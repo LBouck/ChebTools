@@ -330,12 +330,88 @@ TEST_CASE("product commutativity with simple multiplication", "") {
     CHECK(err < 1e-14);
 }
 
+
+TEST_CASE("Constructor Exception Throwing Test"){
+  Eigen::VectorXd x(2);
+  x<<0,1;
+  Eigen::VectorXd y(2);
+  y<<1,1;
+  SECTION("Properly working test 1",""){
+    ChebTools::ChebyshevExpansion xCe = ChebTools::ChebyshevExpansion(x, -1, 1);
+    ChebTools::ChebyshevExpansion yCe = ChebTools::ChebyshevExpansion(y, -1, 1);
+    std::vector<ChebTools::ChebyshevExpansion> xs;
+    xs.push_back(xCe);
+    std::vector<ChebTools::ChebyshevExpansion> ys;
+    ys.push_back(yCe);
+    CHECK_NOTHROW(ChebTools::ChebyshevExpansion2D(xs,ys,-1,1,-1,1));
+  }
+  SECTION("Properly working test 2 with different bounds than standard",""){
+    ChebTools::ChebyshevExpansion xCe = ChebTools::ChebyshevExpansion(x, 0, 2);
+    ChebTools::ChebyshevExpansion yCe = ChebTools::ChebyshevExpansion(y, -3, 3.14);
+    std::vector<ChebTools::ChebyshevExpansion> xs;
+    xs.push_back(xCe);
+    std::vector<ChebTools::ChebyshevExpansion> ys;
+    ys.push_back(yCe);
+    CHECK_NOTHROW(ChebTools::ChebyshevExpansion2D(xs,ys,0,2,-3,3.14));
+  }
+  SECTION("Different xmin test",""){
+    ChebTools::ChebyshevExpansion xCe = ChebTools::ChebyshevExpansion(x, .1, 2);
+    ChebTools::ChebyshevExpansion yCe = ChebTools::ChebyshevExpansion(y, -3, 3.14);
+    std::vector<ChebTools::ChebyshevExpansion> xs;
+    xs.push_back(xCe);
+    std::vector<ChebTools::ChebyshevExpansion> ys;
+    ys.push_back(yCe);
+    CHECK_THROWS_AS(ChebTools::ChebyshevExpansion2D(xs,ys,0,2,-3,3.14), std::invalid_argument);
+  }
+  SECTION("Different xmax test",""){
+    ChebTools::ChebyshevExpansion xCe = ChebTools::ChebyshevExpansion(x, 0, 2.00000000001);
+    ChebTools::ChebyshevExpansion yCe = ChebTools::ChebyshevExpansion(y, -3, 3.14);
+    std::vector<ChebTools::ChebyshevExpansion> xs;
+    xs.push_back(xCe);
+    std::vector<ChebTools::ChebyshevExpansion> ys;
+    ys.push_back(yCe);
+    CHECK_THROWS_AS(ChebTools::ChebyshevExpansion2D(xs,ys,0,2,-3,3.14), std::invalid_argument);
+  }
+  SECTION("Different ymin test",""){
+    ChebTools::ChebyshevExpansion xCe = ChebTools::ChebyshevExpansion(x, 0, 2);
+    ChebTools::ChebyshevExpansion yCe = ChebTools::ChebyshevExpansion(y, -2, 3.14);
+    std::vector<ChebTools::ChebyshevExpansion> xs;
+    xs.push_back(xCe);
+    std::vector<ChebTools::ChebyshevExpansion> ys;
+    ys.push_back(yCe);
+    CHECK_THROWS_AS(ChebTools::ChebyshevExpansion2D(xs,ys,0,2,-3,3.14), std::invalid_argument);
+  }
+  SECTION("Different ymax test",""){
+    ChebTools::ChebyshevExpansion xCe = ChebTools::ChebyshevExpansion(x, 0, 2);
+    ChebTools::ChebyshevExpansion yCe = ChebTools::ChebyshevExpansion(y, -3, 3.1415);
+    std::vector<ChebTools::ChebyshevExpansion> xs;
+    xs.push_back(xCe);
+    std::vector<ChebTools::ChebyshevExpansion> ys;
+    ys.push_back(yCe);
+    CHECK_THROWS_AS(ChebTools::ChebyshevExpansion2D(xs,ys,0,2,-3,3.14), std::invalid_argument);
+  }
+  SECTION("Different x_chebs and y_chebs length",""){
+    ChebTools::ChebyshevExpansion xCe = ChebTools::ChebyshevExpansion(x, 0, 2);
+    ChebTools::ChebyshevExpansion yCe = ChebTools::ChebyshevExpansion(y, -3, 3.14);
+    std::vector<ChebTools::ChebyshevExpansion> xs;
+    xs.push_back(xCe);
+    xs.push_back(xCe);
+    std::vector<ChebTools::ChebyshevExpansion> ys;
+    ys.push_back(yCe);
+    CHECK_THROWS_AS(ChebTools::ChebyshevExpansion2D(xs,ys,0,2,-3,3.14), std::invalid_argument);
+  }
+}
+
+
+
+
+
 //test function to compare values to
 double cheb2d_testfunc(double x, double y){ return x*(1+y); }
 Eigen::ArrayXXd cheb2d_testfunc_vec(Eigen::VectorXd xvec, Eigen::VectorXd yvec){
   Eigen::ArrayXXd ans(yvec.size(),xvec.size());
   for (int i=0;i<yvec.size();i++){
-    for (int j=0;j<xvec.size(),j++){
+    for (int j=0;j<xvec.size();j++){
       ans(i,j) = cheb2d_testfunc(xvec(j),yvec(i));
     }
   }
@@ -345,7 +421,7 @@ double cheb2d_testfunc2(double x, double y){return .5*x*y;}
 Eigen::ArrayXXd cheb2d_testfunc2_vec(Eigen::VectorXd xvec, Eigen::VectorXd yvec){
   Eigen::ArrayXXd ans(yvec.size(),xvec.size());
   for (int i=0;i<yvec.size();i++){
-    for (int j=0;j<xvec.size(),j++){
+    for (int j=0;j<xvec.size();j++){
       ans(i,j) = cheb2d_testfunc2(xvec(j),yvec(i));
     }
   }

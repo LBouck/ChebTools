@@ -185,11 +185,24 @@ namespace ChebTools{
       double x_min,x_max,y_min,y_max;
     public:
       //public constructor
-      ChebyshevExpansion2D(const std::vector<ChebyshevExpansion> &xchebs, const std::vector<ChebyshevExpansion> &ychebs,
-                          double xmin = -1, double xmax = 1,double ymin = -1, double ymax = 1) : x_chebs(xchebs), y_chebs(ychebs),
-                                                                                                 x_min(xmin), x_max(xmax), y_min(ymin), y_max(ymax) {
-                                                                                                   //TODO:need to add way to ensure that both vectors are the same length
-                                                                                                 };
+      ChebyshevExpansion2D(const std::vector<ChebyshevExpansion> &xchebs,
+                            const std::vector<ChebyshevExpansion> &ychebs,
+                            double xmin = -1, double xmax = 1,
+                            double ymin = -1, double ymax = 1) :
+                            x_chebs(xchebs), y_chebs(ychebs),
+                            x_min(xmin), x_max(xmax), y_min(ymin), y_max(ymax) {
+                              if (x_chebs.size()!=y_chebs.size()){
+                                throw std::invalid_argument("Must have same number of y and x ChebyshevExpansions!");
+                              }
+                              for (int i=0;i<x_chebs.size();i++){
+                                if (std::abs(x_chebs.at(i).xmin()-x_min)>1e-15 || std::abs(x_chebs.at(i).xmax()-x_max)>1e-15){
+                                  throw std::invalid_argument("x_cheb bounds must match bounds in 2D cheb!");
+                                }
+                                if (std::abs(y_chebs.at(i).xmin()-y_min)>1e-15 || std::abs(y_chebs.at(i).xmax()-y_max)>1e-15){\
+                                  throw std::invalid_argument("y_cheb bounds must match bounds in 2D cheb!");
+                                }
+                              }
+                            };
       //getter member functions to retrieve private fields
       /*double x_min(){ return x_min; }
       double x_max(){ return x_max; }
