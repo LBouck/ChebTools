@@ -212,20 +212,18 @@ namespace ChebTools{
       //evaluates the ChebyshevExpansion2D using y_Clenshaw from ChebyshevExpansion
       double z_Clenshaw(const double x, const double y) const{
         double z = 0;
-        double xscaled = (2 * x - (x_max + x_min)) / (x_max - x_min);
-        double yscaled = (2 * y - (y_max + y_min)) / (y_max - y_min);
         for (int i=0;i<x_chebs.size();i++){
-          z+=x_chebs.at(i).y_Clenshaw(xscaled)*y_chebs.at(i).y_Clenshaw(yscaled);
+          z+=x_chebs.at(i).y_Clenshaw(x)*y_chebs.at(i).y_Clenshaw(y);
         }
         return z;
       }
 
       //vectorized way of evaluating a grid of x and y values
       Eigen::ArrayXXd z(const vectype xs, const vectype ys) const{
-        Eigen::ArrayXXd z_array(xs.size(),ys.size());
+        Eigen::ArrayXXd z_array(ys.size(),xs.size());
         for (int i=0;i<z_array.rows();i++){
           for (int j=0;j<z_array.cols();j++){
-            z_array(i,j) = z_Clenshaw(xs(i), ys(j));
+            z_array(i,j) = z_Clenshaw(xs(j), ys(i));
           }
         }
         return z_array;

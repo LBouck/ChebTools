@@ -330,18 +330,100 @@ TEST_CASE("product commutativity with simple multiplication", "") {
     CHECK(err < 1e-14);
 }
 
-
+//test function to compare values to
+double cheb2d_testfunc(double x, double y){ return x*(1+y); }
+Eigen::ArrayXXd cheb2d_testfunc_vec(Eigen::VectorXd xvec, Eigen::VectorXd yvec){
+  Eigen::ArrayXXd ans(yvec.size(),xvec.size());
+  for (int i=0;i<yvec.size();i++){
+    for (int j=0;j<xvec.size(),j++){
+      ans(i,j) = cheb2d_testfunc(xvec(j),yvec(i));
+    }
+  }
+  return ans;
+}
+double cheb2d_testfunc2(double x, double y){return .5*x*y;}
+Eigen::ArrayXXd cheb2d_testfunc2_vec(Eigen::VectorXd xvec, Eigen::VectorXd yvec){
+  Eigen::ArrayXXd ans(yvec.size(),xvec.size());
+  for (int i=0;i<yvec.size();i++){
+    for (int j=0;j<xvec.size(),j++){
+      ans(i,j) = cheb2d_testfunc2(xvec(j),yvec(i));
+    }
+  }
+  return ans;
+}
 TEST_CASE("2d chebyshev evaluation tests"){
-
-  //creatinhg two Chebyshev expansions such that the function total should look like f=x(y^2) on [-1,1]^2
+  double error;
+  double tol = 1e-14;
+  //creating the 2d chebyshev expansion that should look like x(1+y)
   Eigen::VectorXd x(2);
   x<<0,1;
-  Eigen::VectorXd y(3);
-  y<<1,0,.5;
-  ChebTools::ChebyshevExpansion xCe = ChebTools::ChebyshevExpansion(c, -1, 1);
-  ChebTools::ChebyshevExpansion yCe = ChebTools::ChebyshevExpansion(c, -1, 1);
-  ChebyshevExpansion2D cheb1 = ChebyshevExpansion2D({xCe},{});
+  Eigen::VectorXd y(2);
+  y<<1,1;
 
-  SECTION("z_recurrence tests",""){
+  ChebTools::ChebyshevExpansion xCe = ChebTools::ChebyshevExpansion(x, -1, 1);
+  ChebTools::ChebyshevExpansion yCe = ChebTools::ChebyshevExpansion(y, -1, 1);
+  std::vector<ChebTools::ChebyshevExpansion> xs;
+  xs.push_back(xCe);
+  std::vector<ChebTools::ChebyshevExpansion> ys;
+  ys.push_back(yCe);
+  ChebTools::ChebyshevExpansion2D chebNormal = ChebTools::ChebyshevExpansion2D(xs,ys,-1,1,-1,1);
+
+  //make the same expansion but on a different interval now so the expansion should look like .5(x+1)y
+  ChebTools::ChebyshevExpansion xCe2 = ChebTools::ChebyshevExpansion(x, -2, 2);
+  ChebTools::ChebyshevExpansion yCe2 = ChebTools::ChebyshevExpansion(y, 0, 2);
+  std::vector<ChebTools::ChebyshevExpansion> xs2;
+  xs2.push_back(xCe2);
+  std::vector<ChebTools::ChebyshevExpansion> ys2;
+  ys2.push_back(yCe2);
+  ChebTools::ChebyshevExpansion2D chebDiffInterval = ChebTools::ChebyshevExpansion2D(xs2,ys2,-2,2,0,2);
+
+
+  SECTION("z_recurrence test inside normal intervals",""){
+    error = std::abs(cheb2d_testfunc(.5,.25)-chebNormal.z_recurrence(.5,.25));
+    CAPTURE(error);
+    CHECK(error<tol);
+  }
+
+  SECTION("z_recurrence test outside normal intervals",""){
+    error = std::abs(cheb2d_testfunc(2,2)-chebNormal.z_recurrence(2,2));
+    CAPTURE(error);
+    CHECK(error<tol);
+  }
+  SECTION("z_recurrence test inside not normal intervals",""){
+    error = std::abs(cheb2d_testfunc2(-.5,.25)-chebDiffInterval.z_recurrence(-.5,.25));
+    CAPTURE(error);
+    CHECK(error<tol);
+  }
+  SECTION("z_recurrence test outside not normal intervals",""){
+    error = std::abs(cheb2d_testfunc2(-4,-.25)-chebDiffInterval.z_recurrence(-4,-.25));
+    CAPTURE(error);
+    CHECK(error<tol);
+  }
+
+
+  SECTION("z_Clenshaw test inside normal intervals",""){
+    error = std::abs(cheb2d_testfunc(.5,.25)-chebNormal.z_Clenshaw(.5,.25));
+    CAPTURE(error);
+    CHECK(error<tol);
+  }
+
+  SECTION("z_Clenshaw test outside normal intervals",""){
+    error = std::abs(cheb2d_testfunc(2,2)-chebNormal.z_Clenshaw(2,2));
+    CAPTURE(error);
+    CHECK(error<tol);
+  }
+  SECTION("z_Clenshaw test inside not normal intervals",""){
+    error = std::abs(cheb2d_testfunc2(-1.5,.25)-chebDiffInterval.z_Clenshaw(-1.5,.25));
+    CAPTURE(error);
+    CHECK(error<tol);
+  }
+  SECTION("z_Clenshaw test outside not normal intervals",""){
+    error = std::abs(cheb2d_testfunc2(-5,-.25)-chebDiffInterval.z_Clenshaw(-5,-.25));
+    CAPTURE(error);
+    CHECK(error<tol);
+  }
+
+  SECTION("vectorized z test",""){
+
   }
 }
