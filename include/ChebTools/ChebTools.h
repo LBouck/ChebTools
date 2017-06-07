@@ -47,8 +47,8 @@ namespace ChebTools{
         ChebyshevExpansion& operator-=(double value);
         /*
          * @brief Multiply two Chebyshev expansions together; thanks to Julia code from Bradley Alpert, NIST
-         * 
-         * Convertes padded expansions to nodal functional values, functional values are multiplied together, 
+         *
+         * Convertes padded expansions to nodal functional values, functional values are multiplied together,
          * and then inverse transformation is used to return to coefficients of the product
          */
         ChebyshevExpansion operator*(const ChebyshevExpansion &ce2) const;
@@ -137,7 +137,7 @@ namespace ChebTools{
         static ChebyshevExpansion factory(const int N, double_function func, const double xmin, const double xmax)
         {
             // Get the precalculated extrema values
-            const Eigen::VectorXd & x_extrema_n11 = get_extrema(N); 
+            const Eigen::VectorXd & x_extrema_n11 = get_extrema(N);
 
             // Step 1&2: Grid points functional values (function evaluated at the
             // extrema of the Chebyshev polynomial of order N - there are N+1 of them)
@@ -167,8 +167,94 @@ namespace ChebTools{
 
         /// Get the Chebyshev-Lobatto nodes
         Eigen::VectorXd get_nodes_n11();
-        /// Values of the function at the Chebyshev-Lobatto nodes 
+        /// Values of the function at the Chebyshev-Lobatto nodes
         Eigen::VectorXd get_node_function_values();
+    };
+
+
+
+
+    /*ChebyshevExpansion2D is a class to create a 2D Chebyshev expansion of a 2d scalar function
+    *@field two vectors x_chebs and y_chebs, which contain 1d Chebyshev expansions with respect to x and y
+    *Order matters on these vectors as the Chebyshev expansion will be represented by \sum{i,j=0}^{N} T_j(x)T_i(y)
+    * where T_j and T_i are ChebyshevExpansion with respect to x and y.
+    * @field double x_min,x_max,y_min,y_max are the bounds on the rectangle we are evaluating the ChebyshevExpansion2D on.*/
+    class ChebyshevExpansion2D{
+    private:
+      std::vector<ChebyshevExpansion> x_chebs, y_chebs;
+      double x_min,x_max,y_min,y_max;
+    public:
+      //public constructor
+      ChebyshevExpansion2D(const std::vector<ChebyshevExpansion> &xchebs, const std::vector<ChebyshevExpansion> &ychebs,
+                          double xmin = -1, double xmax = 1,double ymin = -1, double ymax = 1) : x_chebs(xchebs), y_chebs(ychebs),
+                                                                                                 x_min(xmin), x_max(xmax), y_min(ymin), y_max(ymax) {
+                                                                                                   //TODO:need to add way to ensure that both vectors are the same length
+                                                                                                 };
+      //getter member functions to retrieve private fields
+      /*double x_min(){ return x_min; }
+      double x_max(){ return x_max; }
+      double y_min(){ return y_min; }
+      double y_max(){ return y_max; }
+      //we return references for x_chebs and y_chebs so no copies are made
+      const std::vector<ChebyshevExpansion> &x_chebs() const { return x_chebs; }
+      const std::vector<ChebyshevExpansion> &y_chebs() const { return y_chebs; }*/
+
+
+      //evaluates the ChebyshevExpansion2D using y_recurrence from ChebyshevExpansion
+      double z_recurrence(const double x, const double y){
+        double z = 0;
+        for (int i=0;i<x_chebs.size();i++){
+          z+=x_chebs.at(i).y_recurrence(x)*y_chebs.at(i).y_recurrence(y);
+        }
+        return z;
+      }
+
+      //evaluates the ChebyshevExpansion2D using y_Clenshaw from ChebyshevExpansion
+      double z_Clenshaw(const double x, const double y) const{
+        double z = 0;
+        double xscaled = (2 * x - (x_max + x_min)) / (x_max - x_min);
+        double yscaled = (2 * y - (y_max + y_min)) / (y_max - y_min);
+        for (int i=0;i<x_chebs.size();i++){
+          z+=x_chebs.at(i).y_Clenshaw(xscaled)*y_chebs.at(i).y_Clenshaw(yscaled);
+        }
+        return z;
+      }
+
+      //vectorized way of evaluating a grid of x and y values
+      Eigen::ArrayXXd z(const vectype xs, const vectype ys) const{
+        Eigen::ArrayXXd z_array(xs.size(),ys.size());
+        for (int i=0;i<z_array.rows();i++){
+          for (int j=0;j<z_array.cols();j++){
+            z_array(i,j) = z_Clenshaw(xs(i), ys(j));
+          }
+        }
+        return z_array;
+      }
+      //computes a companion matrix with respect to the y direction and a given x value
+      //this allows to find roots of the ChebyshevExpansion2D at a given x value
+      //this will be useful when we start doing more complicated rootfinding
+      Eigen::MatrixXd companion_matrixY(double x) const{
+        std::vector<double> starting_coeffs = {0};
+        double xscaled = (2 * x - (x_max + x_min)) / (x_max - x_min);
+        ChebyshevExpansion cheb_atx = ChebyshevExpansion(starting_coeffs,y_min,y_max);
+        for (int i=0;i<x_chebs.size();i++){
+          cheb_atx+= x_chebs.at(i).y_Clenshaw(xscaled)*y_chebs.at(i);
+        }
+        return cheb_atx.companion_matrix();
+      }
+
+      //computes a companion matrix with respect to the x direction and a given y value
+      //this allows to find roots of the ChebyshevExpansion2D at a given y value
+      //this will be useful when we start doing more complicated rootfinding
+      Eigen::MatrixXd companion_matrixX(double y) const{
+        std::vector<double> starting_coeffs = {0};
+        double yscaled = (2 * y - (y_max + y_min)) / (y_max - y_min);
+        ChebyshevExpansion cheb_aty = ChebyshevExpansion(starting_coeffs,y_min,y_max);
+        for (int i=0;i<y_chebs.size();i++){
+          cheb_aty+= y_chebs.at(i).y_Clenshaw(yscaled)*x_chebs.at(i);
+        }
+        return cheb_aty.companion_matrix();
+      }
     };
 
 }; /* namespace ChebTools */
