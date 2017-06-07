@@ -336,74 +336,59 @@ TEST_CASE("Constructor Exception Throwing Test"){
   x<<0,1;
   Eigen::VectorXd y(2);
   y<<1,1;
+  ChebTools::ChebyshevExpansion xCe = ChebTools::ChebyshevExpansion(x, -1, 1);
+  ChebTools::ChebyshevExpansion yCe = ChebTools::ChebyshevExpansion(x, -1, 1);
+  std::vector<ChebTools::ChebyshevExpansion> xs, ys;
+
   SECTION("Properly working test 1",""){
-    ChebTools::ChebyshevExpansion xCe = ChebTools::ChebyshevExpansion(x, -1, 1);
-    ChebTools::ChebyshevExpansion yCe = ChebTools::ChebyshevExpansion(y, -1, 1);
-    std::vector<ChebTools::ChebyshevExpansion> xs;
-    xs.push_back(xCe);
-    std::vector<ChebTools::ChebyshevExpansion> ys;
-    ys.push_back(yCe);
+    xs.push_back(xCe); ys.push_back(yCe);
     CHECK_NOTHROW(ChebTools::ChebyshevExpansion2D(xs,ys,-1,1,-1,1));
+    xs.clear(); ys.clear();
   }
+
   SECTION("Properly working test 2 with different bounds than standard",""){
-    ChebTools::ChebyshevExpansion xCe = ChebTools::ChebyshevExpansion(x, 0, 2);
-    ChebTools::ChebyshevExpansion yCe = ChebTools::ChebyshevExpansion(y, -3, 3.14);
-    std::vector<ChebTools::ChebyshevExpansion> xs;
-    xs.push_back(xCe);
-    std::vector<ChebTools::ChebyshevExpansion> ys;
-    ys.push_back(yCe);
+    xCe = ChebTools::ChebyshevExpansion(x, 0, 2);
+    yCe = ChebTools::ChebyshevExpansion(y, -3, 3.14);
+    xs.push_back(xCe); ys.push_back(yCe);
     CHECK_NOTHROW(ChebTools::ChebyshevExpansion2D(xs,ys,0,2,-3,3.14));
+    xs.clear(); ys.clear();
   }
+
   SECTION("Different xmin test",""){
-    ChebTools::ChebyshevExpansion xCe = ChebTools::ChebyshevExpansion(x, .1, 2);
-    ChebTools::ChebyshevExpansion yCe = ChebTools::ChebyshevExpansion(y, -3, 3.14);
-    std::vector<ChebTools::ChebyshevExpansion> xs;
-    xs.push_back(xCe);
-    std::vector<ChebTools::ChebyshevExpansion> ys;
-    ys.push_back(yCe);
+    xCe = ChebTools::ChebyshevExpansion(x, .1, 2);
+    xs.push_back(xCe); ys.push_back(yCe);
     CHECK_THROWS_AS(ChebTools::ChebyshevExpansion2D(xs,ys,0,2,-3,3.14), std::invalid_argument);
+    xs.clear(); ys.clear();
   }
+
   SECTION("Different xmax test",""){
-    ChebTools::ChebyshevExpansion xCe = ChebTools::ChebyshevExpansion(x, 0, 2.00000000001);
-    ChebTools::ChebyshevExpansion yCe = ChebTools::ChebyshevExpansion(y, -3, 3.14);
-    std::vector<ChebTools::ChebyshevExpansion> xs;
-    xs.push_back(xCe);
-    std::vector<ChebTools::ChebyshevExpansion> ys;
-    ys.push_back(yCe);
+    xCe = ChebTools::ChebyshevExpansion(x, 0, 2.00000000001);
+    xs.push_back(xCe); ys.push_back(yCe);
     CHECK_THROWS_AS(ChebTools::ChebyshevExpansion2D(xs,ys,0,2,-3,3.14), std::invalid_argument);
+    xs.clear(); ys.clear();
   }
+
   SECTION("Different ymin test",""){
-    ChebTools::ChebyshevExpansion xCe = ChebTools::ChebyshevExpansion(x, 0, 2);
-    ChebTools::ChebyshevExpansion yCe = ChebTools::ChebyshevExpansion(y, -2, 3.14);
-    std::vector<ChebTools::ChebyshevExpansion> xs;
-    xs.push_back(xCe);
-    std::vector<ChebTools::ChebyshevExpansion> ys;
-    ys.push_back(yCe);
+    xCe = ChebTools::ChebyshevExpansion(x, 0, 2);
+    yCe = ChebTools::ChebyshevExpansion(y, -2, 3.14);
+    xs.push_back(xCe); ys.push_back(yCe);
     CHECK_THROWS_AS(ChebTools::ChebyshevExpansion2D(xs,ys,0,2,-3,3.14), std::invalid_argument);
+    xs.clear(); ys.clear();
   }
+
   SECTION("Different ymax test",""){
-    ChebTools::ChebyshevExpansion xCe = ChebTools::ChebyshevExpansion(x, 0, 2);
-    ChebTools::ChebyshevExpansion yCe = ChebTools::ChebyshevExpansion(y, -3, 3.1415);
-    std::vector<ChebTools::ChebyshevExpansion> xs;
-    xs.push_back(xCe);
-    std::vector<ChebTools::ChebyshevExpansion> ys;
-    ys.push_back(yCe);
+    yCe = ChebTools::ChebyshevExpansion(y, -3, 3.1415);
+    xs.push_back(xCe); ys.push_back(yCe);
     CHECK_THROWS_AS(ChebTools::ChebyshevExpansion2D(xs,ys,0,2,-3,3.14), std::invalid_argument);
+    xs.clear(); ys.clear();
   }
+
   SECTION("Different x_chebs and y_chebs length",""){
-    ChebTools::ChebyshevExpansion xCe = ChebTools::ChebyshevExpansion(x, 0, 2);
-    ChebTools::ChebyshevExpansion yCe = ChebTools::ChebyshevExpansion(y, -3, 3.14);
-    std::vector<ChebTools::ChebyshevExpansion> xs;
-    xs.push_back(xCe);
-    xs.push_back(xCe);
-    std::vector<ChebTools::ChebyshevExpansion> ys;
-    ys.push_back(yCe);
+    yCe = ChebTools::ChebyshevExpansion(y, -3, 3.14);
+    xs.push_back(xCe); xs.push_back(xCe); ys.push_back(yCe);
     CHECK_THROWS_AS(ChebTools::ChebyshevExpansion2D(xs,ys,0,2,-3,3.14), std::invalid_argument);
   }
 }
-
-
-
 
 
 //test function to compare values to
