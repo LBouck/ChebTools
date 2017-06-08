@@ -393,6 +393,7 @@ TEST_CASE("Constructor Exception Throwing Test"){
 
 //test function to compare values to
 double cheb2d_testfunc(double x, double y){ return x*(1+y); }
+
 Eigen::ArrayXXd cheb2d_testfunc_vec(Eigen::VectorXd xvec, Eigen::VectorXd yvec){
   Eigen::ArrayXXd ans(yvec.size(),xvec.size());
   for (int i=0;i<yvec.size();i++){
@@ -402,7 +403,9 @@ Eigen::ArrayXXd cheb2d_testfunc_vec(Eigen::VectorXd xvec, Eigen::VectorXd yvec){
   }
   return ans;
 }
+
 double cheb2d_testfunc2(double x, double y){return .5*x*y;}
+
 Eigen::ArrayXXd cheb2d_testfunc2_vec(Eigen::VectorXd xvec, Eigen::VectorXd yvec){
   Eigen::ArrayXXd ans(yvec.size(),xvec.size());
   for (int i=0;i<yvec.size();i++){
@@ -412,6 +415,7 @@ Eigen::ArrayXXd cheb2d_testfunc2_vec(Eigen::VectorXd xvec, Eigen::VectorXd yvec)
   }
   return ans;
 }
+
 TEST_CASE("2d chebyshev evaluation tests"){
   double error;
   double tol = 1e-14;
@@ -484,7 +488,68 @@ TEST_CASE("2d chebyshev evaluation tests"){
     CHECK(error<tol);
   }
 
-  SECTION("vectorized z test",""){
+  SECTION("vectorized z test normal test",""){
+    Eigen::VectorXd xs(5);
+    xs<< -1,-.5,0,.5,1;
+    Eigen::VectorXd ys(5);
+    ys<< -1,-.5,0,.5,1;
 
+    Eigen::ArrayXXd ans = cheb2d_testfunc_vec(xs, ys);
+    Eigen::ArrayXXd chebAns = chebNormal.z(xs,ys);
+    Eigen::ArrayXXd err_array = ans - chebAns;
+    error = err_array.matrix().norm();
+    CAPTURE(error);
+    CHECK(error<tol);
+  }
+
+  SECTION("vectorized z test unnormal intervals test",""){
+    Eigen::VectorXd xs2(5);
+    xs2<< -2,-1,0,1,2;
+    Eigen::VectorXd ys2(7);
+    ys2<< -.5,0,.5,1,1.5,2,2.5;
+
+    Eigen::ArrayXXd ans = cheb2d_testfunc2_vec(xs2, ys2);
+    Eigen::ArrayXXd chebAns = chebDiffInterval.z(xs2,ys2);
+    Eigen::ArrayXXd err_array = ans - chebAns;
+    error = err_array.matrix().norm();
+    CAPTURE(error);
+    CHECK(error<tol);
+  }
+}
+
+TEST_CASE("companion matrix tests"){
+  double tol = 1e-14;
+  double error;
+  Eigen::VectorXd x(3);
+  x<<0,1,1;
+  Eigen::VectorXd y(3);
+  y<<1,1,1;
+  ChebTools::ChebyshevExpansion xCe = ChebTools::ChebyshevExpansion(x, -1, 1);
+  ChebTools::ChebyshevExpansion yCe = ChebTools::ChebyshevExpansion(y, -1, 1);
+  std::vector<ChebTools::ChebyshevExpansion> xs;
+  xs.push_back(xCe);
+  std::vector<ChebTools::ChebyshevExpansion> ys;
+  ys.push_back(yCe);
+  ChebTools::ChebyshevExpansion2D chebNormal = ChebTools::ChebyshevExpansion2D(xs,ys,-1,1,-1,1);
+
+  SECTION("Companion matrix with respect to x",""){
+    error = ((yCe.y_Clenshaw(.5)*xCe).companion_matrix()-chebNormal.companion_matrixX(.5)).norm();
+    CAPTURE(error);
+    CHECK(error<tol);
+  }
+  SECTION("Companion matrix with respect to y",""){
+
+    Eigen::MatrixXd mat1 = (xCe.y_Clenshaw(.5)*yCe).companion_matrix();
+    Eigen::MatrixXd mat2 = chebNormal.companion_matrixY(.5);
+    std::cout<<"coeffs: "<<(xCe.y_Clenshaw(.5)*yCe).coef()<<std::endl;
+    std::cout<<"mat1:"<<std::endl;
+    std::cout<<mat1<<std::endl;
+    std::cout<<"mat2:"<<std::endl;
+    std::cout<<mat2<<std::endl;
+    std::cout<<"mat1-mat2"<<std::endl;
+    std::cout<<mat1-mat2<<std::endl;
+    error = (mat1-mat2).norm();
+    CAPTURE(error);
+    CHECK(error<tol);
   }
 }

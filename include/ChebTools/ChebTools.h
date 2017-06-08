@@ -3,6 +3,7 @@
 
 #include "Eigen/Dense"
 #include <vector>
+#include <iostream>
 
 namespace ChebTools{
 
@@ -245,26 +246,28 @@ namespace ChebTools{
       //this allows to find roots of the ChebyshevExpansion2D at a given x value
       //this will be useful when we start doing more complicated rootfinding
       Eigen::MatrixXd companion_matrixY(double x) const{
-        std::vector<double> starting_coeffs = {0};
-        double xscaled = (2 * x - (x_max + x_min)) / (x_max - x_min);
+        std::vector<double> starting_coeffs;
+        starting_coeffs.push_back(0);
         ChebyshevExpansion cheb_atx = ChebyshevExpansion(starting_coeffs,y_min,y_max);
         for (int i=0;i<x_chebs.size();i++){
-          cheb_atx+= x_chebs.at(i).y_Clenshaw(xscaled)*y_chebs.at(i);
+          cheb_atx+= x_chebs.at(i).y_Clenshaw(x)*y_chebs.at(i);
         }
-        return cheb_atx.companion_matrix();
+        Eigen::MatrixXd companion = cheb_atx.companion_matrix();
+        return companion;
       }
 
       //computes a companion matrix with respect to the x direction and a given y value
       //this allows to find roots of the ChebyshevExpansion2D at a given y value
       //this will be useful when we start doing more complicated rootfinding
       Eigen::MatrixXd companion_matrixX(double y) const{
-        std::vector<double> starting_coeffs = {0};
-        double yscaled = (2 * y - (y_max + y_min)) / (y_max - y_min);
+        std::vector<double> starting_coeffs;
+        starting_coeffs.push_back(0);
         ChebyshevExpansion cheb_aty = ChebyshevExpansion(starting_coeffs,y_min,y_max);
         for (int i=0;i<y_chebs.size();i++){
-          cheb_aty+= y_chebs.at(i).y_Clenshaw(yscaled)*x_chebs.at(i);
+          cheb_aty+= y_chebs.at(i).y_Clenshaw(y)*x_chebs.at(i);
         }
-        return cheb_aty.companion_matrix();
+        Eigen::MatrixXd companion = cheb_aty.companion_matrix();
+        return companion;
       }
     };
 
