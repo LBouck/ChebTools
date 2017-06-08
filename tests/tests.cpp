@@ -331,6 +331,7 @@ TEST_CASE("product commutativity with simple multiplication", "") {
 }
 
 
+<<<<<<< HEAD
 TEST_CASE("Constructor Exception Throwing Test"){
   Eigen::VectorXd x(2);
   x<<0,1;

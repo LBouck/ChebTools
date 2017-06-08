@@ -25,18 +25,47 @@ namespace ChebTools{
             m_recurrence_buffer.resize(m_c.size());
         }
 
+        //reduce_zeros changes the m_c field so that our companion matrix doesnt have nan values in it
+        //all this does is truncate m_c such that there are no trailing zero values
+        void reduce_zeros(){
+          //these give us a threshold for what coefficients are large enough
+          double largeTerm = 1e-15;
+          if (m_c.size()>=1 && std::abs(m_c(0))>largeTerm){
+            largeTerm = m_c(0);
+          }
+          //if the second coefficient is larger than the first, then make our tolerance
+          //based on the second coefficient, this is useful for functions whose mean value
+          //is zero on the interval
+          if (m_c.size()>=2 && std::abs(m_c(1))>largeTerm){
+            largeTerm = m_c(1);
+          }
+          double tol = largeTerm*(1e-15);
+          double neededSize = m_c.size();
+          //loop over m_c backwards, if we run into large enough coefficient, then record the size and break
+          for (int i=m_c.size()-1;i>=0;i--){
+            if (std::abs(m_c(i))>tol){
+              neededSize = i+1;
+              break;
+            }
+            neededSize--;
+          }
+          //neededSize gives us the number of coefficients that are nonzero
+          //we will resize m_c such that there are essentially no trailing zeros
+          m_c.conservativeResize(neededSize);
+        }
+
     public:
 
-        ChebyshevExpansion(const vectype &c, double xmin = -1, double xmax = 1) : m_c(c), m_xmin(xmin), m_xmax(xmax) { resize(); };
+        ChebyshevExpansion(const vectype &c, double xmin = -1, double xmax = 1) : m_c(c), m_xmin(xmin), m_xmax(xmax) { resize(); reduce_zeros(); };
         ChebyshevExpansion(const std::vector<double> &c, double xmin = -1, double xmax = 1) : m_xmin(xmin), m_xmax(xmax) {
             m_c = Eigen::Map<const Eigen::VectorXd>(&(c[0]), c.size());
-            resize();
+            resize(); reduce_zeros();
         };
         double xmin(){ return m_xmin; }
         double xmax(){ return m_xmax; }
 
         // Move constructor (C++11 only)
-        ChebyshevExpansion(const vectype &&c, double xmin = -1, double xmax = 1) : m_c(c), m_xmin(xmin), m_xmax(xmax) { resize(); };
+        ChebyshevExpansion(const vectype &&c, double xmin = -1, double xmax = 1) : m_c(c), m_xmin(xmin), m_xmax(xmax) { resize(); reduce_zeros(); };
 
         ChebyshevExpansion operator+(const ChebyshevExpansion &ce2) const ;
         ChebyshevExpansion& operator+=(const ChebyshevExpansion &donor);
