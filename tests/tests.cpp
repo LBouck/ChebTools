@@ -524,7 +524,7 @@ TEST_CASE("companion matrix tests"){
   Eigen::VectorXd x(3);
   x<<0,1,1;
   Eigen::VectorXd y(3);
-  y<<1,1,1;
+  y<<1,1,3;
   ChebTools::ChebyshevExpansion xCe = ChebTools::ChebyshevExpansion(x, -1, 1);
   ChebTools::ChebyshevExpansion yCe = ChebTools::ChebyshevExpansion(y, -1, 1);
   std::vector<ChebTools::ChebyshevExpansion> xs;
