@@ -311,7 +311,13 @@ namespace ChebTools{
       }
 
       // TODO: factory,static common roots function
+      static Eigen::Vector3d findpivot(Eigen::ArrayXXd, Eigen::VectorXd,Eigen::VectorXd);
       static ChebyshevExpansion2D factory(int, int, std::function<double(double,double)>,double, double, double, double);
+      static std::vector<double> common_roots(ChebyshevExpansion2D,ChebyshevExpansion2D);
+      static Eigen::MatrixXd bezout_atx(ChebyshevExpansion2D,ChebyshevExpansion2D,double);
+      static Eigen::MatrixXd bezout_aty(ChebyshevExpansion2D,ChebyshevExpansion2D,double);
+
     };
 
 }; /* namespace ChebTools */
+#endif
