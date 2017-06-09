@@ -234,14 +234,25 @@ namespace ChebTools{
                               }
                             };
       //getter member functions to retrieve private fields
-      /*double x_min(){ return x_min; }
-      double x_max(){ return x_max; }
-      double y_min(){ return y_min; }
-      double y_max(){ return y_max; }
-      //we return references for x_chebs and y_chebs so no copies are made
-      const std::vector<ChebyshevExpansion> &x_chebs() const { return x_chebs; }
-      const std::vector<ChebyshevExpansion> &y_chebs() const { return y_chebs; }*/
+      double xmin(){ return x_min; }
+      double xmax(){ return x_max; }
+      double ymin(){ return y_min; }
+      double ymax(){ return y_max; }
 
+      //we return references for x_chebs and y_chebs so no copies are made
+      const std::vector<ChebyshevExpansion> &xchebs() const { return x_chebs; }
+      const std::vector<ChebyshevExpansion> &ychebs() const { return y_chebs; }
+
+      //add 1d chebs to 2d expansions
+      void addExpansions(ChebyshevExpansion xCheb, ChebyshevExpansion yCheb){
+        if (std::abs(xCheb.xmin()-x_min)>1e-15 || std::abs(xCheb.xmax()-x_max)>1e-15){
+          throw std::invalid_argument("x_cheb bounds must match bounds in 2D cheb!");
+        }
+        if (std::abs(yCheb.xmin()-y_min)>1e-15 || std::abs(yCheb.xmax()-y_max)>1e-15){
+          throw std::invalid_argument("y_cheb bounds must match bounds in 2D cheb!");
+        }
+        x_chebs.push_back(xCheb); y_chebs.push_back(yCheb);
+      }
 
       //evaluates the ChebyshevExpansion2D using y_recurrence from ChebyshevExpansion
       double z_recurrence(const double x, const double y){
@@ -298,7 +309,9 @@ namespace ChebTools{
         Eigen::MatrixXd companion = cheb_aty.companion_matrix();
         return companion;
       }
+
+      // TODO: factory,static common roots function
+      static ChebyshevExpansion2D factory(int, int, std::function<double(double,double)>,double, double, double, double);
     };
 
 }; /* namespace ChebTools */
-#endif

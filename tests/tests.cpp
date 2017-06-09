@@ -330,8 +330,6 @@ TEST_CASE("product commutativity with simple multiplication", "") {
     CHECK(err < 1e-14);
 }
 
-
-<<<<<<< HEAD
 TEST_CASE("Constructor Exception Throwing Test"){
   Eigen::VectorXd x(2);
   x<<0,1;
@@ -521,10 +519,10 @@ TEST_CASE("2d chebyshev evaluation tests"){
 TEST_CASE("companion matrix tests"){
   double tol = 1e-14;
   double error;
-  Eigen::VectorXd x(3);
-  x<<0,1,1;
+  Eigen::VectorXd x(4);
+  x<<1,1,2,3;
   Eigen::VectorXd y(3);
-  y<<1,1,3;
+  y<<2,1,3;
   ChebTools::ChebyshevExpansion xCe = ChebTools::ChebyshevExpansion(x, -1, 1);
   ChebTools::ChebyshevExpansion yCe = ChebTools::ChebyshevExpansion(y, -1, 1);
   std::vector<ChebTools::ChebyshevExpansion> xs;
@@ -539,16 +537,8 @@ TEST_CASE("companion matrix tests"){
     CHECK(error<tol);
   }
   SECTION("Companion matrix with respect to y",""){
-
     Eigen::MatrixXd mat1 = (xCe.y_Clenshaw(.5)*yCe).companion_matrix();
     Eigen::MatrixXd mat2 = chebNormal.companion_matrixY(.5);
-    std::cout<<"coeffs: "<<(xCe.y_Clenshaw(.5)*yCe).coef()<<std::endl;
-    std::cout<<"mat1:"<<std::endl;
-    std::cout<<mat1<<std::endl;
-    std::cout<<"mat2:"<<std::endl;
-    std::cout<<mat2<<std::endl;
-    std::cout<<"mat1-mat2"<<std::endl;
-    std::cout<<mat1-mat2<<std::endl;
     error = (mat1-mat2).norm();
     CAPTURE(error);
     CHECK(error<tol);
