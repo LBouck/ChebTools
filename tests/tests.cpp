@@ -1,6 +1,6 @@
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
-
+#include <time.h>
 #include "ChebTools/ChebTools.h"
 
 /*
@@ -395,7 +395,7 @@ double cheb2d_testfunc(double x, double y){ return x*(1+y); }
 
 Eigen::ArrayXXd cheb2d_testfunc_vec(Eigen::VectorXd xvec, Eigen::VectorXd yvec){
   Eigen::ArrayXXd ans(yvec.size(),xvec.size());
-  for (int i=0;i<yvec.size();i++){
+  for (int i=yvec.size()-1;i>=0;i--){
     for (int j=0;j<xvec.size();j++){
       ans(i,j) = cheb2d_testfunc(xvec(j),yvec(i));
     }
@@ -407,7 +407,7 @@ double cheb2d_testfunc2(double x, double y){return .5*x*y;}
 
 Eigen::ArrayXXd cheb2d_testfunc2_vec(Eigen::VectorXd xvec, Eigen::VectorXd yvec){
   Eigen::ArrayXXd ans(yvec.size(),xvec.size());
-  for (int i=0;i<yvec.size();i++){
+  for (int i=yvec.size()-1;i>=0;i--){
     for (int j=0;j<xvec.size();j++){
       ans(i,j) = cheb2d_testfunc2(xvec(j),yvec(i));
     }
@@ -543,4 +543,53 @@ TEST_CASE("companion matrix tests"){
     CAPTURE(error);
     CHECK(error<tol);
   }
+}
+
+double factorytestfunc(double x,double y){
+  return (1+x)*y+(2*std::pow(y,2)+1);
+}
+Eigen::ArrayXXd factorytestfunc_vec(Eigen::VectorXd xvals, Eigen::VectorXd yvals){
+  Eigen::ArrayXXd ans(yvals.size(),xvals.size());
+  for (int i=yvals.size()-1;i>=0;i--){
+    for (int j=0;j<xvals.size();j++){
+      ans(i,j) = factorytestfunc(xvals(j),yvals(i));
+    }
+  }
+  return ans;
+}
+
+TEST_CASE("factory and pivot tests"){
+  double tol = 1e-14;
+  double error;
+  //finds the x,y, and function value of max abs of the function on this array
+  SECTION("pivot test",""){
+    Eigen::ArrayXXd fvals(3,3);
+    fvals<< 1,1,1,
+            2,-2,3,
+            3,-4,1;
+    Eigen::VectorXd xvals(3);
+    Eigen::VectorXd yvals(3);
+    xvals<<1,2,3;
+    yvals<<1,2,3;
+    Eigen::Vector3d ans(2,1,-4);
+    Eigen::Vector3d pivot = ChebTools::ChebyshevExpansion2D::findpivot(fvals,xvals,yvals);
+    error = (ans-pivot).norm();
+    CAPTURE(error);
+    CHECK(error<tol);
+  }
+
+  SECTION("Factory test",""){
+    tol = 100*100*(1e-14);
+    ChebTools::ChebyshevExpansion2D factoryCheb = ChebTools::ChebyshevExpansion2D::factory(10,10,factorytestfunc,-1,1,-1,1);
+    const Eigen::VectorXd & x_gridvals = ChebTools::get_extrema(100);
+    const Eigen::VectorXd & y_gridvals = ChebTools::get_extrema(100);
+    Eigen::ArrayXXd err_arr = factoryCheb.z(x_gridvals,y_gridvals)-factorytestfunc_vec(x_gridvals,y_gridvals);
+
+    error = err_arr.matrix().norm();
+    CAPTURE(error);
+    CHECK(error<tol);
+  }
+
+
+
 }

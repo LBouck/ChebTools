@@ -674,28 +674,30 @@ namespace ChebTools {
     }
 
 
-    static Eigen::Vector3d findpivot(Eigen::ArrayXXd fvals, Eigen::VectorXd x_gridvals,Eigen::VectorXd y_gridvals){
-      double x_maxIndex,y_maxIndex,maxVal;
-      maxVal = fvals.abs().maxCoeff(&y_maxIndex, &x_maxIndex);
-      return Eigen::Vector3d(x_maxIndex,y_maxIndex,maxVal);
+    Eigen::Vector3d ChebyshevExpansion2D::findpivot(Eigen::ArrayXXd fvals, Eigen::VectorXd x_gridvals,Eigen::VectorXd y_gridvals){
+      int x_maxIndex,oldy_maxIndex, newy_maxIndex;
+      double maxVal;
+      maxVal = fvals.abs().maxCoeff(&oldy_maxIndex, &x_maxIndex);
+      newy_maxIndex = y_gridvals.size()-oldy_maxIndex-1;
+      return Eigen::Vector3d(x_gridvals(x_maxIndex),y_gridvals(newy_maxIndex),fvals(oldy_maxIndex ,x_maxIndex));
     }
 
     ChebyshevExpansion2D ChebyshevExpansion2D::factory(int xpts, int ypts, std::function<double(double,double)> func,
                                         double xmin, double xmax, double ymin, double ymax){
       std::vector<ChebyshevExpansion> xChebs,yChebs;
-      ChebyshevExpansion2D new2dCheb = ChebyshevExpansion2D(xChebs,yChebs,xmin,xmax,ymin,ymax) ;
+      ChebyshevExpansion2D new2dCheb = ChebyshevExpansion2D(xChebs,yChebs,xmin,xmax,ymin,ymax);
       // create x chebyshev values
       const Eigen::VectorXd & x_gridvals = ChebTools::get_extrema(xpts);
       // create y chebyshev values
       const Eigen::VectorXd & y_gridvals = ChebTools::get_extrema(ypts);
       // create grid of fvals
-      Eigen::ArrayXXd fvals(ypts,xpts);
+      Eigen::ArrayXXd fvals(ypts+1,xpts+1);
 
       double x,y;
-      for (int j=0;j<ypts;j++){
-        for (int i=0;i<xpts;i++){
+      for (int j=ypts;j>=0;j--){
+        for (int i=0;i<=xpts;i++){
             x = ((xmax - xmin)*x_gridvals(i) + (xmax + xmin)) / 2.0;
-            y = ((ymax - ymin)*y_gridvals(i) + (ymax + ymin)) / 2.0;
+            y = ((ymax - ymin)*y_gridvals(j) + (ymax + ymin)) / 2.0;
             fvals(j,i) = func(x,y);
         }
       }
@@ -703,16 +705,27 @@ namespace ChebTools {
       // pick largest f value in absolute terms
       // then interpolate in both the x and y direction
       // repeat until error is small enough or we run out of points
-      int x_maxIndex;
-      int y_maxIndex;
-      double maxVal = 1e-14;
+      int x_maxIndex, y_maxIndex;
+      double maxVal = fvals.abs().maxCoeff(&y_maxIndex, &x_maxIndex);
+      double tol = maxVal*(1e-14);
+      maxVal = tol;
       double candidate;
-      while (maxVal>=1e-14){
-          maxVal = fvals.abs().maxCoeff(&y_maxIndex, &x_maxIndex);
+      int count = 0;
+      std::vector<double> dummy_coeffs;
+      ChebyshevExpansion chebX = ChebyshevExpansion(dummy_coeffs,xmin,xmax);
+      ChebyshevExpansion chebY = ChebyshevExpansion(dummy_coeffs,ymin,ymax);
+      ChebyshevExpansion2D intermediateCheb = ChebyshevExpansion2D(xChebs,yChebs,xmin,xmax,ymin,ymax);
+      while (maxVal>=tol && count<xpts*ypts){
+
         // TODO: finish up gaussian elimination of function
-        new2dCheb.addExpansions((1/fvals(y_maxIndex,x_maxIndex))*ChebyshevExpansion::factoryf(xpts,fvals.col(x_maxIndex).matrix(),xmin,xmax),
-                                ChebyshevExpansion::factoryf(ypts,fvals.row(y_maxIndex).matrix(),ymin,ymax));
-        fvals = fvals - new2dCheb.z(x_gridvals,y_gridvals);
+        chebX = (1/fvals(y_maxIndex,x_maxIndex))*ChebyshevExpansion::factoryf(xpts,fvals.row(y_maxIndex).matrix(),xmin,xmax);
+        chebY = ChebyshevExpansion::factoryf(ypts,fvals.col(x_maxIndex).matrix(),ymin,ymax);
+        new2dCheb.addExpansions(chebX, chebY);
+        xChebs.push_back(chebX); yChebs.push_back(chebY);
+        fvals = fvals - ChebyshevExpansion2D(xChebs,yChebs,xmin,xmax,ymin,ymax).z(x_gridvals,y_gridvals);
+        xChebs.clear(); yChebs.clear();
+        maxVal = fvals.abs().maxCoeff(&y_maxIndex, &x_maxIndex);
+        count+=1;
       }
       return new2dCheb;
     }

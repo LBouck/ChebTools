@@ -275,7 +275,7 @@ namespace ChebTools{
       //vectorized way of evaluating a grid of x and y values
       Eigen::ArrayXXd z(const vectype xs, const vectype ys) const{
         Eigen::ArrayXXd z_array(ys.size(),xs.size());
-        for (int i=0;i<z_array.rows();i++){
+        for (int i=z_array.rows()-1;i>=0;i--){
           for (int j=0;j<z_array.cols();j++){
             z_array(i,j) = z_Clenshaw(xs(j), ys(i));
           }
@@ -311,7 +311,7 @@ namespace ChebTools{
       }
 
       // TODO: factory,static common roots function
-      static Eigen::Vector3d findpivot(Eigen::ArrayXXd, Eigen::VectorXd,Eigen::VectorXd);
+      static Eigen::Vector3d findpivot(Eigen::ArrayXXd, Eigen::VectorXd, Eigen::VectorXd);
       static ChebyshevExpansion2D factory(int, int, std::function<double(double,double)>,double, double, double, double);
       static std::vector<double> common_roots(ChebyshevExpansion2D,ChebyshevExpansion2D);
       static Eigen::MatrixXd bezout_atx(ChebyshevExpansion2D,ChebyshevExpansion2D,double);
