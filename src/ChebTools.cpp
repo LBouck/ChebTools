@@ -691,14 +691,13 @@ namespace ChebTools {
       // create y chebyshev values
       const Eigen::VectorXd & y_gridvals = ChebTools::get_extrema(ypts);
       // create grid of fvals
+      Eigen::VectorXd newX_grid = ((xmax - xmin)*ChebTools::get_extrema(xpts).array() + (xmax + xmin)) / 2.0;
+      Eigen::VectorXd newY_grid = ((ymax - ymin)*ChebTools::get_extrema(ypts).array() + (ymax + ymin)) / 2.0;
       Eigen::ArrayXXd fvals(ypts+1,xpts+1);
 
-      double x,y;
       for (int j=ypts;j>=0;j--){
         for (int i=0;i<=xpts;i++){
-            x = ((xmax - xmin)*x_gridvals(i) + (xmax + xmin)) / 2.0;
-            y = ((ymax - ymin)*y_gridvals(j) + (ymax + ymin)) / 2.0;
-            fvals(j,i) = func(x,y);
+            fvals(j,i) = func(newX_grid(i),newY_grid(j));
         }
       }
       // Gaussian elimination of a function
@@ -722,7 +721,7 @@ namespace ChebTools {
         chebY = ChebyshevExpansion::factoryf(ypts,fvals.col(x_maxIndex).matrix(),ymin,ymax);
         new2dCheb.addExpansions(chebX, chebY);
         xChebs.push_back(chebX); yChebs.push_back(chebY);
-        fvals = fvals - ChebyshevExpansion2D(xChebs,yChebs,xmin,xmax,ymin,ymax).z(x_gridvals,y_gridvals);
+        fvals = fvals - ChebyshevExpansion2D(xChebs,yChebs,xmin,xmax,ymin,ymax).z(newX_grid,newY_grid);
         xChebs.clear(); yChebs.clear();
         maxVal = fvals.abs().maxCoeff(&y_maxIndex, &x_maxIndex);
         count+=1;

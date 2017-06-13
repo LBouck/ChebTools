@@ -545,21 +545,21 @@ TEST_CASE("companion matrix tests"){
   }
 }
 
-double factorytestfunc(double x,double y){
-  return (1+x)*y+(2*std::pow(y,2)+1);
-}
-Eigen::ArrayXXd factorytestfunc_vec(Eigen::VectorXd xvals, Eigen::VectorXd yvals){
+double func1(double x,double y){ return (1+x)*y+(2*std::pow(y,2)+1);}
+double func2(double x,double y){ return std::sin(x)*std::sin(y);}
+
+Eigen::ArrayXXd factorytest_vec(std::function<double(double,double)> func, Eigen::VectorXd xvals, Eigen::VectorXd yvals){
   Eigen::ArrayXXd ans(yvals.size(),xvals.size());
   for (int i=yvals.size()-1;i>=0;i--){
     for (int j=0;j<xvals.size();j++){
-      ans(i,j) = factorytestfunc(xvals(j),yvals(i));
+      ans(i,j) = func(xvals(j),yvals(i));
     }
   }
   return ans;
 }
 
 TEST_CASE("factory and pivot tests"){
-  double tol = 1e-14;
+  double tol = 100*(1e-14);
   double error;
   //finds the x,y, and function value of max abs of the function on this array
   SECTION("pivot test",""){
@@ -578,18 +578,45 @@ TEST_CASE("factory and pivot tests"){
     CHECK(error<tol);
   }
 
-  SECTION("Factory test",""){
-    tol = 100*100*(1e-14);
-    ChebTools::ChebyshevExpansion2D factoryCheb = ChebTools::ChebyshevExpansion2D::factory(10,10,factorytestfunc,-1,1,-1,1);
-    const Eigen::VectorXd & x_gridvals = ChebTools::get_extrema(100);
-    const Eigen::VectorXd & y_gridvals = ChebTools::get_extrema(100);
-    Eigen::ArrayXXd err_arr = factoryCheb.z(x_gridvals,y_gridvals)-factorytestfunc_vec(x_gridvals,y_gridvals);
+  SECTION("Factory test 1: standard interval and Chebyshev polynomial input",""){
+    ChebTools::ChebyshevExpansion2D factoryCheb = ChebTools::ChebyshevExpansion2D::factory(10,10,func1,-1,1,-1,1);
+    const Eigen::VectorXd & x_gridvals = ChebTools::get_extrema(10);
+    const Eigen::VectorXd & y_gridvals = ChebTools::get_extrema(10);
+    Eigen::ArrayXXd err_arr = factoryCheb.z(x_gridvals,y_gridvals)-factorytest_vec(func1,x_gridvals,y_gridvals);
 
     error = err_arr.matrix().norm();
     CAPTURE(error);
     CHECK(error<tol);
   }
 
+  SECTION("Factory test 2: non standard interval and Chebyshev polynomial input",""){
+    ChebTools::ChebyshevExpansion2D factoryCheb = ChebTools::ChebyshevExpansion2D::factory(10,10,func1,0,2,-3,2);
+    const Eigen::VectorXd & x_gridvals = ((2.0 - 0.0)*ChebTools::get_extrema(10).array() + (2.0 + 0)) / 2.0;
+    const Eigen::VectorXd & y_gridvals = ((2.0 + 3.0)*ChebTools::get_extrema(10).array() + (2.0 -3.0)) / 2.0;
+    Eigen::ArrayXXd err_arr = factoryCheb.z(x_gridvals,y_gridvals)-factorytest_vec(func1,x_gridvals,y_gridvals);
 
+    error = err_arr.matrix().norm();
+    CAPTURE(error);
+    CHECK(error<tol);
+  }
 
+  SECTION("Factory test 3: standard interval and transcendental func input",""){
+    ChebTools::ChebyshevExpansion2D factoryCheb = ChebTools::ChebyshevExpansion2D::factory(10,10,func2,-1,1,-1,1);
+    const Eigen::VectorXd & x_gridvals = ChebTools::get_extrema(10);
+    const Eigen::VectorXd & y_gridvals = ChebTools::get_extrema(10);
+    Eigen::ArrayXXd err_arr = factoryCheb.z(x_gridvals,y_gridvals)-factorytest_vec(func2,x_gridvals,y_gridvals);
+
+    error = err_arr.matrix().norm();
+    CAPTURE(error);
+    CHECK(error<tol);
+  }
+  SECTION("Factory test 4: non standard interval and transcendental func input",""){
+    ChebTools::ChebyshevExpansion2D factoryCheb = ChebTools::ChebyshevExpansion2D::factory(3,3,func2,-3.14,3.14,0,6.28);
+    const Eigen::VectorXd & x_gridvals = ((3.14 + 3.14)*ChebTools::get_extrema(3).array() + (3.14 -3.14)) / 2.0;
+    const Eigen::VectorXd & y_gridvals = ((6.28 + 0.0)*ChebTools::get_extrema(3).array() + (6.28 -0.0)) / 2.0;
+    Eigen::ArrayXXd err_arr = factoryCheb.z(x_gridvals,y_gridvals)-factorytest_vec(func2,x_gridvals,y_gridvals);
+    error = err_arr.matrix().norm();
+    CAPTURE(error);
+    CHECK(error<tol);
+  }
 }
