@@ -729,4 +729,12 @@ namespace ChebTools {
       return new2dCheb;
     }
 
+
+    Eigen::MatrixXd bezout_atx(ChebyshevExpansion2D,ChebyshevExpansion2D,double){
+
+    }
+    Eigen::MatrixXd bezout_aty(ChebyshevExpansion2D,ChebyshevExpansion2D,double){
+
+    }
+
 }; /* namespace ChebTools */

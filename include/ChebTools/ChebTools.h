@@ -285,7 +285,7 @@ namespace ChebTools{
       //computes a companion matrix with respect to the y direction and a given x value
       //this allows to find roots of the ChebyshevExpansion2D at a given x value
       //this will be useful when we start doing more complicated rootfinding
-      Eigen::MatrixXd companion_matrixY(double x) const{
+      Eigen::MatrixXd companionMatrix_atx(double x) const{
         std::vector<double> starting_coeffs;
         starting_coeffs.push_back(0);
         ChebyshevExpansion cheb_atx = ChebyshevExpansion(starting_coeffs,y_min,y_max);
@@ -299,7 +299,7 @@ namespace ChebTools{
       //computes a companion matrix with respect to the x direction and a given y value
       //this allows to find roots of the ChebyshevExpansion2D at a given y value
       //this will be useful when we start doing more complicated rootfinding
-      Eigen::MatrixXd companion_matrixX(double y) const{
+      Eigen::MatrixXd companionMatrix_aty(double y) const{
         std::vector<double> starting_coeffs;
         starting_coeffs.push_back(0);
         ChebyshevExpansion cheb_aty = ChebyshevExpansion(starting_coeffs,y_min,y_max);

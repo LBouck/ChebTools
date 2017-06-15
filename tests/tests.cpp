@@ -532,13 +532,13 @@ TEST_CASE("companion matrix tests"){
   ChebTools::ChebyshevExpansion2D chebNormal = ChebTools::ChebyshevExpansion2D(xs,ys,-1,1,-1,1);
 
   SECTION("Companion matrix with respect to x",""){
-    error = ((yCe.y_Clenshaw(.5)*xCe).companion_matrix()-chebNormal.companion_matrixX(.5)).norm();
+    error = ((yCe.y_Clenshaw(.5)*xCe).companion_matrix()-chebNormal.companionMatrix_aty(.5)).norm();
     CAPTURE(error);
     CHECK(error<tol);
   }
   SECTION("Companion matrix with respect to y",""){
     Eigen::MatrixXd mat1 = (xCe.y_Clenshaw(.5)*yCe).companion_matrix();
-    Eigen::MatrixXd mat2 = chebNormal.companion_matrixY(.5);
+    Eigen::MatrixXd mat2 = chebNormal.companionMatrix_atx(.5);
     error = (mat1-mat2).norm();
     CAPTURE(error);
     CHECK(error<tol);
