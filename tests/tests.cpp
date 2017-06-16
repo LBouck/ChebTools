@@ -330,6 +330,50 @@ TEST_CASE("product commutativity with simple multiplication", "") {
     CHECK(err < 1e-14);
 }
 
+//some corner cases if someone wanted to try and initialize a linear ChebyshevExpansion
+TEST_CASE("corner cases with linear ChebyshevExpansion",""){
+  double error;
+  SECTION("root finding of linear ChebyshevExpansion"){
+    Eigen::VectorXd coeffs(2);
+    coeffs<<0,1;
+    ChebTools::ChebyshevExpansion linCheb = ChebTools::ChebyshevExpansion(coeffs,-1,1);
+    double root = linCheb.real_roots(true).at(0);
+    error = std::abs(root);
+    CAPTURE(error);
+    CHECK(error<1e-14);
+  }
+
+  SECTION("root finding of linear ChebyshevExpansion test 2"){
+    Eigen::VectorXd coeffs(3);
+    coeffs<<-1,1,0;
+    ChebTools::ChebyshevExpansion linCheb = ChebTools::ChebyshevExpansion(coeffs,-1,1);
+    double root = linCheb.real_roots(true).at(0);
+    error = std::abs(1-root);
+    CAPTURE(error);
+    CHECK(error<1e-14);
+  }
+
+  SECTION("root finding of linear ChebyshevExpansion test 3"){
+    Eigen::VectorXd coeffs(3);
+    coeffs<<0,1,0;
+    ChebTools::ChebyshevExpansion linCheb = ChebTools::ChebyshevExpansion(coeffs,-1,1);
+    double root = linCheb.real_roots(true).at(0);
+    error = std::abs(root);
+    CAPTURE(error);
+    CHECK(error<1e-14);
+  }
+
+  SECTION("root finding of linear ChebyshevExpansion test 4"){
+    Eigen::VectorXd coeffs(3);
+    coeffs<<0,0,0;
+    ChebTools::ChebyshevExpansion linCheb = ChebTools::ChebyshevExpansion(coeffs,-1,1);
+    int roots = linCheb.real_roots(true).size();
+    CAPTURE(roots);
+    CHECK(roots==0);
+    CHECK(linCheb.coef().size()==3);
+  }
+}
+
 TEST_CASE("Constructor Exception Throwing Test"){
   Eigen::VectorXd x(2);
   x<<0,1;
@@ -470,7 +514,6 @@ TEST_CASE("2d chebyshev evaluation tests"){
     CAPTURE(error);
     CHECK(error<tol);
   }
-
   SECTION("z_Clenshaw test outside normal intervals",""){
     error = std::abs(cheb2d_testfunc(2,2)-chebNormal.z_Clenshaw(2,2));
     CAPTURE(error);
