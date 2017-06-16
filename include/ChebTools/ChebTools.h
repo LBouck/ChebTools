@@ -246,7 +246,7 @@ namespace ChebTools{
       const std::vector<ChebyshevExpansion> &ychebs() const { return y_chebs; }
 
       //add 1d chebs to 2d expansions
-      void addExpansions(ChebyshevExpansion xCheb, ChebyshevExpansion yCheb){
+      void addExpansions(ChebyshevExpansion &xCheb, ChebyshevExpansion &yCheb){
         if (std::abs(xCheb.xmin()-x_min)>1e-15 || std::abs(xCheb.xmax()-x_max)>1e-15){
           throw std::invalid_argument("x_cheb bounds must match bounds in 2D cheb!");
         }
@@ -275,7 +275,7 @@ namespace ChebTools{
       }
 
       //vectorized way of evaluating a grid of x and y values
-      Eigen::ArrayXXd z(const vectype xs, const vectype ys) const{
+      Eigen::ArrayXXd z(const vectype &xs, const vectype &ys) const{
         Eigen::ArrayXXd z_array(ys.size(),xs.size());
         for (int i=z_array.rows()-1;i>=0;i--){
           for (int j=0;j<z_array.cols();j++){
@@ -294,8 +294,7 @@ namespace ChebTools{
         for (int i=0;i<x_chebs.size();i++){
           cheb_atx+= x_chebs.at(i).y_Clenshaw(x)*y_chebs.at(i);
         }
-        Eigen::MatrixXd companion = cheb_atx.companion_matrix();
-        return companion;
+        return cheb_atx.companion_matrix(cheb_atx.coef());
       }
 
       //computes a companion matrix with respect to the x direction and a given y value
@@ -308,8 +307,7 @@ namespace ChebTools{
         for (int i=0;i<y_chebs.size();i++){
           cheb_aty+= y_chebs.at(i).y_Clenshaw(y)*x_chebs.at(i);
         }
-        Eigen::MatrixXd companion = cheb_aty.companion_matrix();
-        return companion;
+        return cheb_aty.companion_matrix(cheb_aty.coef());
       }
 
       // TODO: factory,static common roots function
