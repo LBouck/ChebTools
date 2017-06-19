@@ -679,7 +679,7 @@ namespace ChebTools {
     }
 
 
-    Eigen::Vector3d ChebyshevExpansion2D::findpivot(Eigen::ArrayXXd fvals, Eigen::VectorXd x_gridvals,Eigen::VectorXd y_gridvals){
+    Eigen::Vector3d ChebyshevExpansion2D::findpivot(const Eigen::ArrayXXd &fvals, const Eigen::VectorXd &x_gridvals,const Eigen::VectorXd &y_gridvals){
       int x_maxIndex,oldy_maxIndex, newy_maxIndex;
       double maxVal;
       maxVal = fvals.abs().maxCoeff(&oldy_maxIndex, &x_maxIndex);
@@ -720,8 +720,6 @@ namespace ChebTools {
       ChebyshevExpansion chebY = ChebyshevExpansion(dummy_coeffs,ymin,ymax);
       ChebyshevExpansion2D intermediateCheb = ChebyshevExpansion2D(xChebs,yChebs,xmin,xmax,ymin,ymax);
       while (maxVal>=tol && count<xpts*ypts){
-
-        // TODO: finish up gaussian elimination of function
         chebX = (1/fvals(y_maxIndex,x_maxIndex))*ChebyshevExpansion::factoryf(xpts,fvals.row(y_maxIndex).matrix(),xmin,xmax);
         chebY = ChebyshevExpansion::factoryf(ypts,fvals.col(x_maxIndex).matrix(),ymin,ymax);
         new2dCheb.addExpansions(chebX, chebY);
@@ -734,12 +732,38 @@ namespace ChebTools {
       return new2dCheb;
     }
 
+    Eigen::MatrixXd ChebyshevExpansion2D::construct_Bezout(const Eigen::VectorXd &first_cvec, const Eigen::VectorXd &second_cvec){
+      int n = first_cvec.size(); int m = second_cvec.size();
+      int N = std::max(n,m)-1; Eigen::MatrixXd bezout = Eigen::MatrixXd::Zero(N,N);
+      Eigen::VectorXd new_firstvec = Eigen::VectorXd::Zero(N+1);
+      Eigen::VectorXd new_secondvec = Eigen::VectorXd::Zero(N+1);
+      new_firstvec.head(n) = first_cvec; new_secondvec.head(m) = second_cvec;
+      Eigen::MatrixXd placeholder = first_cvec*second_cvec.transpose()-second_cvec*first_cvec.transpose();
+      bezout.row(N-1) = 2*placeholder.row(N).head(N);
 
-    Eigen::MatrixXd bezout_atx(ChebyshevExpansion2D,ChebyshevExpansion2D,double){
+      Eigen::VectorXd placeholder2(N);
+      placeholder2(0) = 0; placeholder2(1) = 2*bezout(N-1,0); placeholder2.tail(N-2) = bezout.block(N-1,1,1,N-2);
+      Eigen::VectorXd placeholder3(N);
+      placeholder3.head(N-1) = bezout.block(N-1,1,1,N-1); placeholder3(N-1) = 0;
+      bezout.row(N-2) = 2*placeholder.row(N-1).head(N)+placeholder2+placeholder3;
 
+      for (std::size_t i=N-3;i>=0;i--){
+        placeholder2(1) = 2*bezout(i+1,0); placeholder2.tail(N-2) = bezout.block(i+1,1,1,N-2);
+        placeholder3.head(N-1) = bezout.block(i+1,1,1,N-1);
+        bezout.row(i) = 2*placeholder.row(i+1).head(N)-bezout.row(i+2)+placeholder2+placeholder3;
+      }
+      return bezout;
     }
-    Eigen::MatrixXd bezout_aty(ChebyshevExpansion2D,ChebyshevExpansion2D,double){
 
+    Eigen::MatrixXd ChebyshevExpansion2D::bezout_atx(const ChebyshevExpansion2D &first_cheb, const ChebyshevExpansion2D &second_cheb,double x){
+      Eigen::VectorXd first_cvec = first_cheb.chebExpansion_atx(x).coef();
+      Eigen::VectorXd second_cvec = second_cheb.chebExpansion_atx(x).coef();
+      return ChebyshevExpansion2D::construct_Bezout(first_cvec, second_cvec);
+    }
+    Eigen::MatrixXd ChebyshevExpansion2D::bezout_aty(const ChebyshevExpansion2D &first_cheb, const ChebyshevExpansion2D &second_cheb,double y){
+      Eigen::VectorXd first_cvec = first_cheb.chebExpansion_aty(y).coef();
+      Eigen::VectorXd second_cvec = second_cheb.chebExpansion_aty(y).coef();
+      return ChebyshevExpansion2D::construct_Bezout(first_cvec, second_cvec);
     }
 
 }; /* namespace ChebTools */

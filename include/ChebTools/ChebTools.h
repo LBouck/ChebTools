@@ -226,7 +226,7 @@ namespace ChebTools{
                               if (x_chebs.size()!=y_chebs.size()){
                                 throw std::invalid_argument("Must have same number of y and x ChebyshevExpansions!");
                               }
-                              for (int i=0;i<x_chebs.size();i++){
+                              for (std::size_t i=0;i<x_chebs.size();i++){
                                 if (std::abs(x_chebs.at(i).xmin()-x_min)>1e-15 || std::abs(x_chebs.at(i).xmax()-x_max)>1e-15){
                                   throw std::invalid_argument("x_cheb bounds must match bounds in 2D cheb!");
                                 }
@@ -259,7 +259,7 @@ namespace ChebTools{
       //evaluates the ChebyshevExpansion2D using y_recurrence from ChebyshevExpansion
       double z_recurrence(const double x, const double y){
         double z = 0;
-        for (int i=0;i<x_chebs.size();i++){
+        for (std::size_t i=0;i<x_chebs.size();i++){
           z+=x_chebs.at(i).y_recurrence(x)*y_chebs.at(i).y_recurrence(y);
         }
         return z;
@@ -268,7 +268,7 @@ namespace ChebTools{
       //evaluates the ChebyshevExpansion2D using y_Clenshaw from ChebyshevExpansion
       double z_Clenshaw(const double x, const double y) const{
         double z = 0;
-        for (int i=0;i<x_chebs.size();i++){
+        for (std::size_t i=0;i<x_chebs.size();i++){
           z+=x_chebs.at(i).y_Clenshaw(x)*y_chebs.at(i).y_Clenshaw(y);
         }
         return z;
@@ -284,16 +284,30 @@ namespace ChebTools{
         }
         return z_array;
       }
+
+      ChebyshevExpansion chebExpansion_atx(double x) const{
+        std::vector<double> starting_coeffs;
+        starting_coeffs.push_back(0);
+        ChebyshevExpansion cheb_atx = ChebyshevExpansion(starting_coeffs,y_min,y_max);
+        for (std::size_t i=0;i<x_chebs.size();i++){
+          cheb_atx+= x_chebs.at(i).y_Clenshaw(x)*y_chebs.at(i);
+        }
+        return cheb_atx;
+      }
+      ChebyshevExpansion chebExpansion_aty(double y) const{
+        std::vector<double> starting_coeffs;
+        starting_coeffs.push_back(0);
+        ChebyshevExpansion cheb_aty = ChebyshevExpansion(starting_coeffs,y_min,y_max);
+        for (std::size_t i=0;i<y_chebs.size();i++){
+          cheb_aty+= y_chebs.at(i).y_Clenshaw(y)*x_chebs.at(i);
+        }
+        return cheb_aty;
+      }
       //computes a companion matrix with respect to the y direction and a given x value
       //this allows to find roots of the ChebyshevExpansion2D at a given x value
       //this will be useful when we start doing more complicated rootfinding
       Eigen::MatrixXd companionMatrix_atx(double x) const{
-        std::vector<double> starting_coeffs;
-        starting_coeffs.push_back(0);
-        ChebyshevExpansion cheb_atx = ChebyshevExpansion(starting_coeffs,y_min,y_max);
-        for (int i=0;i<x_chebs.size();i++){
-          cheb_atx+= x_chebs.at(i).y_Clenshaw(x)*y_chebs.at(i);
-        }
+        ChebyshevExpansion cheb_atx = chebExpansion_atx(x);
         return cheb_atx.companion_matrix(cheb_atx.coef());
       }
 
@@ -301,22 +315,17 @@ namespace ChebTools{
       //this allows to find roots of the ChebyshevExpansion2D at a given y value
       //this will be useful when we start doing more complicated rootfinding
       Eigen::MatrixXd companionMatrix_aty(double y) const{
-        std::vector<double> starting_coeffs;
-        starting_coeffs.push_back(0);
-        ChebyshevExpansion cheb_aty = ChebyshevExpansion(starting_coeffs,y_min,y_max);
-        for (int i=0;i<y_chebs.size();i++){
-          cheb_aty+= y_chebs.at(i).y_Clenshaw(y)*x_chebs.at(i);
-        }
+        ChebyshevExpansion cheb_aty = chebExpansion_aty(y);
         return cheb_aty.companion_matrix(cheb_aty.coef());
       }
 
       // TODO: factory,static common roots function
-      static Eigen::Vector3d findpivot(Eigen::ArrayXXd, Eigen::VectorXd, Eigen::VectorXd);
+      static Eigen::Vector3d findpivot(const Eigen::ArrayXXd &fvals, const Eigen::VectorXd &x_gridvals,const Eigen::VectorXd &y_gridvals);
       static ChebyshevExpansion2D factory(int, int, std::function<double(double,double)>,double, double, double, double);
-      static std::vector<Eigen::Vector2d> common_roots(ChebyshevExpansion2D,ChebyshevExpansion2D);
-      static Eigen::MatrixXd bezout_atx(ChebyshevExpansion2D,ChebyshevExpansion2D,double);
-      static Eigen::MatrixXd bezout_aty(ChebyshevExpansion2D,ChebyshevExpansion2D,double);
-
+      static std::vector<Eigen::Vector2d> common_roots(const ChebyshevExpansion2D &first_cheb, const ChebyshevExpansion2D &second_cheb);
+      static Eigen::MatrixXd bezout_atx(const ChebyshevExpansion2D &first_cheb, const ChebyshevExpansion2D &second_cheb,double x);
+      static Eigen::MatrixXd bezout_aty(const ChebyshevExpansion2D &first_cheb, const ChebyshevExpansion2D &second_cheb,double y);
+      static Eigen::MatrixXd construct_Bezout(const Eigen::VectorXd &first_cvec, const Eigen::VectorXd &second_cvec);
     };
 
 }; /* namespace ChebTools */
