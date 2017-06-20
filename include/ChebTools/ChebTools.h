@@ -241,6 +241,28 @@ namespace ChebTools{
       double ymin(){ return y_min; }
       double ymax(){ return y_max; }
 
+      int max_ydegree() const{
+        int maxDegree = 0; int candidate;
+        for (std::size_t i=0;i<y_chebs.size();i++){
+          candidate = y_chebs.at(i).coef().size();
+          if (candidate>maxDegree){
+            maxDegree = candidate;
+          }
+        }
+        return maxDegree;
+      }
+
+      int max_xdegree() const{
+        int maxDegree = 0; int candidate;
+        for (std::size_t i=0;i<x_chebs.size();i++){
+          candidate = x_chebs.at(i).coef().size();
+          if (candidate>maxDegree){
+            maxDegree = candidate;
+          }
+        }
+        return maxDegree;
+      }
+
       //we return references for x_chebs and y_chebs so no copies are made
       const std::vector<ChebyshevExpansion> &xchebs() const { return x_chebs; }
       const std::vector<ChebyshevExpansion> &ychebs() const { return y_chebs; }
@@ -277,9 +299,9 @@ namespace ChebTools{
       //vectorized way of evaluating a grid of x and y values
       Eigen::ArrayXXd z(const vectype &xs, const vectype &ys) const{
         Eigen::ArrayXXd z_array(ys.size(),xs.size());
-        for (int i=z_array.rows()-1;i>=0;i--){
-          for (int j=0;j<z_array.cols();j++){
-            z_array(i,j) = z_Clenshaw(xs(j), ys(i));
+        for (std::size_t i=z_array.rows();i>0;i--){
+          for (std::size_t j=0;j<z_array.cols();j++){
+            z_array(i-1,j) = z_Clenshaw(xs(j), ys(i-1));
           }
         }
         return z_array;
@@ -326,6 +348,10 @@ namespace ChebTools{
       static Eigen::MatrixXd bezout_atx(const ChebyshevExpansion2D &first_cheb, const ChebyshevExpansion2D &second_cheb,double x);
       static Eigen::MatrixXd bezout_aty(const ChebyshevExpansion2D &first_cheb, const ChebyshevExpansion2D &second_cheb,double y);
       static Eigen::MatrixXd construct_Bezout(const Eigen::VectorXd &first_cvec, const Eigen::VectorXd &second_cvec);
+      static std::vector<Eigen::MatrixXd> construct_MatrixPolynomial_inx(const ChebyshevExpansion2D &first_cheb, const ChebyshevExpansion2D &second_cheb);
+      static std::vector<Eigen::MatrixXd> construct_MatrixPolynomial_iny(const ChebyshevExpansion2D &first_cheb, const ChebyshevExpansion2D &second_cheb);
+      static Eigen::VectorXd eigsof_MatrixPolynomial(std::vector<Eigen::MatrixXd> &matrix_poly);
+
     };
 
 }; /* namespace ChebTools */

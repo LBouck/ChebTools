@@ -735,9 +735,8 @@ namespace ChebTools {
     Eigen::MatrixXd ChebyshevExpansion2D::construct_Bezout(const Eigen::VectorXd &first_cvec, const Eigen::VectorXd &second_cvec){
       int n = first_cvec.size(); int m = second_cvec.size();
       int N = std::max(n,m)-1; Eigen::MatrixXd bezout = Eigen::MatrixXd::Zero(N,N);
-      Eigen::VectorXd new_firstvec = Eigen::VectorXd::Zero(N+1);
-      Eigen::VectorXd new_secondvec = Eigen::VectorXd::Zero(N+1);
-      new_firstvec.head(n) = first_cvec; new_secondvec.head(m) = second_cvec;
+      Eigen::VectorXd new_firstvec = Eigen::VectorXd::Zero(N+1); new_firstvec.head(n) = first_cvec;
+      Eigen::VectorXd new_secondvec = Eigen::VectorXd::Zero(N+1); new_secondvec.head(m) = second_cvec;
       Eigen::MatrixXd placeholder = first_cvec*second_cvec.transpose()-second_cvec*first_cvec.transpose();
       bezout.row(N-1) = 2*placeholder.row(N).head(N);
 
@@ -764,6 +763,65 @@ namespace ChebTools {
       Eigen::VectorXd first_cvec = first_cheb.chebExpansion_aty(y).coef();
       Eigen::VectorXd second_cvec = second_cheb.chebExpansion_aty(y).coef();
       return ChebyshevExpansion2D::construct_Bezout(first_cvec, second_cvec);
+    }
+
+
+
+
+
+
+
+
+
+    std::vector<Eigen::Vector2d> common_roots(const ChebyshevExpansion2D &first_cheb, const ChebyshevExpansion2D &second_cheb){
+      std::vector<Eigen::Vector2d> roots;
+      std::vector<Eigen::MatrixXd> matrix_poly;
+
+      bool go_with_x = true;
+      if (first_cheb.max_ydegree()>first_cheb.max_xdegree()){ go_with_x = false; }
+      if (second_cheb.max_ydegree()>second_cheb.max_xdegree()){ go_with_x = false; }
+
+      if (go_with_x){ matrix_poly = ChebyshevExpansion2D::construct_MatrixPolynomial_inx(first_cheb, second_cheb); }
+      else{ matrix_poly = ChebyshevExpansion2D::construct_MatrixPolynomial_iny(first_cheb, second_cheb); }
+
+      Eigen::VectorXd possible_roots = ChebyshevExpansion2D::eigsof_MatrixPolynomial(matrix_poly);
+      std::vector<double> first_cheb_roots,second_cheb_roots;
+      double x,y;
+      Eigen::Vector2d root_vec(0,0);
+      if (go_with_x){
+        for (std::size_t i=0;i<possible_roots.size();i++){
+          x = possible_roots(i);
+          first_cheb_roots = first_cheb.chebExpansion_atx(x).real_roots(true);
+          second_cheb_roots = second_cheb.chebExpansion_atx(x).real_roots(true);
+          for (std::size_t j=0;j<first_cheb_roots.size();j++){
+            for (std::size_t k=0;k<first_cheb_roots.size();k++){
+              if (std::abs(first_cheb_roots.at(j)-second_cheb_roots.at(k))<1e-14){
+                root_vec(0) = x;
+                root_vec(1) = (first_cheb_roots.at(j)-second_cheb_roots.at(k))/2;
+                roots.push_back(root_vec);
+              }
+            }
+          }
+        }
+      }
+
+      else{
+        for (std::size_t i=0;i<possible_roots.size();i++){
+          y = possible_roots(i);
+          first_cheb_roots = first_cheb.chebExpansion_aty(y).real_roots(true);
+          second_cheb_roots = second_cheb.chebExpansion_aty(y).real_roots(true);
+          for (std::size_t j=0;j<first_cheb_roots.size();j++){
+            for (std::size_t k=0;k<first_cheb_roots.size();k++){
+              if (std::abs(first_cheb_roots.at(j)-second_cheb_roots.at(k))<1e-14){
+                root_vec(1) = y;
+                root_vec(0) = (first_cheb_roots.at(j)-second_cheb_roots.at(k))/2;
+                roots.push_back(root_vec);
+              }
+            }
+          }
+        }
+      }
+      return roots;
     }
 
 }; /* namespace ChebTools */
