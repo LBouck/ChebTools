@@ -249,7 +249,7 @@ namespace ChebTools{
             maxDegree = candidate;
           }
         }
-        return maxDegree;
+        return maxDegree-1;
       }
 
       int max_xdegree() const{
@@ -260,7 +260,7 @@ namespace ChebTools{
             maxDegree = candidate;
           }
         }
-        return maxDegree;
+        return maxDegree-1;
       }
 
       //we return references for x_chebs and y_chebs so no copies are made

@@ -764,9 +764,85 @@ namespace ChebTools {
       Eigen::VectorXd second_cvec = second_cheb.chebExpansion_aty(y).coef();
       return ChebyshevExpansion2D::construct_Bezout(first_cvec, second_cvec);
     }
+// TODO: add construct_MatrixPolynomial_inx and construct_MatrixPolynomial_iny
 
+    std::vector<Eigen::MatrixXd> ChebyshevExpansion2D::construct_MatrixPolynomial_inx(const ChebyshevExpansion2D &first_cheb, const ChebyshevExpansion2D &second_cheb){
+      int M = first_cheb.max_xdegree()+second_cheb.max_xdegree();
+      int N = std::max(first_cheb.max_ydegree(),second_cheb.max_ydegree());
+      double xmax = first_cheb.xmax(); double xmin = first_cheb.xmin();
+      Eigen::VectorXd x_grid = ((xmax - xmin)*ChebTools::get_extrema(M).array() + (xmax + xmin)) / 2.0;
+      std::vector<Eigen::MatrixXd(N,N)> matrix_poly(M+1), bezouts(M+1);
 
+      //create Bezout matrices to interpolate and initialize memory for matrix_poly
+      for (std::size_t i=0;i<M;i++){
+        bezouts.at(i) = ChebyshevExpansion2D::bezout_atx(first_cheb,second_cheb,x_grid(i));
+        matrix_poly.at(i) = Eigen::MatrixXd::Zero(N,N);
+      }
+      Eigen::VectorXd bezoutCoeffs(M+1), chebCoeffs(M+1);
+      for (std::size_t i=0; i<N; i++){
+        for (std::size_t j=0; j<N; j++){
+          for (std::size_t k=0; k<M+1; k++){
+            bezoutCoeffs(k) = bezouts.at(k)(i,j);
+          }
+          chebCoeffs = ChebyshevExpansion::factoryf(M, bezoutCoeffs, xmin, xmax).coeffs();
+          for (std::size_t k=0; k<M+1; k++){
+            matrix_poly.at(k)(i,j) = chebCoeffs(k);
+          }
+        }
+      }
+      return matrix_poly;
+    }
 
+    std::vector<Eigen::MatrixXd> ChebyshevExpansion2D::construct_MatrixPolynomial_iny(const ChebyshevExpansion2D &first_cheb, const ChebyshevExpansion2D &second_cheb){
+      int M = first_cheb.max_ydegree()+second_cheb.max_ydegree();
+      int N = std::max(first_cheb.max_xdegree(),second_cheb.max_xdegree());
+      double ymax = first_cheb.ymax(); double ymin = first_cheb.ymin();
+      Eigen::VectorXd y_grid = ((ymax - ymin)*ChebTools::get_extrema(M).array() + (ymax + ymin)) / 2.0;
+      std::vector<Eigen::MatrixXd(N,N)> matrix_poly(M+1), bezouts(M+1);
+
+      //create Bezout matrices to interpolate and initialize memory for matrix_poly
+      for (std::size_t i=0;i<M+1;i++){
+        bezouts.at(i) = ChebyshevExpansion2D::bezout_aty(first_cheb,second_cheb,y_grid(i));
+        matrix_poly.at(i) = Eigen::MatrixXd::Zero(N,N);
+      }
+      Eigen::VectorXd bezoutCoeffs(M+1), chebCoeffs(M+1);
+      for (std::size_t i=0; i<N; i++){
+        for (std::size_t j=0; j<N; j++){
+          for (std::size_t k=0; k<M+1; k++){
+            bezoutCoeffs(k) = bezouts.at(k)(i,j);
+          }
+          chebCoeffs = ChebyshevExpansion::factoryf(M, bezoutCoeffs, ymin, ymax).coeffs();
+          for (std::size_t k=0; k<M+1; k++){
+            matrix_poly.at(k)(i,j) = chebCoeffs(k);
+          }
+        }
+      }
+      return matrix_poly;
+    }
+
+    Eigen::VectorXd ChebyshevExpansion2D::eigsof_MatrixPolynomial(std::vector<Eigen::MatrixXd> &matrix_poly){
+      // checking whether any matrices are not the same size
+      // if any are different throw an invalid_argument Exception
+      int M = matrix_poly.size()-1;
+      if (M==0){ throw std::invalid_argument("Must give matrix poly of at least 2 matrices"); }
+      int N = matrix_poly.at(0).rows();
+      for(std::size_t=0;i=<M;i++){
+        if (matrix_poly.at(i).rows()!=N || matrix_poly.at(i).cols()!=N){
+          throw std::invalid_argument("Matrices must all be the same size");
+        }
+      }
+
+      // TODO: need to add eigenvalue solver
+      Eigen::MatrixXd left_matrix = Eigen::MatrixXd::Zero(M*N,M*N);
+      Eigen::MatrixXd right_matrix = Eigen::MatrixXd::Zero(M*N,M*N);
+
+      left_matrix.block(0,0,N,N) = -.5*matrix_poly.at(M-1);
+      left_matrix.block(N,0,N,N) = .5*(Eigen::MatrixXd::Identity(N)-matrix_poly.at(M-2));
+      left_matrix.block(M*N-N-1,M*N-2*N-1,N,N) = Eigen::MatrixXd::Identity(N);
+      right_matrix.block(0,0,N,N) = matrix_poly.at(M);
+
+      for (std::size_t)
+    }
 
 
 
