@@ -236,10 +236,10 @@ namespace ChebTools{
                               }
                             };
       //getter member functions to retrieve private fields
-      double xmin(){ return x_min; }
-      double xmax(){ return x_max; }
-      double ymin(){ return y_min; }
-      double ymax(){ return y_max; }
+      double xmin() const{ return x_min; }
+      double xmax() const{ return x_max; }
+      double ymin() const{ return y_min; }
+      double ymax() const{ return y_max; }
 
       int max_ydegree() const{
         int maxDegree = 0; int candidate;
@@ -341,6 +341,39 @@ namespace ChebTools{
         return cheb_aty.companion_matrix(cheb_aty.coef());
       }
 
+      Eigen::Vector2d gradient_value(const Eigen::Vector2d &vec) const{
+        Eigen::Vector2d grad(0,0);
+        grad(0) = chebExpansion_atx(vec(0)).deriv(1).y_Clenshaw(vec(0));
+        grad(1) = chebExpansion_aty(vec(1)).deriv(1).y_Clenshaw(vec(1));
+        return grad;
+      }
+
+      static Eigen::Matrix2d jacobian_ofTwoChebs(const ChebyshevExpansion2D &first_cheb, const ChebyshevExpansion2D &second_cheb, const Eigen::Vector2d &vec){
+        Eigen::Matrix2d jac;
+        jac.block(0,0,1,2) = first_cheb.gradient_value(vec);
+        jac.block(1,0,1,2) = second_cheb.gradient_value(vec);
+        return jac;
+      }
+
+      static Eigen::Vector2d eval_bothChebs(const ChebyshevExpansion2D &first_cheb, const ChebyshevExpansion2D &second_cheb, const Eigen::Vector2d &vec){
+        Eigen::Vector2d ans(0,0);
+        ans(0) = first_cheb.z_Clenshaw(vec(0),vec(1));
+        ans(1) = second_cheb.z_Clenshaw(vec(0),vec(1));
+        return ans;
+      }
+
+      static Eigen::Vector2d newton_polish(const ChebyshevExpansion2D &first_cheb, const ChebyshevExpansion2D &second_cheb, const Eigen::Vector2d &root){
+        double error = 1;
+        Eigen::Vector2d new_root = root;
+        Eigen::Vector2d change;
+        while (std::abs(error)>1e-14){
+          change = jacobian_ofTwoChebs(first_cheb,second_cheb,root).fullPivLu().solve(eval_bothChebs(first_cheb,second_cheb,new_root));
+          new_root = new_root-change;
+          error = change.norm();
+        }
+        return new_root;
+      }
+
       // TODO: factory,static common roots function
       static Eigen::Vector3d findpivot(const Eigen::ArrayXXd &fvals, const Eigen::VectorXd &x_gridvals,const Eigen::VectorXd &y_gridvals);
       static ChebyshevExpansion2D factory(int, int, std::function<double(double,double)>,double, double, double, double);
@@ -350,7 +383,7 @@ namespace ChebTools{
       static Eigen::MatrixXd construct_Bezout(const Eigen::VectorXd &first_cvec, const Eigen::VectorXd &second_cvec);
       static std::vector<Eigen::MatrixXd> construct_MatrixPolynomial_inx(const ChebyshevExpansion2D &first_cheb, const ChebyshevExpansion2D &second_cheb);
       static std::vector<Eigen::MatrixXd> construct_MatrixPolynomial_iny(const ChebyshevExpansion2D &first_cheb, const ChebyshevExpansion2D &second_cheb);
-      static Eigen::VectorXd eigsof_MatrixPolynomial(std::vector<Eigen::MatrixXd> &matrix_poly);
+      static std::vector<double> eigsof_MatrixPolynomial(std::vector<Eigen::MatrixXd> &matrix_poly);
 
     };
 

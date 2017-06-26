@@ -771,7 +771,7 @@ namespace ChebTools {
       int N = std::max(first_cheb.max_ydegree(),second_cheb.max_ydegree());
       double xmax = first_cheb.xmax(); double xmin = first_cheb.xmin();
       Eigen::VectorXd x_grid = ((xmax - xmin)*ChebTools::get_extrema(M).array() + (xmax + xmin)) / 2.0;
-      std::vector<Eigen::MatrixXd(N,N)> matrix_poly(M+1), bezouts(M+1);
+      std::vector<Eigen::MatrixXd> matrix_poly(M+1), bezouts(M+1);
 
       //create Bezout matrices to interpolate and initialize memory for matrix_poly
       for (std::size_t i=0;i<M;i++){
@@ -784,7 +784,7 @@ namespace ChebTools {
           for (std::size_t k=0; k<M+1; k++){
             bezoutCoeffs(k) = bezouts.at(k)(i,j);
           }
-          chebCoeffs = ChebyshevExpansion::factoryf(M, bezoutCoeffs, xmin, xmax).coeffs();
+          chebCoeffs = ChebyshevExpansion::factoryf(M, bezoutCoeffs, xmin, xmax).coef();
           for (std::size_t k=0; k<M+1; k++){
             matrix_poly.at(k)(i,j) = chebCoeffs(k);
           }
@@ -798,7 +798,7 @@ namespace ChebTools {
       int N = std::max(first_cheb.max_xdegree(),second_cheb.max_xdegree());
       double ymax = first_cheb.ymax(); double ymin = first_cheb.ymin();
       Eigen::VectorXd y_grid = ((ymax - ymin)*ChebTools::get_extrema(M).array() + (ymax + ymin)) / 2.0;
-      std::vector<Eigen::MatrixXd(N,N)> matrix_poly(M+1), bezouts(M+1);
+      std::vector<Eigen::MatrixXd> matrix_poly(M+1), bezouts(M+1);
 
       //create Bezout matrices to interpolate and initialize memory for matrix_poly
       for (std::size_t i=0;i<M+1;i++){
@@ -811,7 +811,7 @@ namespace ChebTools {
           for (std::size_t k=0; k<M+1; k++){
             bezoutCoeffs(k) = bezouts.at(k)(i,j);
           }
-          chebCoeffs = ChebyshevExpansion::factoryf(M, bezoutCoeffs, ymin, ymax).coeffs();
+          chebCoeffs = ChebyshevExpansion::factoryf(M, bezoutCoeffs, ymin, ymax).coef();
           for (std::size_t k=0; k<M+1; k++){
             matrix_poly.at(k)(i,j) = chebCoeffs(k);
           }
@@ -820,13 +820,13 @@ namespace ChebTools {
       return matrix_poly;
     }
 
-    Eigen::VectorXd ChebyshevExpansion2D::eigsof_MatrixPolynomial(std::vector<Eigen::MatrixXd> &matrix_poly){
+    std::vector<double> ChebyshevExpansion2D::eigsof_MatrixPolynomial(std::vector<Eigen::MatrixXd> &matrix_poly){
       // checking whether any matrices are not the same size
       // if any are different throw an invalid_argument Exception
       int M = matrix_poly.size()-1;
       if (M==0){ throw std::invalid_argument("Must give matrix poly of at least 2 matrices"); }
       int N = matrix_poly.at(0).rows();
-      for(std::size_t=0;i=<M;i++){
+      for(std::size_t i=0;i<=M;i++){
         if (matrix_poly.at(i).rows()!=N || matrix_poly.at(i).cols()!=N){
           throw std::invalid_argument("Matrices must all be the same size");
         }
@@ -837,21 +837,37 @@ namespace ChebTools {
       Eigen::MatrixXd right_matrix = Eigen::MatrixXd::Zero(M*N,M*N);
 
       left_matrix.block(0,0,N,N) = -.5*matrix_poly.at(M-1);
-      left_matrix.block(N,0,N,N) = .5*(Eigen::MatrixXd::Identity(N)-matrix_poly.at(M-2));
-      left_matrix.block(M*N-N-1,M*N-2*N-1,N,N) = Eigen::MatrixXd::Identity(N);
+      left_matrix.block(0,N-1,N,N) = .5*(Eigen::MatrixXd::Identity(N,N)-matrix_poly.at(M-2));
+      left_matrix.block(M*N-N-1,M*N-2*N-1,N,N) = Eigen::MatrixXd::Identity(N,N);
       right_matrix.block(0,0,N,N) = matrix_poly.at(M);
+      right_matrix.block(N-1,N-1,N,N) = Eigen::MatrixXd::Identity(N,N);
+      for (std::size_t i=2;i<M;i++){
+        left_matrix.block(0,i*N-1,N,N) = -.5*matrix_poly.at(M-1-i);
+        left_matrix.block((i-1)*N-1,i*N-1,N,N) = Eigen::MatrixXd::Identity(N,N);
+        right_matrix.block(i*N-1,i*N-1,N,N) = Eigen::MatrixXd::Identity(N,N);
+      }
 
-      for (std::size_t)
+      Eigen::GeneralizedEigenSolver<Eigen::MatrixXd> gen = Eigen::GeneralizedEigenSolver<Eigen::MatrixXd>(left_matrix,right_matrix);
+      Eigen::VectorXcd numerators= gen.alphas();
+      Eigen::VectorXd denominators = gen.betas();
+      std::vector<double> eigs;
+      for (std::size_t i=0;i<numerators.size();i++){
+        if (std::abs(denominators(i))>1e-14 && std::abs(std::imag(numerators(i))/denominators(i))<1e-14){
+          eigs.push_back(std::real(numerators(i))/denominators(i));
+        }
+      }
+      return eigs;
     }
 
 
-
-
-
-
-    std::vector<Eigen::Vector2d> common_roots(const ChebyshevExpansion2D &first_cheb, const ChebyshevExpansion2D &second_cheb){
+    std::vector<Eigen::Vector2d> common_roots(const ChebyshevExpansion2D &first_cheb, const ChebyshevExpansion2D &second_cheb, bool is_in_domain){
       std::vector<Eigen::Vector2d> roots;
       std::vector<Eigen::MatrixXd> matrix_poly;
+      double xmin = first_cheb.xmin(); double xmax = first_cheb.xmax();
+      double ymin = first_cheb.ymin(); double ymax = first_cheb.ymax();
+      if (std::abs(second_cheb.xmin()-xmin)>1e-14 || std::abs(second_cheb.xmax()-xmax)>1e-14 || std::abs(second_cheb.ymin()-ymin)>1e-14 || std::abs(second_cheb.ymax()-ymax)>1e-14){
+        throw std::invalid_argument("Cheb bounds must be the same!");
+      }
 
       bool go_with_x = true;
       if (first_cheb.max_ydegree()>first_cheb.max_xdegree()){ go_with_x = false; }
@@ -860,13 +876,15 @@ namespace ChebTools {
       if (go_with_x){ matrix_poly = ChebyshevExpansion2D::construct_MatrixPolynomial_inx(first_cheb, second_cheb); }
       else{ matrix_poly = ChebyshevExpansion2D::construct_MatrixPolynomial_iny(first_cheb, second_cheb); }
 
-      Eigen::VectorXd possible_roots = ChebyshevExpansion2D::eigsof_MatrixPolynomial(matrix_poly);
+      std::vector<double> possible_roots = ChebyshevExpansion2D::eigsof_MatrixPolynomial(matrix_poly);
       std::vector<double> first_cheb_roots,second_cheb_roots;
       double x,y;
       Eigen::Vector2d root_vec(0,0);
       if (go_with_x){
         for (std::size_t i=0;i<possible_roots.size();i++){
-          x = possible_roots(i);
+          x = possible_roots.at(i);
+          if (!is_in_domain || std::abs(x)>1+1e-14){ continue; }
+          x = (2 * x - (xmax + xmin)) / (xmax - xmin);
           first_cheb_roots = first_cheb.chebExpansion_atx(x).real_roots(true);
           second_cheb_roots = second_cheb.chebExpansion_atx(x).real_roots(true);
           for (std::size_t j=0;j<first_cheb_roots.size();j++){
@@ -883,7 +901,9 @@ namespace ChebTools {
 
       else{
         for (std::size_t i=0;i<possible_roots.size();i++){
-          y = possible_roots(i);
+          y = possible_roots.at(i);
+          if (!is_in_domain || std::abs(y)>1+1e-14){ continue; }
+          y = (2 * y - (ymax + ymin)) / (ymax - ymin);
           first_cheb_roots = first_cheb.chebExpansion_aty(y).real_roots(true);
           second_cheb_roots = second_cheb.chebExpansion_aty(y).real_roots(true);
           for (std::size_t j=0;j<first_cheb_roots.size();j++){
@@ -896,6 +916,10 @@ namespace ChebTools {
             }
           }
         }
+      }
+
+      for (std::size_t i=0;i<roots.size();i++){
+        roots.at(i) = ChebyshevExpansion2D::newton_polish(first_cheb,second_cheb,roots.at(i));
       }
       return roots;
     }
