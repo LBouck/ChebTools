@@ -374,6 +374,33 @@ namespace ChebTools{
         return new_root;
       }
 
+      static std::vector<Eigen::MatrixXd> regularize_MatrixPolynomial(const std::vector<Eigen::MatrixXd> &orig_poly){
+        int N = orig_poly.at(0).rows();
+        for(std::size_t i=0;i<=orig_poly.size();i++){
+          if (orig_poly.at(i).rows()!=N || orig_poly.at(i).cols()!=N){
+            throw std::invalid_argument("Matrices must all be the same size");
+          }
+        }
+        int k = 0;
+        double two_norm1 = 1;
+        double two_norm2 = 1;
+        while (two_norm1>1e-14 || two_norm2>1e-14){
+          k++;
+          if (k==N-1){ break; }
+          two_norm1 = 0;
+          two_norm2 = 0;
+          for (std::size_t i=0;i<orig_poly.size();i++){
+            two_norm1 += orig_poly.at(i).block(N-k,N-k,k,k).norm();
+            two_norm2 += orig_poly.at(i).block(N-k,0,k,N-k).norm();
+          }
+        }
+        std::vector<Eigen::MatrixXd> new_poly;
+        for (std::size_t i=0;i<orig_poly.size();i++){
+          new_poly.push_back(orig_poly.at(i).block(0,0,N-k,N-k));
+        }
+        return  new_poly;
+      }
+
       // TODO: factory,static common roots function
       static Eigen::Vector3d findpivot(const Eigen::ArrayXXd &fvals, const Eigen::VectorXd &x_gridvals,const Eigen::VectorXd &y_gridvals);
       static ChebyshevExpansion2D factory(int, int, std::function<double(double,double)>,double, double, double, double);

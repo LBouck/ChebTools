@@ -323,7 +323,7 @@ namespace ChebTools {
         // Scale x linearly into the domain [-1, 1]
         double xscaled = (2 * x - (m_xmax + m_xmin)) / (m_xmax - m_xmin);
         // Short circuit if not using recursive solution
-        if (Norder == 0){ return m_c[0]; }
+        if (Norder == 0){ return m_c[0]; }get_extrema
         if (Norder == 1) { return m_c[0] + m_c[1]*xscaled; }
 
         vectype &o = m_recurrence_buffer;
@@ -734,23 +734,29 @@ namespace ChebTools {
 
     Eigen::MatrixXd ChebyshevExpansion2D::construct_Bezout(const Eigen::VectorXd &first_cvec, const Eigen::VectorXd &second_cvec){
       int n = first_cvec.size(); int m = second_cvec.size();
-      int N = std::max(n,m)-1; Eigen::MatrixXd bezout = Eigen::MatrixXd::Zero(N,N);
+      int N = std::max(n,m)-1;
+      std::cout<<"N: "<<N<<std::endl;
+      if (N<1){ throw std::invalid_argument("Coefficients need to be longer!"); }
+      Eigen::MatrixXd bezout = Eigen::MatrixXd::Zero(N,N);
       Eigen::VectorXd new_firstvec = Eigen::VectorXd::Zero(N+1); new_firstvec.head(n) = first_cvec;
       Eigen::VectorXd new_secondvec = Eigen::VectorXd::Zero(N+1); new_secondvec.head(m) = second_cvec;
-      Eigen::MatrixXd placeholder = first_cvec*second_cvec.transpose()-second_cvec*first_cvec.transpose();
+      Eigen::MatrixXd placeholder = new_firstvec*new_secondvec.transpose()-new_secondvec*new_firstvec.transpose();
+      std::cout<<"dimensions of pq'-qp': ("<<placeholder.rows()<<", "<<placeholder.cols()<<")"<<std::endl;
       bezout.row(N-1) = 2*placeholder.row(N).head(N);
-
-      Eigen::VectorXd placeholder2(N);
-      placeholder2(0) = 0; placeholder2(1) = 2*bezout(N-1,0); placeholder2.tail(N-2) = bezout.block(N-1,1,1,N-2);
-      Eigen::VectorXd placeholder3(N);
-      placeholder3.head(N-1) = bezout.block(N-1,1,1,N-1); placeholder3(N-1) = 0;
-      bezout.row(N-2) = 2*placeholder.row(N-1).head(N)+placeholder2+placeholder3;
-
-      for (std::size_t i=N-3;i>=0;i--){
-        placeholder2(1) = 2*bezout(i+1,0); placeholder2.tail(N-2) = bezout.block(i+1,1,1,N-2);
-        placeholder3.head(N-1) = bezout.block(i+1,1,1,N-1);
-        bezout.row(i) = 2*placeholder.row(i+1).head(N)-bezout.row(i+2)+placeholder2+placeholder3;
+      Eigen::VectorXd placeholder2(N), placeholder3(N);
+      if (N>=2){
+        placeholder2(0) = 0; placeholder2(1) = 2*bezout(N-1,0); placeholder2.tail(N-2) = bezout.block(N-1,1,1,N-2).transpose();
+        placeholder3.head(N-1) = bezout.block(N-1,1,1,N-1).transpose(); placeholder3(N-1) = 0;
+        bezout.row(N-2) = 2*placeholder.row(N-1).head(N)+placeholder2.transpose()+placeholder3.transpose();
       }
+      if (N>=3){
+        for (int i=N-3;i>=0;i--){
+          placeholder2(1) = 2*bezout(i+1,0); placeholder2.tail(N-2) = bezout.block(i+1,1,1,N-2).transpose();
+          placeholder3.head(N-1) = bezout.block(i+1,1,1,N-1).transpose();
+          bezout.row(i) = 2*placeholder.row(i+1).head(N)-bezout.row(i+2)+placeholder2.transpose()+placeholder3.transpose();
+        }
+      }
+      std::cout<<"dimensions of B: ("<<bezout.rows()<<", "<<bezout.cols()<<")"<<std::endl;
       return bezout;
     }
 
@@ -875,8 +881,8 @@ namespace ChebTools {
 
       if (go_with_x){ matrix_poly = ChebyshevExpansion2D::construct_MatrixPolynomial_inx(first_cheb, second_cheb); }
       else{ matrix_poly = ChebyshevExpansion2D::construct_MatrixPolynomial_iny(first_cheb, second_cheb); }
-
-      std::vector<double> possible_roots = ChebyshevExpansion2D::eigsof_MatrixPolynomial(matrix_poly);
+      std::vector<Eigen::MatrixXd> new_poly = ChebyshevExpansion2D::regularize_MatrixPolynomial(matrix_poly);
+      std::vector<double> possible_roots = ChebyshevExpansion2D::eigsof_MatrixPolynomial(new_poly);
       std::vector<double> first_cheb_roots,second_cheb_roots;
       double x,y;
       Eigen::Vector2d root_vec(0,0);
@@ -917,7 +923,6 @@ namespace ChebTools {
           }
         }
       }
-
       for (std::size_t i=0;i<roots.size();i++){
         roots.at(i) = ChebyshevExpansion2D::newton_polish(first_cheb,second_cheb,roots.at(i));
       }
