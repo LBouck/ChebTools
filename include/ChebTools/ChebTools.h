@@ -350,8 +350,8 @@ namespace ChebTools{
 
       static Eigen::Matrix2d jacobian_ofTwoChebs(const ChebyshevExpansion2D &first_cheb, const ChebyshevExpansion2D &second_cheb, const Eigen::Vector2d &vec){
         Eigen::Matrix2d jac;
-        jac.block(0,0,1,2) = first_cheb.gradient_value(vec);
-        jac.block(1,0,1,2) = second_cheb.gradient_value(vec);
+        jac.block(0,0,1,2) = first_cheb.gradient_value(vec).transpose();
+        jac.block(1,0,1,2) = second_cheb.gradient_value(vec).transpose();
         return jac;
       }
 
@@ -376,7 +376,7 @@ namespace ChebTools{
 
       static std::vector<Eigen::MatrixXd> regularize_MatrixPolynomial(const std::vector<Eigen::MatrixXd> &orig_poly){
         int N = orig_poly.at(0).rows();
-        for(std::size_t i=0;i<=orig_poly.size();i++){
+        for(std::size_t i=0;i<orig_poly.size();i++){
           if (orig_poly.at(i).rows()!=N || orig_poly.at(i).cols()!=N){
             throw std::invalid_argument("Matrices must all be the same size");
           }
@@ -386,7 +386,7 @@ namespace ChebTools{
         double two_norm2 = 1;
         while (two_norm1>1e-14 || two_norm2>1e-14){
           k++;
-          if (k==N-1){ break; }
+          if (k==N){ break; }
           two_norm1 = 0;
           two_norm2 = 0;
           for (std::size_t i=0;i<orig_poly.size();i++){
@@ -395,8 +395,13 @@ namespace ChebTools{
           }
         }
         std::vector<Eigen::MatrixXd> new_poly;
-        for (std::size_t i=0;i<orig_poly.size();i++){
-          new_poly.push_back(orig_poly.at(i).block(0,0,N-k,N-k));
+        if (k==N){
+          new_poly = orig_poly;
+        }
+        else{
+          for (std::size_t i=0;i<orig_poly.size();i++){
+            new_poly.push_back(orig_poly.at(i).block(0,0,N-k,N-k));
+          }
         }
         return  new_poly;
       }
@@ -404,14 +409,15 @@ namespace ChebTools{
       // TODO: factory,static common roots function
       static Eigen::Vector3d findpivot(const Eigen::ArrayXXd &fvals, const Eigen::VectorXd &x_gridvals,const Eigen::VectorXd &y_gridvals);
       static ChebyshevExpansion2D factory(int, int, std::function<double(double,double)>,double, double, double, double);
-      static std::vector<Eigen::Vector2d> common_roots(const ChebyshevExpansion2D &first_cheb, const ChebyshevExpansion2D &second_cheb);
+      static std::vector<Eigen::Vector2d> common_roots(const ChebyshevExpansion2D &first_cheb, const ChebyshevExpansion2D &second_cheb, bool is_in_domain);
       static Eigen::MatrixXd bezout_atx(const ChebyshevExpansion2D &first_cheb, const ChebyshevExpansion2D &second_cheb,double x);
       static Eigen::MatrixXd bezout_aty(const ChebyshevExpansion2D &first_cheb, const ChebyshevExpansion2D &second_cheb,double y);
       static Eigen::MatrixXd construct_Bezout(const Eigen::VectorXd &first_cvec, const Eigen::VectorXd &second_cvec);
       static std::vector<Eigen::MatrixXd> construct_MatrixPolynomial_inx(const ChebyshevExpansion2D &first_cheb, const ChebyshevExpansion2D &second_cheb);
       static std::vector<Eigen::MatrixXd> construct_MatrixPolynomial_iny(const ChebyshevExpansion2D &first_cheb, const ChebyshevExpansion2D &second_cheb);
       static std::vector<double> eigsof_MatrixPolynomial(std::vector<Eigen::MatrixXd> &matrix_poly);
-
+      static std::vector<Eigen::Vector2d> common_roots(int xpts, int ypts, std::function<double(double,double)> func1, std::function<double(double,double)> func2,
+                                                                      double xmin, double xmax, double ymin, double ymax, bool is_in_domain = true);
     };
 
 }; /* namespace ChebTools */

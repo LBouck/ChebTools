@@ -323,7 +323,7 @@ namespace ChebTools {
         // Scale x linearly into the domain [-1, 1]
         double xscaled = (2 * x - (m_xmax + m_xmin)) / (m_xmax - m_xmin);
         // Short circuit if not using recursive solution
-        if (Norder == 0){ return m_c[0]; }get_extrema
+        if (Norder == 0){ return m_c[0]; }
         if (Norder == 1) { return m_c[0] + m_c[1]*xscaled; }
 
         vectype &o = m_recurrence_buffer;
@@ -451,7 +451,6 @@ namespace ChebTools {
           // decomposition, and get the real eigenvalues directly.  These eigenvalues are defined
           // in the domain [-1, 1], but it might also include values outside [-1, 1]
           Eigen::VectorXcd eigs = eigenvalues(companion_matrix(new_mc), /* balance = */ true);
-
 
           for (Eigen::Index i = 0; i < eigs.size(); ++i) {
               if (std::abs(eigs(i).imag() / eigs(i).real()) < 1e-15) {
@@ -735,13 +734,11 @@ namespace ChebTools {
     Eigen::MatrixXd ChebyshevExpansion2D::construct_Bezout(const Eigen::VectorXd &first_cvec, const Eigen::VectorXd &second_cvec){
       int n = first_cvec.size(); int m = second_cvec.size();
       int N = std::max(n,m)-1;
-      std::cout<<"N: "<<N<<std::endl;
       if (N<1){ throw std::invalid_argument("Coefficients need to be longer!"); }
       Eigen::MatrixXd bezout = Eigen::MatrixXd::Zero(N,N);
       Eigen::VectorXd new_firstvec = Eigen::VectorXd::Zero(N+1); new_firstvec.head(n) = first_cvec;
       Eigen::VectorXd new_secondvec = Eigen::VectorXd::Zero(N+1); new_secondvec.head(m) = second_cvec;
       Eigen::MatrixXd placeholder = new_firstvec*new_secondvec.transpose()-new_secondvec*new_firstvec.transpose();
-      std::cout<<"dimensions of pq'-qp': ("<<placeholder.rows()<<", "<<placeholder.cols()<<")"<<std::endl;
       bezout.row(N-1) = 2*placeholder.row(N).head(N);
       Eigen::VectorXd placeholder2(N), placeholder3(N);
       if (N>=2){
@@ -756,7 +753,6 @@ namespace ChebTools {
           bezout.row(i) = 2*placeholder.row(i+1).head(N)-bezout.row(i+2)+placeholder2.transpose()+placeholder3.transpose();
         }
       }
-      std::cout<<"dimensions of B: ("<<bezout.rows()<<", "<<bezout.cols()<<")"<<std::endl;
       return bezout;
     }
 
@@ -778,12 +774,12 @@ namespace ChebTools {
       double xmax = first_cheb.xmax(); double xmin = first_cheb.xmin();
       Eigen::VectorXd x_grid = ((xmax - xmin)*ChebTools::get_extrema(M).array() + (xmax + xmin)) / 2.0;
       std::vector<Eigen::MatrixXd> matrix_poly(M+1), bezouts(M+1);
-
       //create Bezout matrices to interpolate and initialize memory for matrix_poly
-      for (std::size_t i=0;i<M;i++){
+      for (std::size_t i=0;i<M+1;i++){
         bezouts.at(i) = ChebyshevExpansion2D::bezout_atx(first_cheb,second_cheb,x_grid(i));
         matrix_poly.at(i) = Eigen::MatrixXd::Zero(N,N);
       }
+
       Eigen::VectorXd bezoutCoeffs(M+1), chebCoeffs(M+1);
       for (std::size_t i=0; i<N; i++){
         for (std::size_t j=0; j<N; j++){
@@ -866,9 +862,11 @@ namespace ChebTools {
     }
 
 
-    std::vector<Eigen::Vector2d> common_roots(const ChebyshevExpansion2D &first_cheb, const ChebyshevExpansion2D &second_cheb, bool is_in_domain){
+    std::vector<Eigen::Vector2d> ChebyshevExpansion2D::common_roots(const ChebyshevExpansion2D &first_cheb, const ChebyshevExpansion2D &second_cheb, bool is_in_domain){
       std::vector<Eigen::Vector2d> roots;
       std::vector<Eigen::MatrixXd> matrix_poly;
+
+
       double xmin = first_cheb.xmin(); double xmax = first_cheb.xmax();
       double ymin = first_cheb.ymin(); double ymax = first_cheb.ymax();
       if (std::abs(second_cheb.xmin()-xmin)>1e-14 || std::abs(second_cheb.xmax()-xmax)>1e-14 || std::abs(second_cheb.ymin()-ymin)>1e-14 || std::abs(second_cheb.ymax()-ymax)>1e-14){
@@ -881,24 +879,52 @@ namespace ChebTools {
 
       if (go_with_x){ matrix_poly = ChebyshevExpansion2D::construct_MatrixPolynomial_inx(first_cheb, second_cheb); }
       else{ matrix_poly = ChebyshevExpansion2D::construct_MatrixPolynomial_iny(first_cheb, second_cheb); }
-      std::vector<Eigen::MatrixXd> new_poly = ChebyshevExpansion2D::regularize_MatrixPolynomial(matrix_poly);
+
+      //std::vector<Eigen::MatrixXd> new_poly = ChebyshevExpansion2D::regularize_MatrixPolynomial(matrix_poly);
+      std::vector<Eigen::MatrixXd> new_poly = matrix_poly;
       std::vector<double> possible_roots = ChebyshevExpansion2D::eigsof_MatrixPolynomial(new_poly);
+      for (int i=0;i<possible_roots.size();i++){
+        for (int j=possible_roots.size()-1;j>=0;j--){
+          if (j!=i && std::abs(possible_roots.at(i)-possible_roots.at(j))<1e-14){
+            possible_roots.erase(possible_roots.begin() + j);
+          }
+        }
+      }
+      std::cout<<"Number of eigenvalues: "<<possible_roots.size()<<std::endl;
       std::vector<double> first_cheb_roots,second_cheb_roots;
+      int veclength;
       double x,y;
       Eigen::Vector2d root_vec(0,0);
       if (go_with_x){
         for (std::size_t i=0;i<possible_roots.size();i++){
           x = possible_roots.at(i);
+          std::cout<<"x orig = "<<x<<std::endl;
           if (!is_in_domain || std::abs(x)>1+1e-14){ continue; }
-          x = (2 * x - (xmax + xmin)) / (xmax - xmin);
-          first_cheb_roots = first_cheb.chebExpansion_atx(x).real_roots(true);
-          second_cheb_roots = second_cheb.chebExpansion_atx(x).real_roots(true);
-          for (std::size_t j=0;j<first_cheb_roots.size();j++){
-            for (std::size_t k=0;k<first_cheb_roots.size();k++){
-              if (std::abs(first_cheb_roots.at(j)-second_cheb_roots.at(k))<1e-14){
+          x = ((xmax-xmin)*x+xmax+xmin)/2;
+          std::cout<<"x = "<<x<<std::endl;
+          ChebTools::ChebyshevExpansion first1dcheb = first_cheb.chebExpansion_atx(x);
+          ChebTools::ChebyshevExpansion second1dcheb = second_cheb.chebExpansion_atx(x);
+          veclength = std::min(first1dcheb.coef().size(),second1dcheb.coef().size());
+          if ((first1dcheb.coef().head(veclength)+second1dcheb.coef().head(veclength)).norm()>veclength*1e-14){
+            first_cheb_roots = (first1dcheb+second1dcheb).real_roots(is_in_domain);
+            for (std::size_t j=0;j<first_cheb_roots.size();j++){
+              if (std::abs(first1dcheb.y_Clenshaw(first_cheb_roots.at(j)))<1e-14 && std::abs(second1dcheb.y_Clenshaw(first_cheb_roots.at(j)))<1e-14){
                 root_vec(0) = x;
-                root_vec(1) = (first_cheb_roots.at(j)-second_cheb_roots.at(k))/2;
+                root_vec(1) = first_cheb_roots.at(j);
                 roots.push_back(root_vec);
+              }
+            }
+          }
+          else{
+            first_cheb_roots = first1dcheb.real_roots(is_in_domain);
+            second_cheb_roots = second1dcheb.real_roots(is_in_domain);
+            for (std::size_t j=0;j<first_cheb_roots.size();j++){
+              for (std::size_t k=0;k<second_cheb_roots.size();k++){
+                if (std::abs(first_cheb_roots.at(j)-second_cheb_roots.at(k))<1e-14){
+                  root_vec(0) = x;
+                  root_vec(1) = (first_cheb_roots.at(j)-second_cheb_roots.at(k))/2;
+                  roots.push_back(root_vec);
+                }
               }
             }
           }
@@ -909,24 +935,55 @@ namespace ChebTools {
         for (std::size_t i=0;i<possible_roots.size();i++){
           y = possible_roots.at(i);
           if (!is_in_domain || std::abs(y)>1+1e-14){ continue; }
-          y = (2 * y - (ymax + ymin)) / (ymax - ymin);
-          first_cheb_roots = first_cheb.chebExpansion_aty(y).real_roots(true);
-          second_cheb_roots = second_cheb.chebExpansion_aty(y).real_roots(true);
-          for (std::size_t j=0;j<first_cheb_roots.size();j++){
-            for (std::size_t k=0;k<first_cheb_roots.size();k++){
-              if (std::abs(first_cheb_roots.at(j)-second_cheb_roots.at(k))<1e-14){
+          y = ((ymax-ymin)*y+ymax+ymin)/2;
+          std::cout<<"y = "<<y<<std::endl;
+          ChebTools::ChebyshevExpansion first1dcheb = first_cheb.chebExpansion_aty(y);
+          ChebTools::ChebyshevExpansion second1dcheb = second_cheb.chebExpansion_aty(y);
+          veclength = std::min(first1dcheb.coef().size(),second1dcheb.coef().size());
+          if ((first1dcheb.coef().head(veclength)+second1dcheb.coef().head(veclength)).norm()>veclength*1e-14){
+            first_cheb_roots = (first1dcheb+second1dcheb).real_roots(is_in_domain);
+            for (std::size_t j=0;j<first_cheb_roots.size();j++){
+              if (std::abs(first1dcheb.y_Clenshaw(first_cheb_roots.at(j)))<1e-14 && std::abs(second1dcheb.y_Clenshaw(first_cheb_roots.at(j)))<1e-14){
                 root_vec(1) = y;
-                root_vec(0) = (first_cheb_roots.at(j)-second_cheb_roots.at(k))/2;
+                root_vec(0) = first_cheb_roots.at(j);
                 roots.push_back(root_vec);
+              }
+            }
+          }
+          else{
+            first_cheb_roots = first1dcheb.real_roots(is_in_domain);
+            second_cheb_roots = second1dcheb.real_roots(is_in_domain);
+            for (std::size_t j=0;j<first_cheb_roots.size();j++){
+              for (std::size_t k=0;k<second_cheb_roots.size();k++){
+                if (std::abs(first_cheb_roots.at(j)-second_cheb_roots.at(k))<1e-14){
+                  root_vec(1) = y;
+                  root_vec(0) = (first_cheb_roots.at(j)-second_cheb_roots.at(k))/2;
+                  roots.push_back(root_vec);
+                }
               }
             }
           }
         }
       }
+
       for (std::size_t i=0;i<roots.size();i++){
         roots.at(i) = ChebyshevExpansion2D::newton_polish(first_cheb,second_cheb,roots.at(i));
       }
+      for (int i=0;i<roots.size();i++){
+        for (int j=roots.size()-1;j>=0;j--){
+          if (j!=i && (roots.at(i)-roots.at(j)).norm()<2e-14){
+            roots.erase(roots.begin() + j);
+          }
+        }
+      }
       return roots;
+    }
+
+    std::vector<Eigen::Vector2d> ChebyshevExpansion2D::common_roots(int xpts, int ypts, std::function<double(double,double)> func1, std::function<double(double,double)> func2,
+                                                                    double xmin, double xmax, double ymin, double ymax, bool is_in_domain){
+      ChebyshevExpansion2D cheb1 = ChebyshevExpansion2D::factory(xpts, ypts, func1, xmin, xmax, ymin, ymax);
+      ChebyshevExpansion2D cheb2 = ChebyshevExpansion2D::factory(xpts, ypts, func2, xmin, xmax, ymin, ymax);
+      return ChebyshevExpansion2D::common_roots(cheb1, cheb2, is_in_domain);
     }
 
 }; /* namespace ChebTools */
