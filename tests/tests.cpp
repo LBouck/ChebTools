@@ -706,6 +706,76 @@ TEST_CASE("Bezout tests"){
     CAPTURE(error);
     CHECK(error<tol);
   }
+
+  SECTION("Determinant test with respect to x",""){
+    double tol = 1e-14;
+    double det;
+    Eigen::VectorXd x(3);
+    x<<0,0,1;
+    Eigen::VectorXd y(3);
+    y<<1,0,0;
+    ChebTools::ChebyshevExpansion xCe = ChebTools::ChebyshevExpansion(x, -1, 1);
+    ChebTools::ChebyshevExpansion yCe = ChebTools::ChebyshevExpansion(y, -1, 1);
+    std::vector<ChebTools::ChebyshevExpansion> xs;
+    xs.push_back(xCe);
+    std::vector<ChebTools::ChebyshevExpansion> ys;
+    ys.push_back(yCe);
+    ChebTools::ChebyshevExpansion2D cheb1 = ChebTools::ChebyshevExpansion2D(xs,ys,-1,1,-1,1);
+    ChebTools::ChebyshevExpansion2D cheb2 = ChebTools::ChebyshevExpansion2D(ys,xs,-1,1,-1,1);
+    det = ChebTools::ChebyshevExpansion2D::bezout_atx(cheb1, cheb2,std::sqrt(2)/2).determinant();
+    CAPTURE(det);
+    CHECK(std::abs(det)<1e-14);
+
+    det = ChebTools::ChebyshevExpansion2D::bezout_atx(cheb1, cheb2,.5).determinant();
+    CAPTURE(det);
+    CHECK(std::abs(det)>1e-14);
+
+    det = ChebTools::ChebyshevExpansion2D::bezout_aty(cheb1, cheb2,-std::sqrt(2)/2).determinant();
+    CAPTURE(det);
+    CHECK(std::abs(det)<1e-14);
+
+    det = ChebTools::ChebyshevExpansion2D::bezout_aty(cheb1, cheb2,-.5).determinant();
+    CAPTURE(det);
+    CHECK(std::abs(det)>1e-14);
+  }
+  SECTION("Determinant test with respect to x",""){
+    double tol = 1e-14;
+    double det = 0;
+    Eigen::MatrixXd B(2,2);
+    Eigen::VectorXd x(3);
+    x<<0,1,1;
+    Eigen::VectorXd y(3);
+    y<<1,0,0;
+    ChebTools::ChebyshevExpansion xCe = ChebTools::ChebyshevExpansion(x, -1, 1);
+    ChebTools::ChebyshevExpansion yCe = ChebTools::ChebyshevExpansion(y, -1, 1);
+    std::vector<ChebTools::ChebyshevExpansion> xs;
+    xs.push_back(xCe);
+    std::vector<ChebTools::ChebyshevExpansion> ys;
+    ys.push_back(yCe);
+    ChebTools::ChebyshevExpansion2D cheb1 = ChebTools::ChebyshevExpansion2D(xs,ys,-1,1,-1,1);
+    ChebTools::ChebyshevExpansion2D cheb2 = ChebTools::ChebyshevExpansion2D(ys,xs,-1,1,-1,1);
+
+
+    B = ChebTools::ChebyshevExpansion2D::bezout_atx(cheb1, cheb2,.5);
+    det = B.determinant();
+    CAPTURE(det);
+    CHECK(std::abs(det)<1e-14);
+
+    B = ChebTools::ChebyshevExpansion2D::bezout_atx(cheb1, cheb2,0);
+    det = B.determinant();
+    CAPTURE(det);
+    CHECK(std::abs(det)>1e-14);
+
+    B = ChebTools::ChebyshevExpansion2D::bezout_aty(cheb1, cheb2,.5);
+    det = B.determinant();
+    CAPTURE(det);
+    CHECK(std::abs(det)<1e-14);
+
+    B = ChebTools::ChebyshevExpansion2D::bezout_aty(cheb1, cheb2,.49);
+    det = B.determinant();
+    CAPTURE(det);
+    CHECK(std::abs(det)>1e-14);
+  }
 }
 double f(double x, double y){ return std::cos(EIGEN_PI*x)*(y-2); }
 double f2(double x, double y){ return (x-.1)*std::cos(EIGEN_PI*x)*(y-2); }
@@ -716,7 +786,7 @@ TEST_CASE("Roots Test"){
     double tol = 1e-14;
     double error;
     Eigen::VectorXd x(3);
-    x<<0,1,0;
+    x<<0,0,1;
     Eigen::VectorXd y(3);
     y<<1,0,0;
     ChebTools::ChebyshevExpansion xCe = ChebTools::ChebyshevExpansion(x, -1, 1);
@@ -730,10 +800,11 @@ TEST_CASE("Roots Test"){
     std::vector<Eigen::Vector2d> roots = ChebTools::ChebyshevExpansion2D::common_roots(cheb1,cheb2, true);
     int length = roots.size();
     CAPTURE(length);
-    CHECK(length==1);
-    error = roots.at(0).norm();
+    CHECK(length==4);
+    /*Eigen::Vector2d answer(,.5);
+    error = (answer-roots.at(0)).norm();
     CAPTURE(error);
-    CHECK(error<tol);
+    CHECK(error<tol);*/
   }
   SECTION("Root test 2"){
     double tol = 1e-14;
@@ -762,13 +833,13 @@ TEST_CASE("Roots Test"){
 
 
 
-/*
+
   SECTION("Root test 3"){
     double tol = 2e-14;
     double error;
     Eigen::Vector2d true_answer(.5,.9);
-    std::vector<Eigen::Vector2d> roots = ChebTools::ChebyshevExpansion2D::common_roots(4,4,f,g,0,1,0,1,true);
-    std::vector<Eigen::Vector2d> roots2 = ChebTools::ChebyshevExpansion2D::common_roots(4,4,g2,f2,0,1,0,1,true);
+    std::vector<Eigen::Vector2d> roots = ChebTools::ChebyshevExpansion2D::common_roots(16,16,f,g,0,1,0,1,true);
+    std::vector<Eigen::Vector2d> roots2 = ChebTools::ChebyshevExpansion2D::common_roots(16,16,g2,f2,0,1,0,1,true);
     int length = roots.size();
     CAPTURE(length);
     CHECK(length==1);
@@ -777,5 +848,5 @@ TEST_CASE("Roots Test"){
     error = (roots.at(0)-true_answer).norm();
     CAPTURE(error);
     CHECK(error<tol);
-  }*/
+  }
 }

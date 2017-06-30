@@ -857,8 +857,8 @@ namespace ChebTools {
       std::cout<<left_matrix<<std::endl;
       std::cout<<"Right matrix: "<<std::endl;
       std::cout<<right_matrix<<std::endl;
-      Eigen::GeneralizedEigenSolver<Eigen::MatrixXd> gen = Eigen::GeneralizedEigenSolver<Eigen::MatrixXd>(right_matrix,left_matrix);
-      //Eigen::GeneralizedEigenSolver<Eigen::MatrixXd> gen = Eigen::GeneralizedEigenSolver<Eigen::MatrixXd>(left_matrix,right_matrix);
+      //Eigen::GeneralizedEigenSolver<Eigen::MatrixXd> gen = Eigen::GeneralizedEigenSolver<Eigen::MatrixXd>(right_matrix,left_matrix);
+      Eigen::GeneralizedEigenSolver<Eigen::MatrixXd> gen = Eigen::GeneralizedEigenSolver<Eigen::MatrixXd>(left_matrix,right_matrix);
       Eigen::VectorXcd numerators= gen.alphas();
       Eigen::VectorXd denominators = gen.betas();
       std::vector<double> eigs;
@@ -912,8 +912,10 @@ namespace ChebTools {
           if (!is_in_domain || std::abs(x)>1+1e-14){ continue; }
           x = ((xmax-xmin)*x+xmax+xmin)/2;
           std::cout<<"x = "<<x<<std::endl;
+          std::cout<<"Bezout determinant: "<<ChebyshevExpansion2D::bezout_atx(first_cheb,second_cheb,x).determinant()<<std::endl;
           ChebTools::ChebyshevExpansion first1dcheb = first_cheb.chebExpansion_atx(x);
           ChebTools::ChebyshevExpansion second1dcheb = second_cheb.chebExpansion_atx(x);
+          std::cout<<"Bezout determinant again: "<<ChebyshevExpansion2D::construct_Bezout(first1dcheb.coef(), second1dcheb.coef()).determinant()<<std::endl;
           veclength = std::min(first1dcheb.coef().size(),second1dcheb.coef().size());
           if ((first1dcheb.coef().head(veclength)+second1dcheb.coef().head(veclength)).norm()>veclength*1e-14){
             first_cheb_roots = (first1dcheb+second1dcheb).real_roots(is_in_domain);
