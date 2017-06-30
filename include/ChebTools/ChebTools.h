@@ -215,6 +215,32 @@ namespace ChebTools{
     private:
       std::vector<ChebyshevExpansion> x_chebs, y_chebs;
       double x_min,x_max,y_min,y_max;
+      static Eigen::VectorXd reduce_zeros(const Eigen:: VectorXd &chebCoeffs){
+        //these give us a threshold for what coefficients are large enough
+        double largeTerm = 1e-15;
+        if (chebCoeffs.size()>=1 && std::abs(chebCoeffs(0))>largeTerm){
+          largeTerm = chebCoeffs(0);
+        }
+        //if the second coefficient is larger than the first, then make our tolerance
+        //based on the second coefficient, this is useful for functions whose mean value
+        //is zero on the interval
+        if (chebCoeffs.size()>=2 && std::abs(chebCoeffs(1))>largeTerm){
+          largeTerm = chebCoeffs(1);
+        }
+        double tol = largeTerm*(1e-15);
+        int neededSize = static_cast<int>(chebCoeffs.size());
+        //loop over m_c backwards, if we run into large enough coefficient, then record the size and break
+        for (int i=static_cast<int>(chebCoeffs.size())-1; i>=0; i--){
+          if (std::abs(chebCoeffs(i))>tol){
+            neededSize = i+1;
+            break;
+          }
+          neededSize--;
+        }
+        //neededSize gives us the number of coefficients that are nonzero
+        //we will resize m_c such that there are essentially no trailing zeros
+        return chebCoeffs.head(neededSize);
+      }
     public:
       //public constructor
       ChebyshevExpansion2D(const std::vector<ChebyshevExpansion> &xchebs,

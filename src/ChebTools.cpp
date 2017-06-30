@@ -756,6 +756,7 @@ namespace ChebTools {
           bezout.row(i) = 2*placeholder.row(i+1).head(N)-bezout.row(i+2)+placeholder2.transpose()+placeholder3.transpose();
         }
       }
+      bezout.block(0,0,1,N) = .5*bezout.block(0,0,1,N);
       return bezout;
     }
 
@@ -842,17 +843,22 @@ namespace ChebTools {
       Eigen::MatrixXd right_matrix = Eigen::MatrixXd::Zero(M*N,M*N);
 
       left_matrix.block(0,0,N,N) = -.5*matrix_poly.at(M-1);
-      left_matrix.block(0,N-1,N,N) = .5*(Eigen::MatrixXd::Identity(N,N)-matrix_poly.at(M-2));
-      left_matrix.block(M*N-N-1,M*N-2*N-1,N,N) = Eigen::MatrixXd::Identity(N,N);
+      left_matrix.block(0,N,N,N) = .5*(Eigen::MatrixXd::Identity(N,N)-matrix_poly.at(M-2));
+      left_matrix.block(M*N-N,M*N-2*N,N,N) = Eigen::MatrixXd::Identity(N,N);
       right_matrix.block(0,0,N,N) = matrix_poly.at(M);
-      right_matrix.block(N-1,N-1,N,N) = Eigen::MatrixXd::Identity(N,N);
+      right_matrix.block(N,N,N,N) = Eigen::MatrixXd::Identity(N,N);
       for (std::size_t i=2;i<M;i++){
-        left_matrix.block(0,i*N-1,N,N) = -.5*matrix_poly.at(M-1-i);
-        left_matrix.block((i-1)*N-1,i*N-1,N,N) = Eigen::MatrixXd::Identity(N,N);
-        right_matrix.block(i*N-1,i*N-1,N,N) = Eigen::MatrixXd::Identity(N,N);
+        left_matrix.block((i-1)*N,(i-2)*N,N,N) = .5*Eigen::MatrixXd::Identity(N,N);
+        left_matrix.block(0,i*N,N,N) = -.5*matrix_poly.at(M-1-i);
+        left_matrix.block((i-1)*N,i*N,N,N) = .5*Eigen::MatrixXd::Identity(N,N);
+        right_matrix.block(i*N,i*N,N,N) = Eigen::MatrixXd::Identity(N,N);
       }
-
-      Eigen::GeneralizedEigenSolver<Eigen::MatrixXd> gen = Eigen::GeneralizedEigenSolver<Eigen::MatrixXd>(left_matrix,right_matrix);
+      std::cout<<"Left Matrix: "<<std::endl;
+      std::cout<<left_matrix<<std::endl;
+      std::cout<<"Right matrix: "<<std::endl;
+      std::cout<<right_matrix<<std::endl;
+      Eigen::GeneralizedEigenSolver<Eigen::MatrixXd> gen = Eigen::GeneralizedEigenSolver<Eigen::MatrixXd>(right_matrix,left_matrix);
+      //Eigen::GeneralizedEigenSolver<Eigen::MatrixXd> gen = Eigen::GeneralizedEigenSolver<Eigen::MatrixXd>(left_matrix,right_matrix);
       Eigen::VectorXcd numerators= gen.alphas();
       Eigen::VectorXd denominators = gen.betas();
       std::vector<double> eigs;
@@ -882,9 +888,12 @@ namespace ChebTools {
 
       if (go_with_x){ matrix_poly = ChebyshevExpansion2D::construct_MatrixPolynomial_inx(first_cheb, second_cheb); }
       else{ matrix_poly = ChebyshevExpansion2D::construct_MatrixPolynomial_iny(first_cheb, second_cheb); }
-
       //std::vector<Eigen::MatrixXd> new_poly = ChebyshevExpansion2D::regularize_MatrixPolynomial(matrix_poly);
       std::vector<Eigen::MatrixXd> new_poly = matrix_poly;
+      std::cout<<"Matrix poly: "<<std::endl;
+      for (int i=0;i<matrix_poly.size();i++){
+        std::cout<<matrix_poly.at(i)<<std::endl;
+      }
       std::vector<double> possible_roots = ChebyshevExpansion2D::eigsof_MatrixPolynomial(new_poly);
       for (int i=0;i<possible_roots.size();i++){
         for (int j=possible_roots.size()-1;j>=0;j--){
@@ -893,7 +902,6 @@ namespace ChebTools {
           }
         }
       }
-      std::cout<<"Number of eigenvalues: "<<possible_roots.size()<<std::endl;
       std::vector<double> first_cheb_roots,second_cheb_roots;
       int veclength;
       double x,y;
@@ -901,7 +909,6 @@ namespace ChebTools {
       if (go_with_x){
         for (std::size_t i=0;i<possible_roots.size();i++){
           x = possible_roots.at(i);
-          std::cout<<"x orig = "<<x<<std::endl;
           if (!is_in_domain || std::abs(x)>1+1e-14){ continue; }
           x = ((xmax-xmin)*x+xmax+xmin)/2;
           std::cout<<"x = "<<x<<std::endl;
@@ -969,9 +976,9 @@ namespace ChebTools {
         }
       }
 
-      for (std::size_t i=0;i<roots.size();i++){
+      /*for (std::size_t i=0;i<roots.size();i++){
         roots.at(i) = ChebyshevExpansion2D::newton_polish(first_cheb,second_cheb,roots.at(i));
-      }
+      }*/
       for (int i=0;i<roots.size();i++){
         for (int j=roots.size()-1;j>=0;j--){
           if (j!=i && (roots.at(i)-roots.at(j)).norm()<2e-14){

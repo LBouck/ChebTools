@@ -663,7 +663,53 @@ TEST_CASE("factory and pivot tests"){
     CHECK(error<tol);
   }
 }
+
+double bezout_eval(Eigen::MatrixXd B,double t, double s){
+  double result=0;
+  for (int i=0;i<B.rows();i++){
+    for (int j=0;j<B.cols();j++){
+      result+=B(i,j)*std::cos(i*std::acos(t))*std::cos(j*std::acos(s));
+    }
+  }
+  return result;
+}
+TEST_CASE("Bezout tests"){
+  double tol = 100*1e-14;
+  double error = 0;
+  SECTION("Simple construction test",""){
+    Eigen::VectorXd p(4), q(4);
+    p<<1,1,1,1;
+    q<<1,2,3,4;
+    ChebTools::ChebyshevExpansion chebP = ChebTools::ChebyshevExpansion(p,-1,1);
+    ChebTools::ChebyshevExpansion chebQ = ChebTools::ChebyshevExpansion(q,-1,1);
+    Eigen::MatrixXd B = ChebTools::ChebyshevExpansion2D::construct_Bezout(p,q);
+    Eigen::VectorXd ts = Eigen::VectorXd::LinSpaced(10,-1,1);
+    Eigen::VectorXd ss = Eigen::VectorXd::LinSpaced(10,-.9,.9);
+    for (int i=0;i<10;i++){
+      for (int j=0;j<10;j++){
+        if (std::abs(ts(j)-ss(i))<1e-15){continue;}
+        error+= std::abs((chebP.y_Clenshaw(ss(i))*chebQ.y_Clenshaw(ts(j))-chebQ.y_Clenshaw(ss(i))*chebP.y_Clenshaw(ts(j)))/(ss(i)-ts(j))-bezout_eval(B,ts(j), ss(i)));
+      }
+    }
+    CAPTURE(error);
+    CHECK(error<tol);
+  }
+
+  SECTION("Padding Test",""){
+    Eigen::VectorXd p1(4), p2(6), q(6);
+    p1<<1,1,1,1;
+    p2<<1,1,1,1,0,0;
+    q<<1,2,3,4,5,6;
+    Eigen::MatrixXd B1 = ChebTools::ChebyshevExpansion2D::construct_Bezout(p1,q);
+    Eigen::MatrixXd B2 = ChebTools::ChebyshevExpansion2D::construct_Bezout(p2,q);
+    error = (B1-B2).norm();
+    CAPTURE(error);
+    CHECK(error<tol);
+  }
+}
 double f(double x, double y){ return std::cos(EIGEN_PI*x)*(y-2); }
+double f2(double x, double y){ return (x-.1)*std::cos(EIGEN_PI*x)*(y-2); }
+double g2(double x, double y){ return (y-.9)*(y-.1)*(x-2); }
 double g(double x, double y){ return (y-.9)*(x-2); }
 TEST_CASE("Roots Test"){
   SECTION("Root test 1"){
@@ -689,18 +735,47 @@ TEST_CASE("Roots Test"){
     CAPTURE(error);
     CHECK(error<tol);
   }
-
   SECTION("Root test 2"){
-    double tol = 2e-14;
+    double tol = 1e-14;
     double error;
-    Eigen::Vector2d true_answer(.5,.9);
-    std::vector<Eigen::Vector2d> roots = ChebTools::ChebyshevExpansion2D::common_roots(16,16,f,g,0,1,0,1,true);
+    Eigen::VectorXd x(3);
+    x<<-.5,1,0;
+    Eigen::VectorXd y(3);
+    y<<1,0,0;
+    ChebTools::ChebyshevExpansion xCe = ChebTools::ChebyshevExpansion(x, -1, 1);
+    ChebTools::ChebyshevExpansion yCe = ChebTools::ChebyshevExpansion(y, -1, 1);
+    std::vector<ChebTools::ChebyshevExpansion> xs;
+    xs.push_back(xCe);
+    std::vector<ChebTools::ChebyshevExpansion> ys;
+    ys.push_back(yCe);
+    ChebTools::ChebyshevExpansion2D cheb1 = ChebTools::ChebyshevExpansion2D(xs,ys,-1,1,-1,1);
+    ChebTools::ChebyshevExpansion2D cheb2 = ChebTools::ChebyshevExpansion2D(ys,xs,-1,1,-1,1);
+    std::vector<Eigen::Vector2d> roots = ChebTools::ChebyshevExpansion2D::common_roots(cheb1,cheb2, true);
     int length = roots.size();
     CAPTURE(length);
     CHECK(length==1);
-    std::cout<<roots.at(0)<<std::endl;
-    error = (roots.at(0)-true_answer).norm();
+    Eigen::Vector2d trueans(.5,.5);
+    error = (trueans-roots.at(0)).norm();
     CAPTURE(error);
     CHECK(error<tol);
   }
+
+
+
+/*
+  SECTION("Root test 3"){
+    double tol = 2e-14;
+    double error;
+    Eigen::Vector2d true_answer(.5,.9);
+    std::vector<Eigen::Vector2d> roots = ChebTools::ChebyshevExpansion2D::common_roots(4,4,f,g,0,1,0,1,true);
+    std::vector<Eigen::Vector2d> roots2 = ChebTools::ChebyshevExpansion2D::common_roots(4,4,g2,f2,0,1,0,1,true);
+    int length = roots.size();
+    CAPTURE(length);
+    CHECK(length==1);
+    std::cout<<roots2.size()<<std::endl;
+    for (int i=0;i<roots2.size();i++){ std::cout<<roots2.at(i)<<std::endl; }
+    error = (roots.at(0)-true_answer).norm();
+    CAPTURE(error);
+    CHECK(error<tol);
+  }*/
 }
