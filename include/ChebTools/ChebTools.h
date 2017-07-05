@@ -215,7 +215,7 @@ namespace ChebTools{
     private:
       std::vector<ChebyshevExpansion> x_chebs, y_chebs;
       double x_min,x_max,y_min,y_max;
-      static Eigen::VectorXd reduce_zeros(const Eigen:: VectorXd &chebCoeffs){
+      static Eigen::VectorXd reduce_zeros_vector(const Eigen:: VectorXd &chebCoeffs){
         //these give us a threshold for what coefficients are large enough
         double largeTerm = 1e-15;
         if (chebCoeffs.size()>=1 && std::abs(chebCoeffs(0))>largeTerm){
@@ -240,6 +240,14 @@ namespace ChebTools{
         //neededSize gives us the number of coefficients that are nonzero
         //we will resize m_c such that there are essentially no trailing zeros
         return chebCoeffs.head(neededSize);
+      }
+      ChebyshevExpansion2D reduce_zeros_expansion() const{
+        std::vector<ChebyshevExpansion> newx_chebs, newy_chebs;
+        for (std::size_t i=0;i<x_chebs.size();i++){
+          newx_chebs.push_back(ChebyshevExpansion(reduce_zeros_vector(x_chebs.at(i).coef()),x_min,x_max));
+          newy_chebs.push_back(ChebyshevExpansion(reduce_zeros_vector(y_chebs.at(i).coef()),y_min,y_max));
+        }
+        return ChebyshevExpansion2D(newx_chebs,newy_chebs,x_min,x_max,y_min,y_max);
       }
     public:
       //public constructor
@@ -431,17 +439,31 @@ namespace ChebTools{
         }
         return  new_poly;
       }
+      static void degreeGrade_MatrixPolynomial(std::vector<Eigen::MatrixXd> &matrix_poly){
+        double tol = 1e-14;
+        if (matrix_poly.size()>=1 && matrix_poly.at(0).lpNorm<Eigen::Infinity>()>1){
+          tol = tol*matrix_poly.at(0).lpNorm<Eigen::Infinity>();
+        }
+        else if (matrix_poly.size()>=2 && matrix_poly.at(1).lpNorm<Eigen::Infinity>()>matrix_poly.at(0).lpNorm<Eigen::Infinity>() && matrix_poly.at(1).lpNorm<Eigen::Infinity>()>1){
+          tol = 1e-14*matrix_poly.at(1).lpNorm<Eigen::Infinity>();
+        }
+        for (int i=matrix_poly.size()-1;i>=0;i--){
+          if (matrix_poly.at(i).lpNorm<Eigen::Infinity>()>tol){ break; }
+          else{ matrix_poly.pop_back(); }
+        }
+      }
 
       // TODO: factory,static common roots function
       static Eigen::Vector3d findpivot(const Eigen::ArrayXXd &fvals, const Eigen::VectorXd &x_gridvals,const Eigen::VectorXd &y_gridvals);
       static ChebyshevExpansion2D factory(int, int, std::function<double(double,double)>,double, double, double, double);
-      static std::vector<Eigen::Vector2d> common_roots(const ChebyshevExpansion2D &first_cheb, const ChebyshevExpansion2D &second_cheb, bool is_in_domain);
+      static std::vector<Eigen::Vector2d> common_roots(const ChebyshevExpansion2D &cheb1, const ChebyshevExpansion2D &cheb2, bool is_in_domain);
       static Eigen::MatrixXd bezout_atx(const ChebyshevExpansion2D &first_cheb, const ChebyshevExpansion2D &second_cheb,double x);
       static Eigen::MatrixXd bezout_aty(const ChebyshevExpansion2D &first_cheb, const ChebyshevExpansion2D &second_cheb,double y);
       static Eigen::MatrixXd construct_Bezout(const Eigen::VectorXd &first_cvec, const Eigen::VectorXd &second_cvec);
       static std::vector<Eigen::MatrixXd> construct_MatrixPolynomial_inx(const ChebyshevExpansion2D &first_cheb, const ChebyshevExpansion2D &second_cheb);
       static std::vector<Eigen::MatrixXd> construct_MatrixPolynomial_iny(const ChebyshevExpansion2D &first_cheb, const ChebyshevExpansion2D &second_cheb);
       static std::vector<double> eigsof_MatrixPolynomial(std::vector<Eigen::MatrixXd> &matrix_poly);
+
       static std::vector<Eigen::Vector2d> common_roots(int xpts, int ypts, std::function<double(double,double)> func1, std::function<double(double,double)> func2,
                                                                       double xmin, double xmax, double ymin, double ymax, bool is_in_domain = true);
     };
