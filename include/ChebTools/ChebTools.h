@@ -408,46 +408,113 @@ namespace ChebTools{
         return new_root;
       }
 
-      static std::vector<Eigen::MatrixXd> regularize_MatrixPolynomial(const std::vector<Eigen::MatrixXd> &orig_poly){
-        int N = orig_poly.at(0).rows();
-        for(std::size_t i=0;i<orig_poly.size();i++){
-          if (orig_poly.at(i).rows()!=N || orig_poly.at(i).cols()!=N){
+      static Eigen::MatrixXd evaluate_MatrixPolynomial(const std::vector<Eigen::MatrixXd> &matrix_poly,double x){
+        if (matrix_poly.size()==0){ throw std::invalid_argument("Need matrix poly to be of at least order 1!"); }
+        Eigen::MatrixXd ans = Eigen::MatrixXd::Zero(matrix_poly.at(0).rows(),matrix_poly.at(0).cols());
+        for (std::size_t i=0;i<matrix_poly.size();i++){
+          if (std::abs(x)<=1){ ans += matrix_poly.at(i)*std::cos(i*std::acos(x)); }
+          else if (x>1){ ans += matrix_poly.at(i)*std::cosh(i*std::acosh(x)); }
+          else { ans += matrix_poly.at(i)*std::pow(-1,i)*std::cosh(i*std::acosh(-x)); }
+        }
+        return ans;
+      }
+
+      static std::vector<Eigen::MatrixXd> lowerRight_subPoly(const std::vector<Eigen::MatrixXd> &matrix_poly, std::size_t rows, std::size_t cols){
+        if (matrix_poly.size()==0){ throw std::invalid_argument("Need matrix poly to be of at least order 1!"); }
+        std::size_t N = matrix_poly.at(0).rows();
+        if (matrix_poly.at(0).cols()!=N){ throw std::invalid_argument("Matrix poly should be square!"); }
+        std::vector<Eigen::MatrixXd> new_poly(matrix_poly.size());
+        for (std::size_t i=0;i<matrix_poly.size();i++){
+          new_poly.at(i) = matrix_poly.at(i).block(N-rows,N-cols,rows,cols);
+        }
+        return new_poly;
+      }
+      static std::vector<Eigen::MatrixXd> lowerLeft_subPoly(const std::vector<Eigen::MatrixXd> &matrix_poly, std::size_t rows, std::size_t cols){
+        if (matrix_poly.size()==0){ throw std::invalid_argument("Need matrix poly to be of at least order 1!"); }
+        std::size_t N = matrix_poly.at(0).rows();
+        if (matrix_poly.at(0).cols()!=N){ throw std::invalid_argument("Matrix poly should be square!"); }
+        std::vector<Eigen::MatrixXd> new_poly(matrix_poly.size());
+        for (std::size_t i=0;i<matrix_poly.size();i++){
+          new_poly.at(i) = matrix_poly.at(i).block(N-rows,0,rows,cols);
+        }
+        return new_poly;
+      }
+
+      static std::vector<Eigen::MatrixXd> upperLeft_subPoly(const std::vector<Eigen::MatrixXd> &matrix_poly, std::size_t rows, std::size_t cols){
+        if (matrix_poly.size()==0){ throw std::invalid_argument("Need matrix poly to be of at least order 1!"); }
+        std::size_t N = matrix_poly.at(0).rows();
+        if (matrix_poly.at(0).cols()!=N){ throw std::invalid_argument("Matrix poly should be square!"); }
+        std::vector<Eigen::MatrixXd> new_poly(matrix_poly.size());
+        for (std::size_t i=0;i<matrix_poly.size();i++){
+          new_poly.at(i) = matrix_poly.at(i).block(0,0,rows,cols);
+        }
+        return new_poly;
+      }
+      static double max2norm_lowerRight_subPoly(const std::vector<Eigen::MatrixXd> &matrix_poly, std::size_t rows, std::size_t cols){
+        std::vector<Eigen::MatrixXd> sub_poly = lowerRight_subPoly(matrix_poly,rows,cols);
+        Eigen::VectorXd xvals = Eigen::VectorXd::LinSpaced(100,-1,1);
+        double norm = 0;
+        double candidate;
+        for (std::size_t i=0;i<xvals.size();i++){
+          candidate = evaluate_MatrixPolynomial(sub_poly,xvals(i)).norm();
+          if (candidate>norm){ norm = candidate; }
+        }
+        return norm;
+      }
+      static double max2norm_lowerLeft_subPoly(const std::vector<Eigen::MatrixXd> &matrix_poly, std::size_t rows, std::size_t cols){
+        std::vector<Eigen::MatrixXd> sub_poly = lowerLeft_subPoly(matrix_poly,rows,cols);
+        Eigen::VectorXd xvals = Eigen::VectorXd::LinSpaced(100,-1,1);
+        double norm = 0;
+        double candidate;
+        for (std::size_t i=0;i<xvals.size();i++){
+          candidate = evaluate_MatrixPolynomial(sub_poly,xvals(i)).norm();
+          if (candidate>norm){ norm = candidate; }
+        }
+        return norm;
+      }
+      static std::vector<Eigen::MatrixXd> regularize_MatrixPolynomial(const std::vector<Eigen::MatrixXd> &matrix_poly){
+        double tol = std::numeric_limits<double>::epsilon();
+        if (matrix_poly.size()==0){ throw std::invalid_argument("Need matrix poly to be of at least order 1!"); }
+        int N = matrix_poly.at(0).rows();
+        for(std::size_t i=0;i<matrix_poly.size();i++){
+          if (matrix_poly.at(i).rows()!=N || matrix_poly.at(i).cols()!=N){
             throw std::invalid_argument("Matrices must all be the same size");
           }
         }
         int k = 0;
-        double two_norm1 = 1;
-        double two_norm2 = 1;
-        while (two_norm1>1e-14 || two_norm2>1e-14){
+        double lowerRightNorm = 1;
+        double lowerLeftNorm = 1;
+
+        while (lowerRightNorm>tol || lowerLeftNorm>std::sqrt(tol)){
           k++;
           if (k==N){ break; }
-          two_norm1 = 0;
-          two_norm2 = 0;
-          for (std::size_t i=0;i<orig_poly.size();i++){
-            two_norm1 += orig_poly.at(i).block(N-k,N-k,k,k).norm();
-            two_norm2 += orig_poly.at(i).block(N-k,0,k,N-k).norm();
-          }
+          lowerRightNorm = max2norm_lowerRight_subPoly(matrix_poly, k, k);
+          lowerLeftNorm = max2norm_lowerLeft_subPoly(matrix_poly, k, N-k);
         }
+
         std::vector<Eigen::MatrixXd> new_poly;
         if (k==N){
-          new_poly = orig_poly;
+          new_poly = matrix_poly;
         }
         else{
-          for (std::size_t i=0;i<orig_poly.size();i++){
-            new_poly.push_back(orig_poly.at(i).block(0,0,N-k,N-k));
-          }
+          new_poly = upperLeft_subPoly(matrix_poly, N-k, N-k);
         }
         return  new_poly;
       }
+
+
       static void degreeGrade_MatrixPolynomial(std::vector<Eigen::MatrixXd> &matrix_poly){
-        double tol = 1e-14;
+        double tol = 1e-15;
         if (matrix_poly.size()>=1 && matrix_poly.at(0).lpNorm<Eigen::Infinity>()>1){
           tol = tol*matrix_poly.at(0).lpNorm<Eigen::Infinity>();
+          std::cout<<"tol: "<<tol<<std::endl;
         }
         else if (matrix_poly.size()>=2 && matrix_poly.at(1).lpNorm<Eigen::Infinity>()>matrix_poly.at(0).lpNorm<Eigen::Infinity>() && matrix_poly.at(1).lpNorm<Eigen::Infinity>()>1){
-          tol = 1e-14*matrix_poly.at(1).lpNorm<Eigen::Infinity>();
+          tol = 1e-15*matrix_poly.at(1).lpNorm<Eigen::Infinity>();
+          std::cout<<"tol: "<<tol<<std::endl;
         }
         for (int i=matrix_poly.size()-1;i>=0;i--){
+          std::cout<<"norm: "<<matrix_poly.at(i).lpNorm<Eigen::Infinity>()<<std::endl;
           if (matrix_poly.at(i).lpNorm<Eigen::Infinity>()>tol){ break; }
           else{ matrix_poly.pop_back(); }
         }
@@ -455,6 +522,8 @@ namespace ChebTools{
 
       // TODO: factory,static common roots function
       static Eigen::Vector3d findpivot(const Eigen::ArrayXXd &fvals, const Eigen::VectorXd &x_gridvals,const Eigen::VectorXd &y_gridvals);
+      static std::vector<Eigen::Vector2d> pivots_from_factory(int xpts, int ypts, std::function<double(double,double)> func,
+                                          double xmin, double xmax, double ymin, double ymax);
       static ChebyshevExpansion2D factory(int, int, std::function<double(double,double)>,double, double, double, double);
       static std::vector<Eigen::Vector2d> common_roots(const ChebyshevExpansion2D &cheb1, const ChebyshevExpansion2D &cheb2, bool is_in_domain);
       static Eigen::MatrixXd bezout_atx(const ChebyshevExpansion2D &first_cheb, const ChebyshevExpansion2D &second_cheb,double x);

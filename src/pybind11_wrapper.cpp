@@ -21,7 +21,6 @@ void init_ChebTools(py::module &m){
     m.def("generate_Chebyshev_expansion", &ChebyshevExpansion::factory<std::function<double(double)> >);
     m.def("Eigen_nbThreads", []() { return Eigen::nbThreads(); });
     m.def("Eigen_setNbThreads", [](int Nthreads) { return Eigen::setNbThreads(Nthreads); });
-
     py::class_<ChebyshevExpansion>(m, "ChebyshevExpansion")
         .def(py::init<const std::vector<double> &, double, double>())
         .def(py::self + py::self)
@@ -50,6 +49,11 @@ void init_ChebTools(py::module &m){
         .def("xmax", &ChebyshevExpansion::xmax)
         .def("get_nodes_n11", &ChebyshevExpansion::get_nodes_n11)
         .def("get_node_function_values", &ChebyshevExpansion::get_node_function_values)
+        ;
+    py::class_<ChebyshevExpansion2D>(m,"ChebyshevExpansion2D")
+        .def("pivots_from_factory", &ChebyshevExpansion2D::pivots_from_factory)
+        .def("z_Clenshaw", &ChebyshevExpansion2D::z_Clenshaw)
+        .def("factory", &ChebyshevExpansion2D::factory)
         ;
 }
 

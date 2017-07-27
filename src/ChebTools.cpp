@@ -453,7 +453,6 @@ namespace ChebTools {
           // decomposition, and get the real eigenvalues directly.  These eigenvalues are defined
           // in the domain [-1, 1], but it might also include values outside [-1, 1]
           Eigen::VectorXcd eigs = eigenvalues(companion_matrix(new_mc), /* balance = */ true);
-
           for (Eigen::Index i = 0; i < eigs.size(); ++i) {
               if (std::abs(eigs(i).imag() / eigs(i).real()) < 1e-15) {
                   double val_n11 = eigs(i).real();
@@ -734,14 +733,75 @@ namespace ChebTools {
       return new2dCheb;
     }
 
-    Eigen::MatrixXd ChebyshevExpansion2D::construct_Bezout(const Eigen::VectorXd &first_cvec, const Eigen::VectorXd &second_cvec){
+    std::vector<Eigen::Vector2d> ChebyshevExpansion2D::pivots_from_factory(int xpts, int ypts, std::function<double(double,double)> func,
+                                        double xmin, double xmax, double ymin, double ymax){
+
+      std::vector<Eigen::Vector2d> pivots;
+      std::vector<ChebyshevExpansion> xChebs,yChebs;
+      ChebyshevExpansion2D new2dCheb = ChebyshevExpansion2D(xChebs,yChebs,xmin,xmax,ymin,ymax);
+      // create x chebyshev values
+      const Eigen::VectorXd & x_gridvals = ChebTools::get_extrema(xpts);
+      // create y chebyshev values
+      const Eigen::VectorXd & y_gridvals = ChebTools::get_extrema(ypts);
+      // create grid of fvals
+      Eigen::VectorXd newX_grid = ((xmax - xmin)*ChebTools::get_extrema(xpts).array() + (xmax + xmin)) / 2.0;
+      Eigen::VectorXd newY_grid = ((ymax - ymin)*ChebTools::get_extrema(ypts).array() + (ymax + ymin)) / 2.0;
+      Eigen::ArrayXXd fvals(ypts+1,xpts+1);
+
+      for (int j=ypts;j>=0;j--){
+        for (int i=0;i<=xpts;i++){
+            fvals(j,i) = func(newX_grid(i),newY_grid(j));
+        }
+      }
+      // Gaussian elimination of a function
+      // pick largest f value in absolute terms
+      // then interpolate in both the x and y direction
+      // repeat until error is small enough or we run out of points
+      Eigen::Vector2d pivot(0,0);
+      int x_maxIndex, y_maxIndex;
+      double maxVal = fvals.abs().maxCoeff(&y_maxIndex, &x_maxIndex);
+      pivot(0) = newX_grid(x_maxIndex); pivot(1) = newX_grid(y_maxIndex);
+      pivots.push_back(pivot);
+      double tol = maxVal*(1e-14);
+      maxVal = tol;
+      double candidate;
+      int count = 0;
+      std::vector<double> dummy_coeffs;
+      ChebyshevExpansion chebX = ChebyshevExpansion(dummy_coeffs,xmin,xmax);
+      ChebyshevExpansion chebY = ChebyshevExpansion(dummy_coeffs,ymin,ymax);
+      ChebyshevExpansion2D intermediateCheb = ChebyshevExpansion2D(xChebs,yChebs,xmin,xmax,ymin,ymax);
+      while (maxVal>=tol && count<xpts*ypts){
+        chebX = (1/fvals(y_maxIndex,x_maxIndex))*ChebyshevExpansion::factoryf(xpts,fvals.row(y_maxIndex).matrix(),xmin,xmax);
+        chebY = ChebyshevExpansion::factoryf(ypts,fvals.col(x_maxIndex).matrix(),ymin,ymax);
+        new2dCheb.addExpansions(chebX, chebY);
+        xChebs.push_back(chebX); yChebs.push_back(chebY);
+        fvals = fvals - ChebyshevExpansion2D(xChebs,yChebs,xmin,xmax,ymin,ymax).z(newX_grid,newY_grid);
+        xChebs.clear(); yChebs.clear();
+        maxVal = fvals.abs().maxCoeff(&y_maxIndex, &x_maxIndex);
+        pivot(0) = newX_grid(x_maxIndex); pivot(1) = newX_grid(y_maxIndex);
+        pivots.push_back(pivot);
+        count+=1;
+      }
+      return pivots;
+    }
+
+    /*Eigen::MatrixXd ChebyshevExpansion2D::construct_Bezout(const Eigen::VectorXd &first_cvec, const Eigen::VectorXd &second_cvec){
       int n = first_cvec.size(); int m = second_cvec.size();
       int N = std::max(n,m)-1;
       if (N<1){ throw std::invalid_argument("Coefficients need to be longer!"); }
       Eigen::MatrixXd bezout = Eigen::MatrixXd::Zero(N,N);
       Eigen::VectorXd new_firstvec = Eigen::VectorXd::Zero(N+1); new_firstvec.head(n) = first_cvec;
       Eigen::VectorXd new_secondvec = Eigen::VectorXd::Zero(N+1); new_secondvec.head(m) = second_cvec;
+      std::cout<<"Vectors: "<<std::endl;
+      std::cout<<new_firstvec<<std::endl;
+      std::cout<<new_secondvec<<std::endl;
+      std::cout<<"S: "<<std::endl;
+      std::cout<<new_secondvec*new_firstvec.transpose()<<std::endl;
+      std::cout<<"S': "<<std::endl;
+      std::cout<<new_firstvec*new_secondvec.transpose()<<std::endl;
       Eigen::MatrixXd placeholder = new_firstvec*new_secondvec.transpose()-new_secondvec*new_firstvec.transpose();
+      std::cout<<"Matrix R: "<<std::endl;
+      std::cout<<placeholder<<std::endl;
       bezout.row(N-1) = 2*placeholder.row(N).head(N);
       Eigen::VectorXd placeholder2(N), placeholder3(N);
       if (N>=2){
@@ -757,18 +817,102 @@ namespace ChebTools {
         }
       }
       bezout.block(0,0,1,N) = .5*bezout.block(0,0,1,N);
+      std::cout<<"Bezout matrix: "<<std::endl;
+      std::cout<<bezout<<std::endl;
+      return bezout;
+    }*/
+
+    //TODO: finish replicating Alex Townsend chebfun2 code
+
+    Eigen::MatrixXd ChebyshevExpansion2D::construct_Bezout(const Eigen::VectorXd &first_cvec, const Eigen::VectorXd &second_cvec){
+
+      int n = first_cvec.size(); int k = n - 1; int s = k;
+      Eigen::MatrixXd S = Eigen::MatrixXd::Zero(n,n);
+      S.block(1,0,n-1,n) = 2*second_cvec*first_cvec.transpose();
+      Eigen::MatrixXd placeholder = S.transpose()-S;
+      int N = n-1;
+      Eigen::MatrixXd bezout = Eigen::MatrixXd::Zero(N,N);
+      if (N==1){ bezout = placeholder.block(0,1,1,1); return bezout; }
+
+
+      // std::cout<<"Vectors: "<<std::endl;
+      // std::cout<<first_cvec<<std::endl;
+      // std::cout<<second_cvec<<std::endl;
+      // std::cout<<"S: "<<std::endl;
+      // std::cout<<S<<std::endl;
+      // std::cout<<"Matrix R: "<<std::endl;
+      // std::cout<<placeholder<<std::endl;
+
+      Eigen::VectorXd placeholder2(N), placeholder3(N);
+      bezout.row(0) = placeholder.row(0).tail(N).transpose();
+      placeholder2 = Eigen::VectorXd::Zero(N);
+      placeholder2.head(N-2) = bezout.block(0,1,1,N-2).transpose(); placeholder2(N-2) = 2*bezout(0,N-1);
+      placeholder3 = Eigen::VectorXd::Zero(N);
+      placeholder3.tail(N-1) = bezout.block(0,0,1,N-1).transpose();
+      bezout.row(1) = placeholder.row(1).tail(N).transpose()+placeholder2+placeholder3;
+
+      for (std::size_t i=2;i<N;i++){
+        placeholder2.head(N-2) = bezout.block(i-1,1,1,N-2).transpose(); placeholder2(N-2) = 2*bezout(i-1,N-1);
+        placeholder3.tail(N-1) = bezout.block(i-1,0,1,N-1).transpose();
+        bezout.row(i) += placeholder.row(i).tail(N).transpose();
+        bezout.row(i)-= bezout.row(i-2);
+        bezout.row(i) += placeholder2.transpose();
+        bezout.row(i) += placeholder3.transpose();
+      }
+      bezout.row(N-1) = bezout.row(N-1)/2;
+
       return bezout;
     }
 
     Eigen::MatrixXd ChebyshevExpansion2D::bezout_atx(const ChebyshevExpansion2D &first_cheb, const ChebyshevExpansion2D &second_cheb,double x){
       Eigen::VectorXd first_cvec = first_cheb.chebExpansion_atx(x).coef();
       Eigen::VectorXd second_cvec = second_cheb.chebExpansion_atx(x).coef();
-      return ChebyshevExpansion2D::construct_Bezout(first_cvec, second_cvec);
+      // std::cout<<"First vec"<<first_cvec<<std::endl;
+      // std::cout<<"Second vec"<<second_cvec<<std::endl;
+      bool reduce;
+      Eigen::VectorXd first_cvec2;
+      if (first_cvec.size()<second_cvec.size()){
+        std::swap(first_cvec,second_cvec);
+      }
+      if (first_cvec.size()==second_cvec.size()){
+        first_cvec2.resize(first_cvec.size()+1);
+        first_cvec2 = Eigen::VectorXd::Zero(first_cvec.size()+1);
+        first_cvec2.tail(first_cvec.size()) = first_cvec;
+        reduce = true;
+      }
+      else{
+        first_cvec2 = first_cvec;
+        reduce = false;
+      }
+      Eigen::VectorXd second_cvec2 = Eigen::VectorXd::Zero(first_cvec2.size()-1);
+      second_cvec2.tail(second_cvec.size()) = second_cvec;
+      Eigen::MatrixXd bez = ChebyshevExpansion2D::construct_Bezout(first_cvec2, second_cvec2.reverse());
+      if (reduce) { return bez.block(1,1,bez.rows()-1,bez.cols()-1); }
+      else{ return bez; }
     }
     Eigen::MatrixXd ChebyshevExpansion2D::bezout_aty(const ChebyshevExpansion2D &first_cheb, const ChebyshevExpansion2D &second_cheb,double y){
       Eigen::VectorXd first_cvec = first_cheb.chebExpansion_aty(y).coef();
       Eigen::VectorXd second_cvec = second_cheb.chebExpansion_aty(y).coef();
-      return ChebyshevExpansion2D::construct_Bezout(first_cvec, second_cvec);
+      bool reduce;
+      Eigen::VectorXd first_cvec2;
+      if (first_cvec.size()<second_cvec.size()){
+        std::swap(first_cvec,second_cvec);
+      }
+      if (first_cvec.size()==second_cvec.size()){
+        first_cvec2.resize(first_cvec.size()+1);
+        first_cvec2 = Eigen::VectorXd::Zero(first_cvec.size()+1);
+        first_cvec2.tail(first_cvec.size()) = first_cvec;
+        reduce = true;
+      }
+      else{
+        first_cvec2 = first_cvec;
+        reduce = false;
+      }
+      Eigen::VectorXd second_cvec2 = Eigen::VectorXd::Zero(first_cvec2.size()-1);
+      second_cvec2.tail(second_cvec.size()) = second_cvec;
+      Eigen::MatrixXd bez = ChebyshevExpansion2D::construct_Bezout(first_cvec2, second_cvec2);
+      if (reduce) { return bez.block(1,1,first_cvec2.size()-1,first_cvec2.size()-1); }
+      else{ return bez; }
     }
 // TODO: add construct_MatrixPolynomial_inx and construct_MatrixPolynomial_iny
 
@@ -853,12 +997,19 @@ namespace ChebTools {
         left_matrix.block((i-1)*N,i*N,N,N) = .5*Eigen::MatrixXd::Identity(N,N);
         right_matrix.block(i*N,i*N,N,N) = Eigen::MatrixXd::Identity(N,N);
       }
-      //std::cout<<"Left Matrix: "<<std::endl;
-      //std::cout<<left_matrix<<std::endl;
-      //std::cout<<"Right matrix: "<<std::endl;
-      //std::cout<<right_matrix<<std::endl;
+      Eigen::MatrixXd left_balanced, Dleft;
+      balance_matrix(left_matrix, left_balanced, Dleft);
+      Eigen::MatrixXd right_balanced, Dright;
+      balance_matrix(right_matrix, right_balanced, Dright);
+
+      // std::cout<<"Left Matrix: "<<std::endl;
+      // std::cout<<left_matrix<<std::endl;
+      // std::cout<<"Right matrix: "<<std::endl;
+      // std::cout<<right_matrix<<std::endl;
       //Eigen::GeneralizedEigenSolver<Eigen::MatrixXd> gen = Eigen::GeneralizedEigenSolver<Eigen::MatrixXd>(right_matrix,left_matrix);
-      Eigen::GeneralizedEigenSolver<Eigen::MatrixXd> gen = Eigen::GeneralizedEigenSolver<Eigen::MatrixXd>(left_matrix,right_matrix);
+
+      //Eigen::GeneralizedEigenSolver<Eigen::MatrixXd> gen = Eigen::GeneralizedEigenSolver<Eigen::MatrixXd>(left_matrix,right_matrix);
+      Eigen::GeneralizedEigenSolver<Eigen::MatrixXd> gen = Eigen::GeneralizedEigenSolver<Eigen::MatrixXd>(left_balanced,right_balanced);
       Eigen::VectorXcd numerators= gen.alphas();
       Eigen::VectorXd denominators = gen.betas();
       std::vector<double> eigs;
@@ -890,15 +1041,15 @@ namespace ChebTools {
 
       if (go_with_x){ matrix_poly = ChebyshevExpansion2D::construct_MatrixPolynomial_inx(first_cheb, second_cheb); }
       else{ matrix_poly = ChebyshevExpansion2D::construct_MatrixPolynomial_iny(first_cheb, second_cheb); }
-      //std::cout<<"\nOG Matrix poly size: "<<matrix_poly.size()<<std::endl;
+      std::cout<<"\nOG Matrix poly size: "<<matrix_poly.size()<<" matrices of size "<<matrix_poly.at(0).rows()<<std::endl;
       ChebyshevExpansion2D::degreeGrade_MatrixPolynomial(matrix_poly);
-      std::vector<Eigen::MatrixXd> new_poly = matrix_poly;
-      //std::vector<Eigen::MatrixXd> new_poly = ChebTools::ChebyshevExpansion2D::regularize_MatrixPolynomial(matrix_poly);
-      //std::cout<<"Matrix poly size: "<<matrix_poly.size()<<std::endl;
-      //std::cout<<"Infinity norm of last matrix: "<<matrix_poly.at(matrix_poly.size()-1).lpNorm<Eigen::Infinity>()<<std::endl;
-      /*for (int i=0;i<matrix_poly.size();i++){
-        std::cout<<matrix_poly.at(i)<<std::endl;
-      }*/
+      //std::vector<Eigen::MatrixXd> new_poly = matrix_poly;
+      std::vector<Eigen::MatrixXd> new_poly = ChebTools::ChebyshevExpansion2D::regularize_MatrixPolynomial(matrix_poly);
+      std::cout<<"Matrix poly size: "<<new_poly.size()<<" matrices of size "<<new_poly.at(0).rows()<<std::endl;
+      std::cout<<"Infinity norm of last matrix: "<<new_poly.at(new_poly.size()-1).lpNorm<Eigen::Infinity>()<<std::endl;
+      // for (int i=0;i<matrix_poly.size();i++){
+      //   std::cout<<matrix_poly.at(i)<<std::endl;
+      // }
       std::vector<double> possible_roots = ChebyshevExpansion2D::eigsof_MatrixPolynomial(new_poly);
       for (int i=0;i<possible_roots.size();i++){
         for (int j=possible_roots.size()-1;j>=0;j--){
@@ -907,6 +1058,7 @@ namespace ChebTools {
           }
         }
       }
+      std::cout<<"1-D root finding"<<std::endl;
       std::vector<double> first_cheb_roots,second_cheb_roots;
       int veclength;
       double x,y;
@@ -916,14 +1068,19 @@ namespace ChebTools {
           x = possible_roots.at(i);
           if (!is_in_domain || std::abs(x)>1+1e-14){ continue; }
           x = ((xmax-xmin)*x+xmax+xmin)/2;
-          //std::cout<<"x = "<<x<<std::endl;
-          //std::cout<<"Bezout determinant: "<<ChebyshevExpansion2D::bezout_atx(first_cheb,second_cheb,x).determinant()<<std::endl;
+          std::cout<<"x = "<<x<<std::endl;
+          std::cout<<"Bezout determinant: "<<ChebyshevExpansion2D::bezout_atx(first_cheb,second_cheb,x).determinant()<<std::endl;
           ChebTools::ChebyshevExpansion first1dcheb = first_cheb.chebExpansion_atx(x);
           ChebTools::ChebyshevExpansion second1dcheb = second_cheb.chebExpansion_atx(x);
-          veclength = std::min(first1dcheb.coef().size(),second1dcheb.coef().size());
-          if ((first1dcheb.coef().head(veclength)+second1dcheb.coef().head(veclength)).norm()>veclength*1e-14){
+          Eigen::VectorXd firstcoeff = first1dcheb.coef(); Eigen::VectorXd secondcoeff = second1dcheb.coef();
+          veclength = std::max(first1dcheb.coef().size(),second1dcheb.coef().size());
+          firstcoeff.conservativeResizeLike(Eigen::VectorXd::Zero(veclength));
+          secondcoeff.conservativeResizeLike(Eigen::VectorXd::Zero(veclength));
+          if ((firstcoeff+secondcoeff).norm()>veclength*1e-14){
             first_cheb_roots = (first1dcheb+second1dcheb).real_roots(is_in_domain);
             for (std::size_t j=0;j<first_cheb_roots.size();j++){
+              std::cout<<"Possible root: "<<first_cheb_roots.at(j)<<std::endl;
+
               if (std::abs(first1dcheb.y_Clenshaw(first_cheb_roots.at(j)))<1e-14 && std::abs(second1dcheb.y_Clenshaw(first_cheb_roots.at(j)))<1e-14){
                 root_vec(0) = x;
                 root_vec(1) = first_cheb_roots.at(j);
