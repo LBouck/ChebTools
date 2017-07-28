@@ -400,10 +400,13 @@ namespace ChebTools{
         double error = 1;
         Eigen::Vector2d new_root = root;
         Eigen::Vector2d change;
+        int count = 0;
         while (std::abs(error)>1e-14){
+          if (count>1000){ throw "Not converging!"; }
           change = jacobian_ofTwoChebs(first_cheb,second_cheb,root).fullPivLu().solve(eval_bothChebs(first_cheb,second_cheb,new_root));
           new_root = new_root-change;
           error = change.norm();
+          count++;
         }
         return new_root;
       }
@@ -507,14 +510,14 @@ namespace ChebTools{
         double tol = 1e-15;
         if (matrix_poly.size()>=1 && matrix_poly.at(0).lpNorm<Eigen::Infinity>()>1){
           tol = tol*matrix_poly.at(0).lpNorm<Eigen::Infinity>();
-          std::cout<<"tol: "<<tol<<std::endl;
+        //  std::cout<<"tol: "<<tol<<std::endl;
         }
         else if (matrix_poly.size()>=2 && matrix_poly.at(1).lpNorm<Eigen::Infinity>()>matrix_poly.at(0).lpNorm<Eigen::Infinity>() && matrix_poly.at(1).lpNorm<Eigen::Infinity>()>1){
           tol = 1e-15*matrix_poly.at(1).lpNorm<Eigen::Infinity>();
-          std::cout<<"tol: "<<tol<<std::endl;
+          //std::cout<<"tol: "<<tol<<std::endl;
         }
         for (int i=matrix_poly.size()-1;i>=0;i--){
-          std::cout<<"norm: "<<matrix_poly.at(i).lpNorm<Eigen::Infinity>()<<std::endl;
+          //std::cout<<"norm: "<<matrix_poly.at(i).lpNorm<Eigen::Infinity>()<<std::endl;
           if (matrix_poly.at(i).lpNorm<Eigen::Infinity>()>tol){ break; }
           else{ matrix_poly.pop_back(); }
         }

@@ -51,9 +51,21 @@ void init_ChebTools(py::module &m){
         .def("get_node_function_values", &ChebyshevExpansion::get_node_function_values)
         ;
     py::class_<ChebyshevExpansion2D>(m,"ChebyshevExpansion2D")
-        .def("pivots_from_factory", &ChebyshevExpansion2D::pivots_from_factory)
+        .def(py::init<const std::vector<ChebyshevExpansion> &, const std::vector<ChebyshevExpansion> &, double, double, double, double>())
+        .def("max_ydegree", &ChebyshevExpansion2D::max_ydegree)
+        .def("max_xdegree", &ChebyshevExpansion2D::max_xdegree)
+        .def("xchebs", &ChebyshevExpansion2D::xchebs)
+        .def("ychebs", &ChebyshevExpansion2D::ychebs)
+        .def("addExpansions", &ChebyshevExpansion2D::addExpansions)
+        .def("z_recurrence", &ChebyshevExpansion2D::z_recurrence)
         .def("z_Clenshaw", &ChebyshevExpansion2D::z_Clenshaw)
-        .def("factory", &ChebyshevExpansion2D::factory)
+        .def("z", &ChebyshevExpansion2D::z)
+        .def("chebExpansion_atx", &ChebyshevExpansion2D::chebExpansion_atx)
+        .def("chebExpansion_aty", &ChebyshevExpansion2D::chebExpansion_aty)
+        .def("pivots_from_factory", &ChebyshevExpansion2D::pivots_from_factory)
+        .def("generate_Chebyshev_expansion2d", &ChebyshevExpansion2D::factory)
+        //.def("common_roots",(std::vector<Eigen::Vector2d>(ChebyshevExpansion2D::*)(const ChebyshevExpansion2D &, const ChebyshevExpansion2D &, bool)), &ChebyshevExpansion2D::common_roots)
+        //.def("common_roots",(std::vector<Eigen::Vector2d>(ChebyshevExpansion2D::*)(int, int, std::function<double(double,double)>, std::function<double(double,double)>, double, double, double, double, bool)), &ChebyshevExpansion2D::common_roots)
         ;
 }
 

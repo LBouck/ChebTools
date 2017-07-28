@@ -1041,12 +1041,12 @@ namespace ChebTools {
 
       if (go_with_x){ matrix_poly = ChebyshevExpansion2D::construct_MatrixPolynomial_inx(first_cheb, second_cheb); }
       else{ matrix_poly = ChebyshevExpansion2D::construct_MatrixPolynomial_iny(first_cheb, second_cheb); }
-      std::cout<<"\nOG Matrix poly size: "<<matrix_poly.size()<<" matrices of size "<<matrix_poly.at(0).rows()<<std::endl;
+      // std::cout<<"\nOG Matrix poly size: "<<matrix_poly.size()<<" matrices of size "<<matrix_poly.at(0).rows()<<std::endl;
       ChebyshevExpansion2D::degreeGrade_MatrixPolynomial(matrix_poly);
-      //std::vector<Eigen::MatrixXd> new_poly = matrix_poly;
+      // std::vector<Eigen::MatrixXd> new_poly = matrix_poly;
       std::vector<Eigen::MatrixXd> new_poly = ChebTools::ChebyshevExpansion2D::regularize_MatrixPolynomial(matrix_poly);
       std::cout<<"Matrix poly size: "<<new_poly.size()<<" matrices of size "<<new_poly.at(0).rows()<<std::endl;
-      std::cout<<"Infinity norm of last matrix: "<<new_poly.at(new_poly.size()-1).lpNorm<Eigen::Infinity>()<<std::endl;
+      // std::cout<<"Infinity norm of last matrix: "<<new_poly.at(new_poly.size()-1).lpNorm<Eigen::Infinity>()<<std::endl;
       // for (int i=0;i<matrix_poly.size();i++){
       //   std::cout<<matrix_poly.at(i)<<std::endl;
       // }
@@ -1070,6 +1070,7 @@ namespace ChebTools {
           x = ((xmax-xmin)*x+xmax+xmin)/2;
           std::cout<<"x = "<<x<<std::endl;
           std::cout<<"Bezout determinant: "<<ChebyshevExpansion2D::bezout_atx(first_cheb,second_cheb,x).determinant()<<std::endl;
+          if (std::abs(ChebyshevExpansion2D::bezout_atx(first_cheb,second_cheb,x).determinant())>1){ continue; }
           ChebTools::ChebyshevExpansion first1dcheb = first_cheb.chebExpansion_atx(x);
           ChebTools::ChebyshevExpansion second1dcheb = second_cheb.chebExpansion_atx(x);
           Eigen::VectorXd firstcoeff = first1dcheb.coef(); Eigen::VectorXd secondcoeff = second1dcheb.coef();
@@ -1080,11 +1081,15 @@ namespace ChebTools {
             first_cheb_roots = (first1dcheb+second1dcheb).real_roots(is_in_domain);
             for (std::size_t j=0;j<first_cheb_roots.size();j++){
               std::cout<<"Possible root: "<<first_cheb_roots.at(j)<<std::endl;
-
-              if (std::abs(first1dcheb.y_Clenshaw(first_cheb_roots.at(j)))<1e-14 && std::abs(second1dcheb.y_Clenshaw(first_cheb_roots.at(j)))<1e-14){
-                root_vec(0) = x;
-                root_vec(1) = first_cheb_roots.at(j);
-                roots.push_back(root_vec);
+              root_vec(0) = x;
+              root_vec(1) = first_cheb_roots.at(j);
+              try{ root_vec = ChebyshevExpansion2D::newton_polish(first_cheb,second_cheb,root_vec); }
+              catch(const char* msg){ continue; }
+              std::cout<<"Possible root: "<<root_vec<<std::endl;
+              std::cout<<"Eval chebs: "<<std::abs(first_cheb.z_Clenshaw(root_vec(0),root_vec(1)))<<" "<<std::abs(second_cheb.z_Clenshaw(root_vec(0),root_vec(1)))<<std::endl;
+              if (std::abs(first_cheb.z_Clenshaw(root_vec(0),root_vec(1)))<1e-12 && std::abs(second_cheb.z_Clenshaw(root_vec(0),root_vec(1)))<1e-12){
+                std::cout<<"Found a root!"<<std::endl;
+                if (!is_in_domain || (root_vec(0)<xmax && root_vec(0)>xmin && root_vec(1)<ymax && root_vec(1)>ymin)){ roots.push_back(root_vec); }
               }
             }
           }
@@ -1093,10 +1098,12 @@ namespace ChebTools {
             second_cheb_roots = second1dcheb.real_roots(is_in_domain);
             for (std::size_t j=0;j<first_cheb_roots.size();j++){
               for (std::size_t k=0;k<second_cheb_roots.size();k++){
-                if (std::abs(first_cheb_roots.at(j)-second_cheb_roots.at(k))<1e-14){
-                  root_vec(0) = x;
-                  root_vec(1) = (first_cheb_roots.at(j)-second_cheb_roots.at(k))/2;
-                  roots.push_back(root_vec);
+                root_vec(0) = x;
+                root_vec(1) = (first_cheb_roots.at(j)+second_cheb_roots.at(k))/2;
+                try{ root_vec = ChebyshevExpansion2D::newton_polish(first_cheb,second_cheb,root_vec); }
+                catch(const char* msg){ continue; }
+                if (std::abs(first_cheb.z_Clenshaw(root_vec(0),root_vec(1)))<1e-12 && std::abs(second_cheb.z_Clenshaw(root_vec(0),root_vec(1)))<1e-12){
+                  if (!is_in_domain || (root_vec(0)<xmax && root_vec(0)>xmin && root_vec(1)<ymax && root_vec(1)>ymin)){ roots.push_back(root_vec); }
                 }
               }
             }
@@ -1110,6 +1117,7 @@ namespace ChebTools {
           if (!is_in_domain || std::abs(y)>1+1e-14){ continue; }
           y = ((ymax-ymin)*y+ymax+ymin)/2;
           //std::cout<<"y = "<<y<<std::endl;
+          if (std::abs(ChebyshevExpansion2D::bezout_aty(first_cheb,second_cheb,y).determinant())>1){ continue; }
           ChebTools::ChebyshevExpansion first1dcheb = first_cheb.chebExpansion_aty(y);
           ChebTools::ChebyshevExpansion second1dcheb = second_cheb.chebExpansion_aty(y);
           //std::cout<<"Bezout determinant: "<<ChebyshevExpansion2D::bezout_aty(first_cheb,second_cheb,y).determinant()<<std::endl;
@@ -1117,10 +1125,12 @@ namespace ChebTools {
           if ((first1dcheb.coef().head(veclength)+second1dcheb.coef().head(veclength)).norm()>veclength*1e-14){
             first_cheb_roots = (first1dcheb+second1dcheb).real_roots(is_in_domain);
             for (std::size_t j=0;j<first_cheb_roots.size();j++){
-              if (std::abs(first1dcheb.y_Clenshaw(first_cheb_roots.at(j)))<1e-14 && std::abs(second1dcheb.y_Clenshaw(first_cheb_roots.at(j)))<1e-14){
-                root_vec(1) = y;
-                root_vec(0) = first_cheb_roots.at(j);
-                roots.push_back(root_vec);
+              root_vec(1) = y;
+              root_vec(0) = first_cheb_roots.at(j);
+              try{ root_vec = ChebyshevExpansion2D::newton_polish(first_cheb,second_cheb,root_vec); }
+              catch(const char* msg){ continue; }
+              if (std::abs(first_cheb.z_Clenshaw(root_vec(0),root_vec(1)))<1e-12 && std::abs(second_cheb.z_Clenshaw(root_vec(0),root_vec(1)))<1e-12){
+                if (!is_in_domain || (root_vec(0)<xmax && root_vec(0)>xmin && root_vec(1)<ymax && root_vec(1)>ymin)){ roots.push_back(root_vec); }
               }
             }
           }
@@ -1129,10 +1139,12 @@ namespace ChebTools {
             second_cheb_roots = second1dcheb.real_roots(is_in_domain);
             for (std::size_t j=0;j<first_cheb_roots.size();j++){
               for (std::size_t k=0;k<second_cheb_roots.size();k++){
-                if (std::abs(first_cheb_roots.at(j)-second_cheb_roots.at(k))<1e-14){
-                  root_vec(1) = y;
-                  root_vec(0) = (first_cheb_roots.at(j)-second_cheb_roots.at(k))/2;
-                  roots.push_back(root_vec);
+                root_vec(1) = y;
+                root_vec(0) = (first_cheb_roots.at(j)+second_cheb_roots.at(k))/2;
+                try{ root_vec = ChebyshevExpansion2D::newton_polish(first_cheb,second_cheb,root_vec); }
+                catch(const char* msg){ continue; }
+                if (std::abs(first_cheb.z_Clenshaw(root_vec(0),root_vec(1)))<1e-12 && std::abs(second_cheb.z_Clenshaw(root_vec(0),root_vec(1)))<1e-12){
+                  if (!is_in_domain || (root_vec(0)<xmax && root_vec(0)>xmin && root_vec(1)<ymax && root_vec(1)>ymin)){ roots.push_back(root_vec); }
                 }
               }
             }
