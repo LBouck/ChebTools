@@ -1,0 +1,6 @@
+\beamer@endinputifotherversion {3.36pt}
+\select@language {english}
+\beamer@sectionintoc {1}{The Problem}{3}{0}{1}
+\beamer@sectionintoc {2}{What are Chebyshev Polynomials and why use them?}{8}{0}{2}
+\beamer@sectionintoc {3}{The Algorithm}{11}{0}{3}
+\beamer@sectionintoc {4}{Current Ideas for Moving Beyond Rectangular Domains}{16}{0}{4}
