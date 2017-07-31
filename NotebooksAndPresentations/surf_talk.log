@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015) (preloaded format=pdflatex 2015.5.24)  30 JUL 2017 15:06
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015) (preloaded format=pdflatex 2015.5.24)  31 JUL 2017 00:50
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -1130,23 +1130,87 @@ Package: algorithmic 2009/08/24 v0.1 Document Style `algorithmic'
 \ALC@tlm=\skip69
 \algorithmicindent=\skip70
 )
-(./surf_talk.aux)
+(/usr/local/texlive/2015/texmf-dist/tex/latex/animate/animate.sty
+Package: animate 2015/03/11 PDF animations from files and inline graphics
+
+(/usr/local/texlive/2015/texmf-dist/tex/latex/oberdiek/ifdraft.sty
+Package: ifdraft 2008/08/11 v1.3 Detect class options draft and final (HO)
+)
+(/usr/local/texlive/2015/texmf-dist/tex/latex/tools/calc.sty
+Package: calc 2014/10/28 v4.3 Infix arithmetic (KKT,FJ)
+\calc@Acount=\count288
+\calc@Bcount=\count289
+\calc@Adimen=\dimen259
+\calc@Bdimen=\dimen260
+\calc@Askip=\skip71
+\calc@Bskip=\skip72
+LaTeX Info: Redefining \setlength on input line 80.
+LaTeX Info: Redefining \addtolength on input line 81.
+\calc@Ccount=\count290
+\calc@Cskip=\skip73
+)
+(/usr/local/texlive/2015/texmf-dist/tex/latex/animate/animfp.sty
+Package: animfp 2009/07/23 fixed point addition for animate.sty
+\afp@xs=\count291
+\afp@xia=\count292
+\afp@xib=\count293
+\afp@xfa=\count294
+\afp@xfb=\count295
+\afp@rega=\count296
+\afp@regb=\count297
+\afp@regs=\count298
+)
+(/usr/local/texlive/2015/texmf-dist/tex/context/base/supp-pdf.mkii
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count299
+\scratchdimen=\dimen261
+\scratchbox=\box77
+\nofMPsegments=\count300
+\nofMParguments=\count301
+\everyMPshowfont=\toks50
+\MPscratchCnt=\count302
+\MPscratchDim=\dimen262
+\MPnumerator=\count303
+\makeMPintoPDFobject=\count304
+\everyMPtoPDFconversion=\toks51
+)
+\@anim@box=\box78
+\@anim@measbox=\box79
+\@anim@tmpdima=\dimen263
+\@anim@tmpdimb=\dimen264
+\@anim@ocnum=\count305
+\@anim@num=\count306
+\@anim@curframe=\count307
+\@anim@curframe@zb=\count308
+\@anim@resizeflags=\count309
+\@anim@skipfram=\count310
+\@anim@mulframecnt=\count311
+\@anim@@tmlnfile=\read3
+\@anim@tmpcnt=\count312
+\c@@anim@ltxcnt=\count313
+\@anim@curlayer=\count314
+\@anim@lineno=\count315
+\@anim@curfield=\count316
+\@anim@begin=\toks52
+\@anim@end=\toks53
+\@anim@@resizeflags=\count317
+) (./surf_talk.aux)
 \openout1 = `surf_talk.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 80.
-LaTeX Font Info:    ... okay on input line 80.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 80.
-LaTeX Font Info:    ... okay on input line 80.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 80.
-LaTeX Font Info:    ... okay on input line 80.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 80.
-LaTeX Font Info:    ... okay on input line 80.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 80.
-LaTeX Font Info:    ... okay on input line 80.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 80.
-LaTeX Font Info:    ... okay on input line 80.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 80.
-LaTeX Font Info:    ... okay on input line 80.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 81.
+LaTeX Font Info:    ... okay on input line 81.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 81.
+LaTeX Font Info:    ... okay on input line 81.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 81.
+LaTeX Font Info:    ... okay on input line 81.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 81.
+LaTeX Font Info:    ... okay on input line 81.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 81.
+LaTeX Font Info:    ... okay on input line 81.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 81.
+LaTeX Font Info:    ... okay on input line 81.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 81.
+LaTeX Font Info:    ... okay on input line 81.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
@@ -1182,20 +1246,7 @@ LaTeX Font Info:    ... okay on input line 80.
 * \@reversemarginfalse
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
-(/usr/local/texlive/2015/texmf-dist/tex/context/base/supp-pdf.mkii
-[Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count288
-\scratchdimen=\dimen259
-\scratchbox=\box77
-\nofMPsegments=\count289
-\nofMParguments=\count290
-\everyMPshowfont=\toks50
-\MPscratchCnt=\count291
-\MPscratchDim=\dimen260
-\MPnumerator=\count292
-\makeMPintoPDFobject=\count293
-\everyMPtoPDFconversion=\toks51
-) (/usr/local/texlive/2015/texmf-dist/tex/latex/oberdiek/epstopdf-base.sty
+(/usr/local/texlive/2015/texmf-dist/tex/latex/oberdiek/epstopdf-base.sty
 Package: epstopdf-base 2010/02/09 v2.5 Base part for package epstopdf
 
 (/usr/local/texlive/2015/texmf-dist/tex/latex/oberdiek/grfext.sty
@@ -1211,8 +1262,8 @@ File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
 ABD: EveryShipout initializing macros
-\AtBeginShipoutBox=\box78
-Package hyperref Info: Link coloring OFF on input line 80.
+\AtBeginShipoutBox=\box80
+Package hyperref Info: Link coloring OFF on input line 81.
 
 (/usr/local/texlive/2015/texmf-dist/tex/latex/hyperref/nameref.sty
 Package: nameref 2012/10/27 v2.43 Cross-referencing by name of section
@@ -1220,68 +1271,68 @@ Package: nameref 2012/10/27 v2.43 Cross-referencing by name of section
 (/usr/local/texlive/2015/texmf-dist/tex/generic/oberdiek/gettitlestring.sty
 Package: gettitlestring 2010/12/03 v1.4 Cleanup title references (HO)
 )
-\c@section@level=\count294
+\c@section@level=\count318
 )
-LaTeX Info: Redefining \ref on input line 80.
-LaTeX Info: Redefining \pageref on input line 80.
-LaTeX Info: Redefining \nameref on input line 80.
+LaTeX Info: Redefining \ref on input line 81.
+LaTeX Info: Redefining \pageref on input line 81.
+LaTeX Info: Redefining \nameref on input line 81.
 
 (./surf_talk.out) (./surf_talk.out)
 \@outlinefile=\write5
 \openout5 = `surf_talk.out'.
 
 LaTeX Font Info:    Overwriting symbol font `operators' in version `normal'
-(Font)                  OT1/cmr/m/n --> OT1/cmss/m/n on input line 80.
+(Font)                  OT1/cmr/m/n --> OT1/cmss/m/n on input line 81.
 LaTeX Font Info:    Overwriting symbol font `operators' in version `bold'
-(Font)                  OT1/cmr/bx/n --> OT1/cmss/bx/n on input line 80.
+(Font)                  OT1/cmr/bx/n --> OT1/cmss/bx/n on input line 81.
 \symnumbers=\mathgroup7
 \sympureletters=\mathgroup8
 LaTeX Font Info:    Overwriting math alphabet `\mathrm' in version `normal'
-(Font)                  OT1/cmss/m/n --> OT1/cmr/m/n on input line 80.
-LaTeX Font Info:    Redeclaring math alphabet \mathbf on input line 80.
+(Font)                  OT1/cmss/m/n --> OT1/cmr/m/n on input line 81.
+LaTeX Font Info:    Redeclaring math alphabet \mathbf on input line 81.
 LaTeX Font Info:    Overwriting math alphabet `\mathbf' in version `normal'
-(Font)                  OT1/cmr/bx/n --> OT1/cmss/bx/n on input line 80.
+(Font)                  OT1/cmr/bx/n --> OT1/cmss/bx/n on input line 81.
 LaTeX Font Info:    Overwriting math alphabet `\mathbf' in version `bold'
-(Font)                  OT1/cmr/bx/n --> OT1/cmss/bx/n on input line 80.
-LaTeX Font Info:    Redeclaring math alphabet \mathsf on input line 80.
+(Font)                  OT1/cmr/bx/n --> OT1/cmss/bx/n on input line 81.
+LaTeX Font Info:    Redeclaring math alphabet \mathsf on input line 81.
 LaTeX Font Info:    Overwriting math alphabet `\mathsf' in version `normal'
-(Font)                  OT1/cmss/m/n --> OT1/cmss/m/n on input line 80.
+(Font)                  OT1/cmss/m/n --> OT1/cmss/m/n on input line 81.
 LaTeX Font Info:    Overwriting math alphabet `\mathsf' in version `bold'
-(Font)                  OT1/cmss/bx/n --> OT1/cmss/m/n on input line 80.
-LaTeX Font Info:    Redeclaring math alphabet \mathit on input line 80.
+(Font)                  OT1/cmss/bx/n --> OT1/cmss/m/n on input line 81.
+LaTeX Font Info:    Redeclaring math alphabet \mathit on input line 81.
 LaTeX Font Info:    Overwriting math alphabet `\mathit' in version `normal'
-(Font)                  OT1/cmr/m/it --> OT1/cmss/m/it on input line 80.
+(Font)                  OT1/cmr/m/it --> OT1/cmss/m/it on input line 81.
 LaTeX Font Info:    Overwriting math alphabet `\mathit' in version `bold'
-(Font)                  OT1/cmr/bx/it --> OT1/cmss/m/it on input line 80.
-LaTeX Font Info:    Redeclaring math alphabet \mathtt on input line 80.
+(Font)                  OT1/cmr/bx/it --> OT1/cmss/m/it on input line 81.
+LaTeX Font Info:    Redeclaring math alphabet \mathtt on input line 81.
 LaTeX Font Info:    Overwriting math alphabet `\mathtt' in version `normal'
-(Font)                  OT1/cmtt/m/n --> OT1/cmtt/m/n on input line 80.
+(Font)                  OT1/cmtt/m/n --> OT1/cmtt/m/n on input line 81.
 LaTeX Font Info:    Overwriting math alphabet `\mathtt' in version `bold'
-(Font)                  OT1/cmtt/m/n --> OT1/cmtt/m/n on input line 80.
+(Font)                  OT1/cmtt/m/n --> OT1/cmtt/m/n on input line 81.
 LaTeX Font Info:    Overwriting symbol font `numbers' in version `bold'
-(Font)                  OT1/cmss/m/n --> OT1/cmss/bx/n on input line 80.
+(Font)                  OT1/cmss/m/n --> OT1/cmss/bx/n on input line 81.
 LaTeX Font Info:    Overwriting symbol font `pureletters' in version `bold'
-(Font)                  OT1/cmss/m/it --> OT1/cmss/bx/it on input line 80.
+(Font)                  OT1/cmss/m/it --> OT1/cmss/bx/it on input line 81.
 LaTeX Font Info:    Overwriting math alphabet `\mathrm' in version `bold'
-(Font)                  OT1/cmss/bx/n --> OT1/cmr/bx/n on input line 80.
+(Font)                  OT1/cmss/bx/n --> OT1/cmr/bx/n on input line 81.
 LaTeX Font Info:    Overwriting math alphabet `\mathbf' in version `bold'
-(Font)                  OT1/cmss/bx/n --> OT1/cmss/bx/n on input line 80.
+(Font)                  OT1/cmss/bx/n --> OT1/cmss/bx/n on input line 81.
 LaTeX Font Info:    Overwriting math alphabet `\mathsf' in version `bold'
-(Font)                  OT1/cmss/m/n --> OT1/cmss/bx/n on input line 80.
+(Font)                  OT1/cmss/m/n --> OT1/cmss/bx/n on input line 81.
 LaTeX Font Info:    Overwriting math alphabet `\mathit' in version `bold'
-(Font)                  OT1/cmss/m/it --> OT1/cmss/bx/it on input line 80.
+(Font)                  OT1/cmss/m/it --> OT1/cmss/bx/it on input line 81.
 LaTeX Font Info:    Overwriting math alphabet `\mathtt' in version `bold'
-(Font)                  OT1/cmtt/m/n --> OT1/cmtt/bx/n on input line 80.
-LaTeX Font Info:    Redeclaring symbol font `pureletters' on input line 80.
+(Font)                  OT1/cmtt/m/n --> OT1/cmtt/bx/n on input line 81.
+LaTeX Font Info:    Redeclaring symbol font `pureletters' on input line 81.
 LaTeX Font Info:    Overwriting symbol font `pureletters' in version `normal'
 (Font)                  OT1/cmss/m/it --> OT1/mathkerncmss/m/sl on input line 8
-0.
+1.
 LaTeX Font Info:    Overwriting symbol font `pureletters' in version `bold'
 (Font)                  OT1/cmss/bx/it --> OT1/mathkerncmss/m/sl on input line 
-80.
+81.
 LaTeX Font Info:    Overwriting symbol font `pureletters' in version `bold'
 (Font)                  OT1/mathkerncmss/m/sl --> OT1/mathkerncmss/bx/sl on inp
-ut line 80.
+ut line 81.
 
 (/usr/local/texlive/2015/texmf-dist/tex/latex/beamer/translator/dicts/translato
 r-basic-dictionary/translator-basic-dictionary-English.dict
@@ -1307,12 +1358,12 @@ Dictionary: translator-numbers-dictionary, Language: English
 r-theorem-dictionary/translator-theorem-dictionary-English.dict
 Dictionary: translator-theorem-dictionary, Language: English 
 )
-LaTeX Info: Redefining \includegraphics on input line 80.
+LaTeX Info: Redefining \includegraphics on input line 81.
 
 (./surf_talk.nav)
 
 LaTeX Font Warning: Font shape `OT1/cmss/m/n' in size <4> not available
-(Font)              size <5> substituted on input line 97.
+(Font)              size <5> substituted on input line 98.
 
 [1
 
@@ -1322,38 +1373,46 @@ LaTeX Font Warning: Font shape `OT1/cmss/m/n' in size <4> not available
 ] (./surf_talk.toc) [3
 
 ]
-LaTeX Font Info:    Try loading font information for U+msa on input line 128.
+LaTeX Font Info:    Try loading font information for U+msa on input line 129.
 
 (/usr/local/texlive/2015/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 128.
+LaTeX Font Info:    Try loading font information for U+msb on input line 129.
 
 (/usr/local/texlive/2015/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-LaTeX Font Info:    Try loading font information for U+lasy on input line 128.
+LaTeX Font Info:    Try loading font information for U+lasy on input line 129.
 
 (/usr/local/texlive/2015/texmf-dist/tex/latex/base/ulasy.fd
 File: ulasy.fd 1998/08/17 v2.2e LaTeX symbol font definitions
 )
 LaTeX Font Info:    Try loading font information for OT1+mathkerncmss on input 
-line 128.
+line 129.
 
 (/usr/local/texlive/2015/texmf-dist/tex/latex/sansmathaccent/ot1mathkerncmss.fd
 File: ot1mathkerncmss.fd 2013/03/27 Fontinst v1.933 font definitions for OT1/ma
 thkerncmss.
 ) [4
 
-] <level_sets1.pdf, id=86, 1156.32pt x 578.16pt>
+] <surface_plots1.pdf, id=79, 1156.32pt x 578.16pt>
+File: surface_plots1.pdf Graphic file (type pdf)
+
+<use surface_plots1.pdf>
+Package pdftex.def Info: surface_plots1.pdf used on input line 138.
+(pdftex.def)             Requested size: 342.2953pt x 184.7856pt.
+ [5
+
+ <./surface_plots1.pdf>]
+<level_sets1.pdf, id=114, 1156.32pt x 578.16pt>
 File: level_sets1.pdf Graphic file (type pdf)
  <use level_sets1.pdf>
 Package pdftex.def Info: level_sets1.pdf used on input line 147.
 (pdftex.def)             Requested size: 308.06367pt x 154.03122pt.
+ [6
 
-[5
-
- <./level_sets1.pdf>] <newton_basins.pdf, id=123, 925.05597pt x 635.97598pt>
+ <./level_sets1.pdf>] <newton_basins.pdf, id=141, 925.05597pt x 635.97598pt>
 File: newton_basins.pdf Graphic file (type pdf)
 
 <use newton_basins.pdf>
@@ -1363,68 +1422,80 @@ Package pdftex.def Info: newton_basins.pdf used on input line 158.
 Overfull \vbox (13.48737pt too high) detected at line 158
  []
 
-[6
+[7
 
- <./newton_basins.pdf>] [7
+ <./newton_basins.pdf>] [8
 
-] (./surf_talk.toc) [8
+] (./surf_talk.toc) [9
 
 ]
-<cheb_poly_plot.pdf, id=165, 925.05597pt x 635.97598pt>
+<cheb_poly_plot.pdf, id=183, 925.05597pt x 635.97598pt>
 File: cheb_poly_plot.pdf Graphic file (type pdf)
 
 <use cheb_poly_plot.pdf>
 Package pdftex.def Info: cheb_poly_plot.pdf used on input line 197.
 (pdftex.def)             Requested size: 191.68452pt x 131.78302pt.
- [9
+ [10
 
  <./cheb_poly_plot.pdf>]
-<runge_plot.pdf, id=186, 1084.05pt x 505.89pt>
+<cheb_convergence_plots.pdf, id=203, 650.43pt x 433.62pt>
+File: cheb_convergence_plots.pdf Graphic file (type pdf)
+
+<use cheb_convergence_plots.pdf>
+Package pdftex.def Info: cheb_convergence_plots.pdf used on input line 220.
+(pdftex.def)             Requested size: 222.48985pt x 148.32207pt.
+
+Overfull \vbox (6.38068pt too high) detected at line 220
+ []
+
+[11
+
+ <./cheb_convergence_plots.pdf>]
+<runge_plot.pdf, id=222, 1084.05pt x 505.89pt>
 File: runge_plot.pdf Graphic file (type pdf)
  <use runge_plot.pdf>
 Package pdftex.def Info: runge_plot.pdf used on input line 234.
 (pdftex.def)             Requested size: 342.2953pt x 159.73442pt.
- [10
+ [12
 
- <./runge_plot.pdf>] (./surf_talk.toc) [11
+ <./runge_plot.pdf>] (./surf_talk.toc) [13
 
-]
-<contours_pivots.pdf, id=214, 1156.32pt x 578.16pt>
-File: contours_pivots.pdf Graphic file (type pdf)
- <use contours_pivots.pdf>
-Package pdftex.def Info: contours_pivots.pdf used on input line 286.
-(pdftex.def)             Requested size: 308.06367pt x 154.0321pt.
-
-Overfull \vbox (2.23514pt too high) detected at line 286
+] <./pivots2_animation-0.pdf> <./pivots2_animation-1.pdf> <./pivots2_animation-
+2.pdf> <./pivots2_animation-3.pdf> <./pivots2_animation-4.pdf> <./pivots2_anima
+tion-5.pdf> <./pivots2_animation-6.pdf> <./pivots2_animation-7.pdf> <./pivots2_
+animation-8.pdf> <./pivots2_animation-9.pdf> <./pivots2_animation-10.pdf> <./pi
+vots2_animation-11.pdf> <./pivots2_animation-12.pdf> <./pivots2_animation-13.pd
+f> <./pivots2_animation-14.pdf> <./pivots2_animation-15.pdf> <./pivots2_animati
+on-16.pdf> <./pivots2_animation-17.pdf> <./pivots2_animation-18.pdf> <./pivots2
+_animation-19.pdf> <./pivots2_animation-20.pdf> <./pivots2_animation-21.pdf> <.
+/pivots2_animation-22.pdf> <./pivots2_animation-23.pdf> <./pivots2_animation-24
+.pdf> <./pivots2_animation-25.pdf> <./pivots2_animation-26.pdf> <./pivots2_anim
+ation-27.pdf> <./pivots2_animation-28.pdf>
+Overfull \vbox (2.7575pt too high) detected at line 291
  []
 
-[12
+[14
 
- <./contours_pivots.pdf>]
-<pointwise_error_surface.pdf, id=240, 922.03995pt x 457.99104pt>
+] <pointwise_error_surface.pdf, id=930, 1156.32pt x 578.16pt>
 File: pointwise_error_surface.pdf Graphic file (type pdf)
 
 <use pointwise_error_surface.pdf>
-Package pdftex.def Info: pointwise_error_surface.pdf used on input line 300.
-(pdftex.def)             Requested size: 290.9531pt x 144.51952pt.
+Package pdftex.def Info: pointwise_error_surface.pdf used on input line 317.
+(pdftex.def)             Requested size: 290.9531pt x 145.47478pt.
+ [15
 
-Overfull \vbox (7.88272pt too high) detected at line 300
- []
-
-[13
-
- <./pointwise_error_surface.pdf>] [14
-
-] [15
-
-] (./surf_talk.toc) [16
-
-] [17
+ <./pointwise_error_surface.pdf>] [16
 
 ]
-[18
+[17
 
-] [19
+] [18
+
+]
+Package atenddvi Info: Last page = 19.
+ [19
+
+] [20
 
 ]
 \tf@nav=\write6
@@ -1436,17 +1507,17 @@ Overfull \vbox (7.88272pt too high) detected at line 300
 \tf@snm=\write8
 \openout8 = `surf_talk.snm'.
 
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 524.
-Package atveryend Info: Executing hook `AfterLastShipout' on input line 524.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 541.
+Package atveryend Info: Executing hook `AfterLastShipout' on input line 541.
  (./surf_talk.aux
 
-Package atenddvi Warning: Rerun LaTeX, last page not yet found.
+Package atenddvi Warning: Rerun LaTeX, last page has changed.
 
 )
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 524.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 524.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 541.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 541.
 Package rerunfilecheck Info: File `surf_talk.out' has not changed.
-(rerunfilecheck)             Checksum: 571DDB82F07239B4D33C301778AC55B5;263.
+(rerunfilecheck)             Checksum: 5FCCD103AF1508B44241B119F748EBD6;177.
 
 
 LaTeX Font Warning: Size substitutions with differences
@@ -1455,22 +1526,20 @@ LaTeX Font Warning: Size substitutions with differences
 
 LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 524.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 541.
  ) 
 Here is how much of TeX's memory you used:
- 28685 strings out of 493089
- 580417 string characters out of 6134842
- 628898 words of memory out of 5000000
- 31548 multiletter control sequences out of 15000+600000
+ 29470 strings out of 493089
+ 593267 string characters out of 6134842
+ 655859 words of memory out of 5000000
+ 32288 multiletter control sequences out of 15000+600000
  15121 words of font info for 59 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 58i,16n,63p,10384b,707s stack positions out of 5000i,500n,10000p,200000b,80000s
-pdfTeX warning (dest): name{Navigation20} has been referenced but does not ex
-ist, replaced by a fixed one
-
-</usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><
-/usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></
-usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb></u
+ 58i,16n,63p,10384b,714s stack positions out of 5000i,500n,10000p,200000b,80000s
+</usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb
+></usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb>
+</usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb><
+/usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></u
 sr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmss10.pfb></us
 r/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmss12.pfb></usr
 /local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmss8.pfb></usr/l
@@ -1481,10 +1550,10 @@ ocal/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/lo
 cal/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/loca
 l/texlive/2015/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.pfb></usr/local/texli
 ve/2015/texmf-dist/fonts/type1/urw/helvetic/uhvro8a.pfb>
-Output written on surf_talk.pdf (19 pages, 925997 bytes).
+Output written on surf_talk.pdf (20 pages, 1625959 bytes).
 PDF statistics:
- 353 PDF objects out of 1000 (max. 8388607)
- 285 compressed objects within 3 object streams
+ 1037 PDF objects out of 1200 (max. 8388607)
+ 860 compressed objects within 9 object streams
  44 named destinations out of 1000 (max. 500000)
- 151 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 709 words of extra memory for PDF output out of 10000 (max. 10000000)
 
