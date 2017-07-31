@@ -64,6 +64,8 @@ void init_ChebTools(py::module &m){
         .def("chebExpansion_aty", &ChebyshevExpansion2D::chebExpansion_aty)
         .def("pivots_from_factory", &ChebyshevExpansion2D::pivots_from_factory)
         .def("generate_Chebyshev_expansion2d", &ChebyshevExpansion2D::factory)
+        .def("construct_MatrixPolynomial_inx", &ChebyshevExpansion2D::construct_MatrixPolynomial_inx)
+        .def("construct_MatrixPolynomial_iny", &ChebyshevExpansion2D::construct_MatrixPolynomial_iny)
         //.def("common_roots",(std::vector<Eigen::Vector2d>(ChebyshevExpansion2D::*)(const ChebyshevExpansion2D &, const ChebyshevExpansion2D &, bool)), &ChebyshevExpansion2D::common_roots)
         //.def("common_roots",(std::vector<Eigen::Vector2d>(ChebyshevExpansion2D::*)(int, int, std::function<double(double,double)>, std::function<double(double,double)>, double, double, double, double, bool)), &ChebyshevExpansion2D::common_roots)
         ;
