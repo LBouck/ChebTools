@@ -113,6 +113,7 @@ Collaborator: Ian H. Bell (NIST Division 647)
 \end{frame}
 \frame{
 \frametitle{The Problem}
+\begin{block}{Global 2-D Rootfinding Problem}
 We want to find all solutions to 
 $$\begin{pmatrix} f(x,y) \\
 g(x,y)
@@ -121,11 +122,16 @@ g(x,y)
 0
 \end{pmatrix}$$
 in a given bounded domain $\Omega$
+\end{block}
+
+\begin{block}{The Big Picture: ChebTools}
 \begin{itemize}
-\item This is a global rootfinding problem: we want all solutions inside $\Omega$
-\item rootfinding is has applications in many fields
-\item An application for NIST would be in making flash calculations to determine properties of a fluid from its equation of state
+\item ChebTools is a C++ library for working with Chebyshev expansions
+\item Inspired by the Matlab library Chebfun
+\item Solving this problem will be a significant feature for ChebTools
+\item With a higher level Python interface, ChebTools could be useful for a wide range of users
 \end{itemize}
+\end{block}
 }
 \frame{
 \frametitle{Example}
@@ -137,7 +143,7 @@ $f(x,y)=x^2-y^2$ and $g(x,y)=\sin\left(\pi\sqrt{x^2+y^2}\right)$ with the square
 \end{center}
 }
 \frame{
-\frametitle{Example }
+\frametitle{Example (cont.)}
 Another view: We are finding where $f$ and $g$'s zero level sets intersect inside $\Omega$
 \begin{center}
 \begin{figure}
@@ -183,7 +189,7 @@ To develop a truly global rootfinding method
 $$T_n(x)=\cos\left(n\arccos(x)\right),\, x\in[-1,1]$$
 \end{block}
 \begin{minipage}[t]{.4\linewidth}
-They are orthogonal under a weighted inner product:
+Orthogonal under a weighted inner product:
 $$\int_{-1}^{1} T_n(x)T_k(x)w(x)\, dx=0$$ when $n\neq k$ 
 \\ and $w(x)=\frac{1}{\sqrt{1-x^2}}$
 \end{minipage}%}%
@@ -220,7 +226,7 @@ $$\int_{-1}^{1} T_n(x)T_k(x)w(x)\, dx=0$$ when $n\neq k$
 }
 
 \frame{
-\frametitle{Chebyshev polynomials are accurate and numerically stable}
+\frametitle{Chebyshev polynomials are numerically stable}
 \begin{itemize}
 \item Typical interpolation is susceptible to the {\bf Runge phenomenon}
 \item Chebyshev interpolation minimizes this effect.
@@ -234,6 +240,7 @@ $$\int_{-1}^{1} T_n(x)T_k(x)w(x)\, dx=0$$ when $n\neq k$
 }
 
 \section{The Algorithm}
+
 \begin{frame}
 \tableofcontents[currentsection]
 \end{frame}
@@ -311,7 +318,7 @@ $$\int_{-1}^{1} T_n(x)T_k(x)w(x)\, dx=0$$ when $n\neq k$
 \end{itemize}
 \begin{center}
 \begin{figure}
-\includegraphics[width=.85\textwidth]{pointwise_error_surface.pdf}
+\includegraphics[height=.7\textheight]{pointwise_error_surface.pdf}
 \end{figure}
 \end{center}
 }
@@ -356,21 +363,18 @@ $$\int_{-1}^{1} T_n(x)T_k(x)w(x)\, dx=0$$ when $n\neq k$
 %}
 \frame{
 \frametitle{B\'{e}zout Matrix Polynomials}
+\begin{block}{We create a matrix polynomial $B(x)$ from our Chebyshevs}
 \begin{itemize}
-\item We can create B\'{e}zout matrices at each Chebyshev node along the $x$ or $y$ axis
-\item Interpolating the B\'{e}zout matrices gives us a matrix polynomial $B(x)$
-\end{itemize}
-
-The matrix polynomial can be expressed as
-$$B(x) = \sum_{k=0}^MB_{k}T_{k}(x)$$
-where $B_k$ are $N\times N$ matrices. 
-
-\begin{itemize}
+\item $B(x)$ is a matrix with polynomial entries
 \item $\det\left(B(x)\right)=0$ $\iff$ common roots along the specific $x$ value
 \item Solving $\det\left(B(x)\right)=0$ is a {\bf matrix polynomial eigenvalue problem}
-%\item Can be solved by linearizing and solving generalized eigenvalue problem of size $MN\times MN$
-\item The most computational intensive part of the algorithm
 \end{itemize}
+\end{block}
+\begin{center}
+\begin{figure}
+\includegraphics[height=.55\textheight]{bezout_det_plot.pdf}
+\end{figure}
+\end{center}
 }
 
 %\frame{
@@ -393,22 +397,18 @@ where $B_k$ are $N\times N$ matrices.
 %}
 
 \frame{
-\frametitle{1-D rootfinding}
+\frametitle{1-D Rootfinding and Local Refinement}
 \begin{itemize}
-\item We now have the possible $x$ (or $y$) values for where there are common roots
+\item We now have the possible $x$ values for where there are common roots
 \item Employ a well known 1-D rootfinding method again using Chebyshev Polynomials
-\end{itemize}
-We do the following:
-\begin{itemize}
-\item Find the 1-D Chebyshev polynomials $p_f(y),p_g(y)$ at the specific $x$ values
-\item Utilize 1-D Chebyshev rootfinding techniques
-%\item Find the roots of $p_f(y)+p_g(y)$ using a companion matrix method
-%	\begin{itemize}
-%	\item We do this to account for the degenerate case of $p_g(y)$ or $p_f(y)\equiv 0$
-%	\item If $p_g(y)=-p_f(y)$ then we find the roots of $p_f(y),p_g(y)$ individually
-%	\end{itemize}
+\item {\bf Issue:} Poor conditioning of matrix polynomial problem $\implies$ need for local refinement
 \item Polish the roots with Newton's method
 \end{itemize}
+}
+
+\frame{
+\frametitle{Results:}
+
 }
 
 %\frame{
@@ -504,18 +504,18 @@ We do the following:
 \frametitle{Conclusions and Future Work}
 Key Contributions:
 \begin{itemize}
-\item Replicated Alex Townsend's algorithm in chebfun2 with some modifications in C++
+\item Made significant progress in replicating the 2-D rootfinding algorithm in chebfun2 with some modifications in C++
 \item Developed ideas and have a strategy for extending the algorithm to non-rectangular domains
 \end{itemize}
 
 Future Work:
 \begin{itemize}
-\item Introduce GPU/parallel computing to the rootfinding process
 \item Further develop ideas on non-rectangular domains and subdivision strategies
+\item Introduce GPU/parallel computing to the rootfinding process
 \end{itemize}
 
 
-Other ideas while at NIST:
+Other Contributions while at NIST:
 \begin{itemize}
 \item Idea for using Gram-Schmidt process to create orthogonal terms for developing equations of state
 \end{itemize}
