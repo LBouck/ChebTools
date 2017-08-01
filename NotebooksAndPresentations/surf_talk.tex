@@ -124,12 +124,12 @@ g(x,y)
 in a given bounded domain $\Omega$
 \end{block}
 
-\begin{block}{The Big Picture: ChebTools}
+\begin{block}{The Big Picture: {\tt chebtools}}
 \begin{itemize}
-\item ChebTools is a C++ library for working with Chebyshev expansions
-\item Inspired by the Matlab library Chebfun
-\item Solving this problem will be a significant feature for ChebTools
-\item With a higher level Python interface, ChebTools could be useful for a wide range of users
+\item {\tt chebtools} is a C++ library for working with Chebyshev expansions developed by Ian Bell
+\item Inspired by the Matlab library {\tt chebfun}
+\item Solving this problem will be a significant feature for  {\tt chebtools}
+\item With a higher level Python interface,  {\tt chebtools} could be useful for a wide range of users
 \end{itemize}
 \end{block}
 }
@@ -158,7 +158,7 @@ There are actually infinitely many roots outside $\Omega$ in our example. Local 
 \begin{center}
 \begin{figure}
 \includegraphics[width=.7\textwidth]{newton_basins.pdf}
-\caption{Note that initial guesses in white areas converged to roots outside our domain and the basin of attraction for $(0,0)$ is relatively small}
+\caption{Initial guesses in white areas did not converge to roots in $\Omega$}
 \end{figure}
 \end{center}
 }
@@ -188,16 +188,20 @@ To develop a truly global rootfinding method
 \begin{block}{Chebyshev polynomials}
 $$T_n(x)=\cos\left(n\arccos(x)\right),\, x\in[-1,1]$$
 \end{block}
-\begin{minipage}[t]{.4\linewidth}
+\begin{minipage}{.4\linewidth}
 Orthogonal under a weighted inner product:
 $$\int_{-1}^{1} T_n(x)T_k(x)w(x)\, dx=0$$ when $n\neq k$ 
 \\ and $w(x)=\frac{1}{\sqrt{1-x^2}}$
+\\
+
+Numerically stable for interpolating functions
 \end{minipage}%}%
 \hfill%
 %\fbox{%
-\begin{minipage}[t]{.56\linewidth}
+\begin{minipage}{.56\linewidth}
 \begin{figure}
-\includegraphics[width=\linewidth]{cheb_poly_plot.pdf}
+\caption{First 5 Chebyshev Polynomials}
+\includegraphics[height=.5\textheight]{cheb_poly_plot.pdf}
 \end{figure}
 \end{minipage}%}
 }
@@ -212,29 +216,30 @@ $$\int_{-1}^{1} T_n(x)T_k(x)w(x)\, dx=0$$ when $n\neq k$
 %
 %}
 
-\frame{
-\frametitle{Chebyshev polynomials provide accurate approximations}
-\begin{itemize}
-\item Lipschitz continuity $\implies$ uniform convergence of Chebyshev interpolations 
-\item $\nu-1$ continuous derivatives and a $\nu$th derivative of bounded variation $\implies$ Chebyshev interpolation converges like $\mathcal{O}(n^{-\nu})$
-\item Analytic function $\implies$ geometric convergence
-\end{itemize}
-\centering
-\begin{figure}
-\includegraphics[width=.65\textwidth]{cheb_convergence_plots.pdf}
-\end{figure}
-}
+%\frame{
+%\frametitle{Chebyshev polynomials provide accurate approximations}
+%\begin{itemize}
+%\item Lipschitz continuity $\implies$ uniform convergence of Chebyshev interpolations 
+%\item $\nu-1$ continuous derivatives and a $\nu$th derivative of bounded variation $\implies$ Chebyshev interpolation converges like $\mathcal{O}(n^{-\nu})$
+%\item Analytic function $\implies$ geometric convergence
+%\end{itemize}
+%\centering
+%\begin{figure}
+%\includegraphics[width=.65\textwidth]{cheb_convergence_plots.pdf}
+%\end{figure}
+%}
 
 \frame{
 \frametitle{Chebyshev polynomials are numerically stable}
 \begin{itemize}
-\item Typical interpolation is susceptible to the {\bf Runge phenomenon}
+\item Interpolation on evenly spaced points is susceptible to the {\bf Runge phenomenon}
 \item Chebyshev interpolation minimizes this effect.
 %\item Our application area deals with Gaussians often, so minimizing the Runge phenomenon is useful
 \end{itemize}
 \begin{center}
 \begin{figure}
-\includegraphics[width=1\textwidth]{runge_plot.pdf}
+\includegraphics[width=.9\textwidth]{runge_plot.pdf}
+\caption{Interpolating $\frac{1}{1+25x^2}$}
 \end{figure}
 \end{center}
 }
@@ -318,7 +323,7 @@ $$\int_{-1}^{1} T_n(x)T_k(x)w(x)\, dx=0$$ when $n\neq k$
 \end{itemize}
 \begin{center}
 \begin{figure}
-\includegraphics[height=.7\textheight]{pointwise_error_surface.pdf}
+\includegraphics[trim = 3cm 0cm 0cm 0.75cm, width=\textwidth]{pointwise_error_surface.pdf}
 \end{figure}
 \end{center}
 }
@@ -372,7 +377,7 @@ $$\int_{-1}^{1} T_n(x)T_k(x)w(x)\, dx=0$$ when $n\neq k$
 \end{block}
 \begin{center}
 \begin{figure}
-\includegraphics[height=.55\textheight]{bezout_det_plot.pdf}
+\includegraphics[height=.57\textheight]{bezout_det_plot.pdf}
 \end{figure}
 \end{center}
 }
@@ -401,8 +406,8 @@ $$\int_{-1}^{1} T_n(x)T_k(x)w(x)\, dx=0$$ when $n\neq k$
 \begin{itemize}
 \item We now have the possible $x$ values for where there are common roots
 \item Employ a well known 1-D rootfinding method again using Chebyshev Polynomials
-\item {\bf Issue:} Poor conditioning of matrix polynomial problem $\implies$ need for local refinement
-\item Polish the roots with Newton's method
+\item {\bf Problem:} Poor conditioning of matrix polynomial problem $\implies$ need for local refinement of roots
+\item Refine the roots with Newton's method
 \end{itemize}
 }
 
@@ -504,7 +509,7 @@ $$\int_{-1}^{1} T_n(x)T_k(x)w(x)\, dx=0$$ when $n\neq k$
 \frametitle{Conclusions and Future Work}
 Key Contributions:
 \begin{itemize}
-\item Made significant progress in replicating the 2-D rootfinding algorithm in chebfun2 with some modifications in C++
+\item Made significant progress in replicating the 2-D rootfinding algorithm in {\tt chebfun} with some modifications in C++11, which will be fully open source
 \item Developed ideas and have a strategy for extending the algorithm to non-rectangular domains
 \end{itemize}
 
