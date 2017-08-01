@@ -403,12 +403,31 @@ Numerically stable for interpolating functions
 
 \frame{
 \frametitle{1-D Rootfinding and Local Refinement}
+\noindent
+\begin{minipage}{.4\linewidth}
+\begin{block}{1-D Rootfinding}
 \begin{itemize}
 \item We now have the possible $x$ values for where there are common roots
-\item Employ a well known 1-D rootfinding method again using Chebyshev Polynomials
-\item {\bf Problem:} Poor conditioning of matrix polynomial problem $\implies$ need for local refinement of roots
+\item We employ a well known 1-D rootfinding method again using Chebyshev Polynomials
+\end{itemize}
+\end{block}
+\end{minipage}%
+\hspace{.01\linewidth}
+\noindent
+\begin{minipage}{.53\linewidth}
+\begin{center}
+\begin{figure}
+\includegraphics[width=\linewidth]{cheb1d_roots.pdf}
+\end{figure}
+\end{center}
+\end{minipage}%
+\begin{block}{Problem: Poor conditioning of matrix polynomial problem}
+\begin{itemize}
+\item  Need for local refinement of roots
 \item Refine the roots with Newton's method
 \end{itemize}
+\end{block}
+
 }
 
 \frame{
