@@ -835,11 +835,16 @@ TEST_CASE("Roots Test"){
     ChebTools::ChebyshevExpansion2D cheb2 = ChebTools::ChebyshevExpansion2D(ys,xs,-1,1,-1,1);
     // std::cout<<ChebTools::ChebyshevExpansion2D::bezout_atx(cheb1,cheb2,.0048)<<std::endl;
     // std::cout<<"Root test 1: Determinant at 0: "<<ChebTools::ChebyshevExpansion2D::bezout_atx(cheb1, cheb2,0).determinant()<<std::endl;
+    std::clock_t begin = std::clock();
     std::vector<Eigen::Vector2d> roots = ChebTools::ChebyshevExpansion2D::common_roots(cheb1,cheb2, true);
+    std::clock_t end = std::clock();
+    double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+    std::cout<<"Time elapsed: "<<elapsed_secs<<std::endl;
     int length = roots.size();
     CAPTURE(length);
     CHECK(length==1);
     error = roots.at(0).norm();
+    std::cout<<"Error: "<<error<<std::endl;
     CAPTURE(error);
     CHECK(error<tol);
   }
@@ -872,19 +877,31 @@ TEST_CASE("Roots Test"){
   SECTION("Root test 3"){
     double tol = 2e-14;
     double error = 0;
-    // Eigen::Vector2d true_answer(.5,.9);
-    // std::cout<<"Root test 3 part 1: "<<std::endl;
-    // std::vector<Eigen::Vector2d> roots = ChebTools::ChebyshevExpansion2D::common_roots(16,16,f,g,0,1,0,1,true);
-    // int length = roots.size();
-    // CAPTURE(length);
-    // CHECK(length==1);
+    Eigen::Vector2d true_answer(.5,.9);
+    std::cout<<"Root test 3 part 1: "<<std::endl;
+    std::clock_t begin = std::clock();
+    std::vector<Eigen::Vector2d> roots = ChebTools::ChebyshevExpansion2D::common_roots(16,16,f,g,0,1,0,1,true);
+    std::clock_t end = std::clock();
+    double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+    std::cout<<"Time elapsed: "<<elapsed_secs<<std::endl;
+    int length = roots.size();
+    CAPTURE(length);
+    CHECK(length==1);
+    error = (roots.at(0)-true_answer).norm();
+    std::cout<<"Error: "<<error<<std::endl;
     std::cout<<"Root test 3 part 2: "<<std::endl;
+    begin = std::clock();
     std::vector<Eigen::Vector2d> roots2 = ChebTools::ChebyshevExpansion2D::common_roots(16,16,g2,f2,0,1,0,1,true);
+    end = std::clock();
+    elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+    std::cout<<"Time elapsed: "<<elapsed_secs<<std::endl;
     std::cout<<roots2.size()<<std::endl;
-    for (int i=0;i<roots2.size();i++){ std::cout<<roots2.at(i)<<std::endl; }
-
-    // error = (roots.at(0)-true_answer).norm();
-    error = 0;
+    for (int i=0;i<roots2.size();i++){
+      std::cout<<roots2.at(i)<<std::endl;
+    }
+    Eigen::Vector2d true_answer1(.6,.9);
+    Eigen::Vector2d true_answer2(.6,.1);
+    std::cout<<"Error: "<<std::max((roots2.at(0)-true_answer1).norm(),(roots2.at(1)-true_answer2).norm())<<std::endl;
     CAPTURE(error);
     CHECK(error<tol);
 

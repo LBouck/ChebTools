@@ -142,18 +142,18 @@ $f(x,y)=x^2-y^2$ and $g(x,y)=\sin\left(\pi\sqrt{x^2+y^2}\right)$ with the square
 \end{figure}
 \end{center}
 }
-\frame{
-\frametitle{Example (cont.)}
-Another view: We are finding where $f$ and $g$'s zero level sets intersect inside $\Omega$
-\begin{center}
-\begin{figure}
-\includegraphics[trim=3cm 1cm 1cm 1cm,width=.9\textwidth]{level_sets1.pdf}
-\end{figure}
-\end{center}
-}
+%\frame{
+%\frametitle{Example (cont.)}
+%Another view: We are finding where $f$ and $g$'s zero level sets intersect inside %$\Omega$
+%\begin{center}
+%\begin{figure}
+%\includegraphics[trim=3cm 1cm 1cm 1cm,width=.9\textwidth]{level_sets1.pdf}
+%\end{figure}
+%\end{center}
+%}
 
 \frame{
-\frametitle{Local Methods May Not Be Good for Global rootfinding}
+\frametitle{Local Methods May Not Be Good For Global Rootfinding}
 There are actually infinitely many roots outside $\Omega$ in our example. Local methods may converge to roots outside the domain of interest.
 \begin{center}
 \begin{figure}
@@ -164,7 +164,7 @@ There are actually infinitely many roots outside $\Omega$ in our example. Local 
 }
 
 \frame{
-\frametitle{A Need for a Global Method}
+\frametitle{A Need For a Global Method}
 Our example illustrates a few lessons
 \begin{itemize}
 \item Many iterative and local methods like Newton's method can only guarantee convergence to a root if the initial guess is sufficiently close
@@ -178,7 +178,7 @@ To develop a truly global rootfinding method
 \end{block}
 }
 
-\section{What are Chebyshev Polynomials and why use them?}
+\section{What Are Chebyshev Polynomials and Why Use Them?}
 \begin{frame}
 \tableofcontents[currentsection]
 \end{frame}
@@ -229,20 +229,20 @@ Numerically stable for interpolating functions
 %\end{figure}
 %}
 
-\frame{
-\frametitle{Chebyshev polynomials are numerically stable}
-\begin{itemize}
-\item Interpolation on evenly spaced points is susceptible to the {\bf Runge phenomenon}
-\item Chebyshev interpolation minimizes this effect.
+%\frame{
+%\frametitle{Chebyshev polynomials are numerically stable}
+%\begin{itemize}
+%\item Interpolation on evenly spaced points is susceptible to the {\bf Runge phenomenon}
+%\item Chebyshev interpolation minimizes this effect.
 %\item Our application area deals with Gaussians often, so minimizing the Runge phenomenon is useful
-\end{itemize}
-\begin{center}
-\begin{figure}
-\includegraphics[width=.9\textwidth]{runge_plot.pdf}
-\caption{Interpolating $\frac{1}{1+25x^2}$}
-\end{figure}
-\end{center}
-}
+%\end{itemize}
+%\begin{center}
+%\begin{figure}
+%\includegraphics[width=.9\textwidth]{runge_plot.pdf}
+%\caption{Interpolating $\frac{1}{1+25x^2}$}
+%\end{figure}
+%\end{center}
+%}
 
 \section{The Algorithm}
 
@@ -315,18 +315,18 @@ Numerically stable for interpolating functions
 %\end{center}
 %}
 
-\frame{
-\frametitle{Our Algorithm Can Provide Accurate Approximations}
-\begin{itemize}
-\item Almost machine precision accuracy with $x^2-y^2$
-\item Struggles with  $\sin\left(\pi\sqrt{x^2+y^2}\right)$ due to the lack of differentiability at $(0,0)$
-\end{itemize}
-\begin{center}
-\begin{figure}
-\includegraphics[trim = 3cm 0cm 0cm 0.75cm, width=\textwidth]{pointwise_error_surface.pdf}
-\end{figure}
-\end{center}
-}
+%\frame{
+%\frametitle{Our Algorithm Can Provide Accurate Approximations}
+%\begin{itemize}
+%\item Almost machine precision accuracy with $x^2-y^2$
+%\item Struggles with  $\sin\left(\pi\sqrt{x^2+y^2}\right)$ due to the lack of %differentiability at $(0,0)$
+%\end{itemize}
+%\begin{center}
+%\begin{figure}
+%\includegraphics[trim = 3cm 0cm 0cm 0.75cm, width=\textwidth]%{pointwise_error_surface.pdf}
+%\end{figure}
+%\end{center}
+%}
 
 %\frame{
 %\frametitle{Comparison to chebfun2}
@@ -429,11 +429,53 @@ Numerically stable for interpolating functions
 \end{block}
 
 }
-
+\section{Results}
+\frame{
+\tableofcontents[currentsection]
+}
 \frame{
 \frametitle{Results:}
 
+
+\begin{tabular}{ |c|c|c|c|c|  }
+ \hline
+ & \multicolumn{2}{|c|}{{\tt chebtools}}&\multicolumn{2}{|c|}{{\tt chebfun}} \\
+ \hline
+ Functions							& Error 	& Time (s)	& Error	& Time (s)\\
+ \hline
+ $F_1(x,y),F_2(x,y)$ & $6.97\times10^{-32}$&0.004268 &$7.7\times10^{-16}$ &0.522 \\
+ \hline
+ $G_1(x,y),G_2(x,y)$ & $6.21\times10^{-16}$ & 214.059 &$2.92\times10^{-10}$ &0.294 \\
+ \hline
+ $H_1(x,y),H_2(x,y)$ &$3.24\times10^{-16}$ & 195.903 &$2.77\times10^{-11}$ &0.296 \\
+ \hline
+\end{tabular}
+\begin{align*}
+F_1(x,y) &= T_3(x)-13T_1(x)\\
+ F_2(x,y) &= T_3(y)-13T_1(y)\\
+G_1(x,y) &= \cos(\pi x)(y-2)\\
+ G_2(x,y) &= (y-.9)(x-2)\\
+H_1(x,y) &= \cos\left(\pi x-\frac{\pi}{10}\right)(y-2)\\
+H_2(x,y) &= (y-.1)(y-.9)(x-2)
+\end{align*}
 }
+\frame{
+\frametitle{Back to Our First Example}
+\begin{block}{{\tt chebfun} also struggled}
+\begin{itemize}
+\item Found 4 of the roots with an error of $5.55\times10^-16$
+\item Took 208.8 seconds
+\item Missed the root at $(0,0)$
+\end{itemize}
+\end{block}
+\begin{center}
+\begin{figure}
+\includegraphics[trim=3cm 0cm 0cm 0cm,width=.8\textwidth]{surface_plots1.pdf}
+\end{figure}
+\end{center}
+
+}
+
 
 %\frame{
 %\frametitle{Similarities and Differences with chefun2}
@@ -551,7 +593,7 @@ Other Contributions while at NIST:
 \begin{itemize}
 \item Dr.\ Ian Bell for the mentorship and guidance
 \item Dr.\ Bradley Alpert for the lively discussions and brainstorming
-\item The SURF program
+\item The Summer Undergraduate Research Fellowship program
 \end{itemize}
 
 
@@ -559,7 +601,9 @@ Other Contributions while at NIST:
 
 \frame{
 \frametitle{References}
- References here
+$[1]$ G. Golub and C. Van Loan. {\it Matrix Computations}. The Johns Hopkins University Press, Baltimore, 2013.\\
+ $[2]$ A. Townsend. {\it Computing with Functions in Two Dimensions} (Doctoral Dissertation). Oxford University, 2014.\\
+ $[3]$ L. N. Trefethen, {\it Approximation Theory and Approximation Practice}, SIAM, Philadelphia, 2013.\\
 }
 
 \end{document}

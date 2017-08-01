@@ -1,5 +1,6 @@
 \beamer@endinputifotherversion {3.36pt}
 \select@language {english}
 \beamer@sectionintoc {1}{The Problem}{3}{0}{1}
-\beamer@sectionintoc {2}{What are Chebyshev Polynomials and why use them?}{9}{0}{2}
-\beamer@sectionintoc {3}{The Algorithm}{12}{0}{3}
+\beamer@sectionintoc {2}{What Are Chebyshev Polynomials and Why Use Them?}{8}{0}{2}
+\beamer@sectionintoc {3}{The Algorithm}{10}{0}{3}
+\beamer@sectionintoc {4}{Results}{14}{0}{4}
