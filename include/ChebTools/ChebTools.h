@@ -377,8 +377,8 @@ namespace ChebTools{
 
       Eigen::Vector2d gradient_value(const Eigen::Vector2d &vec) const{
         Eigen::Vector2d grad(0,0);
-        grad(0) = chebExpansion_atx(vec(0)).deriv(1).y_Clenshaw(vec(0));
-        grad(1) = chebExpansion_aty(vec(1)).deriv(1).y_Clenshaw(vec(1));
+        grad(0) = chebExpansion_aty(vec(1)).deriv(1).y_Clenshaw(vec(0));
+        grad(1) = chebExpansion_atx(vec(0)).deriv(1).y_Clenshaw(vec(1));
         return grad;
       }
 
