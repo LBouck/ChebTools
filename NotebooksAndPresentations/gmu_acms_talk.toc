@@ -1,0 +1,6 @@
+\beamer@endinputifotherversion {3.36pt}
+\select@language {english}
+\beamer@sectionintoc {1}{Summary of the Problem and Background}{3}{0}{1}
+\beamer@sectionintoc {2}{What Are Chebyshev Polynomials and Why Use Them?}{8}{0}{2}
+\beamer@sectionintoc {3}{The Algorithm for Rectangular Domains from {\tt chebfun}}{10}{0}{3}
+\beamer@sectionintoc {4}{Results and Future Work}{16}{0}{4}

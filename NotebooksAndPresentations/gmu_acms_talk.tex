@@ -1,0 +1,778 @@
+%% Holzer's Golden Rule to presentations:
+%% 1) Tell them what you're about to tell them
+%% 2) Tell them
+%% 3) Tell them what you just told them
+
+\documentclass[xcolor={rgb,dvipsnames}]{beamer}		%% dvipsnames gives toooons of color options
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}{}
+
+% - Style is ornate.
+
+\mode<presentation>							%% makes fullscreen on pdf reader and space bar to change slides
+{
+    \usetheme{Madrid}							%% specify theme
+    %\usecolortheme{Lukestheme}						%% specify color scheme
+    %\usefonttheme[onlysmall]{structuresmallcapsserif}
+    \setbeamercovered{transparent}					%% makes items in enumerate transparent until you click on them
+}
+
+\usepackage{multimedia}							%% movies: .mp4 etc etc
+\usepackage[english]{babel}						%% has all words/spellings/hyphenated words built in for whatever language you 							      					       specify in [ ]
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{float}
+\usepackage{subfigure}
+\usepackage{graphics}
+\usepackage{graphicx}
+\usepackage{latexsym}
+\usepackage{hyperref}
+\usepackage{verbatim}
+\usepackage{enumerate}
+\usepackage{braket}
+\usepackage{media9}
+\usepackage{algorithm,algorithmic}
+\usepackage{animate}
+%\usepackage[noend]{algpseudocode}
+
+\setbeamercovered{dynamic}
+\graphicspath{ {/Users/Luke/Desktop/EXTREEMS/Write-ups} }
+\addmediapath{{/Users/Luke/Desktop/EXTREEMS/Write-ups} }
+
+
+
+
+%% Bibliography colors if you do not want bib items same color as the structure color
+
+%% \setbeamercolor{bibliography entry author}{fg=Black}
+%% \setbeamercolor{bibliography item}{fg=Black}
+%% \setbeamercolor*{bibliography entry title}{fg=Black}
+%% \setbeamercolor{bibliography entry journal}{fg=Black}
+%% \setbeamercolor{bibliography entry note}{fg=Black}
+
+\newcommand{\R}{\mathbb{R}}						%% example of a useful shortcut
+\newcommand{\hs}{\hspace}
+\newcommand{\vs}{\vspace}
+
+%\usepackage{times}
+%\usepackage[T1]{fontenc}
+
+\title[Root Finding with Chebyshev Polynomials] %optional
+{Root Finding with Chebyshev Polynomials in 2 Dimensions}
+
+%\subtitle{}
+
+\author[L. Bouck] % optional, will appear on every slide
+{Lucas C. Bouck}	%% add more as needed
+
+\institute[GMU] % optional, will appear on every slide
+{ 
+George Mason University\\
+Department of Mathematical Sciences
+}
+
+\date[ACMS]{September 8, 2017} 		%%% include conference name here, appears on every page
+ 
+
+
+\begin{document}
+
+\frame
+{
+  \titlepage
+ \vspace*{-2ex}
+    \begin{center}
+    \structure{
+    Applied and Computational Math Seminar\\
+    George Mason University\\
+     Fairfax, VA}  \\[2ex]
+
+
+{\small
+Collaborator: Ian H. Bell (NIST Applied Chemicals and Materials Division)
+}
+\end{center}
+}
+
+\frame
+{
+\frametitle{Outline}
+\tableofcontents					%% Here's where you give a brief overview as to what you are going to talk about 
+}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Summary of the Problem and Background}
+\begin{frame}
+\tableofcontents[currentsection]
+\end{frame}
+\frame{
+\frametitle{The Problem}
+\begin{block}{Global 2-D Root Finding Problem}
+We want to find all solutions ${\bf x}\in\Omega\subset\R^2$ to 
+$${\bf F}({\bf x})={\bf 0}$$
+\end{block}
+
+Additional assumptions
+\begin{itemize}
+\item $\Omega$ will be a bounded domain and rectangular for now
+\item Treat ${\bf F}$ as $\begin{pmatrix} f(x,y) \\
+g(x,y)
+\end{pmatrix}$, where $x,y\in\R$ and $f,g$ are scalar functions
+\item Assume $f,g$ are smooth enough (more on this later)
+\item Assume finitely many roots
+\end{itemize}
+}
+
+\frame{
+\frametitle{Background and Motivation}
+The Big Picture: {\tt chebtools}
+\begin{itemize}
+\item {\tt chebtools} is a C++ library for working with Chebyshev expansions developed by Ian Bell
+\item Inspired by the Matlab library {\tt chebfun}
+\item 2-D root finding will become a central feature of {\tt chebtools}
+\end{itemize}
+
+Applications:
+\begin{itemize}
+\item One example is determining thermodynamic properties of steam or water (Kunick, Kretzschmar, and Gampe 2008)
+\item With a higher level Python interface, {\tt chebtools} could be useful for a wide range of users
+\end{itemize}
+
+}
+
+
+
+\frame{
+\frametitle{Example}
+$f(x,y)=x^2-y^2$ and $g(x,y)=\sin\left(\pi\sqrt{x^2+y^2}\right)$ with the square domain $\Omega=[-1,1]^2$
+\begin{center}
+\begin{figure}
+\includegraphics[trim=3cm 0cm 0cm 0cm,width=1\textwidth]{surface_plots1.pdf}
+\end{figure}
+\end{center}
+}
+
+
+
+%\frame{
+%\frametitle{Example (cont.)}
+%Another view: We are finding where $f$ and $g$'s zero level sets intersect inside %$\Omega$
+%\begin{center}
+%\begin{figure}
+%\includegraphics[trim=3cm 1cm 1cm 1cm,width=.9\textwidth]{level_sets1.pdf}
+%\end{figure}
+%\end{center}
+%}
+
+\frame{
+\frametitle{A Need for a Method to Find All Roots}
+\begin{itemize}
+\item Iterative methods may converge to roots outside the domain of interest.
+\item Globalized Newton methods guarantee convergence to a root but only find them one at a time (Deuflhard, 2011)
+\item We need a method to find all solutions at once
+\end{itemize}
+\begin{center}
+\begin{figure}
+\includegraphics[width=.5\textwidth]{newton_basins.pdf}
+\caption{Initial guesses in white areas did not converge to roots in $\Omega$}
+\end{figure}
+\end{center}
+}
+
+%\frame{
+%\frametitle{A Need For a Global Method}
+%Our example illustrates a few lessons
+%\begin{itemize}
+%\item Many iterative and local methods like Newton's method can only guarantee convergence to a root if the initial guess is sufficiently close
+%\item Sufficiently close depends on the problem
+%\item Our example is an example of this problem
+%\item Other Globalized Newton methods can guarantee convergence to a root but only find them one at a time (Deuflhard, 2011)
+%\end{itemize}
+%\bigskip
+%\bigskip
+%\begin{block}{Goal:}
+%To develop a global root finding method to find all solutions at once
+%\end{block}
+%}
+
+\section{What Are Chebyshev Polynomials and Why Use Them?}
+\begin{frame}
+\tableofcontents[currentsection]
+\end{frame}
+
+
+\frame{
+\frametitle{What are Chebyshev Polynomials?}
+%\noindent\fbox{%
+\begin{block}{Chebyshev polynomials}
+$$T_n(x)=\cos\left(n\arccos(x)\right),\, x\in[-1,1]$$
+\end{block}
+\begin{minipage}{.4\linewidth}
+%Orthogonal under a weighted inner product:
+%$$\int_{-1}^{1} T_n(x)T_k(x)w(x)\, dx=0$$ when $n\neq k$ 
+%\\ and $w(x)=\frac{1}{\sqrt{1-x^2}}$
+%\\
+\begin{itemize}
+\item Orthogonal under an inner product with weight $w(x)=\frac{1}{\sqrt{1-x^2}}$
+\item Lipschitz continuity $\implies$ uniform convergence of Chebyshev interpolations
+ \item Analytic function $\implies$ geometric convergence
+\end{itemize}
+
+%Numerically stable for interpolating functions
+\end{minipage}%}%
+\hfill%
+%\fbox{%
+\begin{minipage}{.56\linewidth}
+\begin{figure}
+\caption{First 5 Chebyshev Polynomials}
+\includegraphics[height=.55\textheight]{cheb_poly_plot.pdf}
+\end{figure}
+\end{minipage}%}
+}
+
+%\frame{
+%\frametitle{What Chebyshev Polynomials Look Like}
+%\begin{center}
+%\begin{figure}
+%\includegraphics[width=\textwidth]{cheb_poly_plot.pdf}
+%\end{figure}
+%\end{center}
+%
+%}
+
+%\frame{
+%\frametitle{Chebyshev Interpolation Converges Quickly}
+%\begin{itemize}
+%\item Lipschitz continuity $\implies$ uniform convergence of Chebyshev interpolations 
+%\item $\nu-1$ continuous derivatives and a $\nu$th derivative of bounded variation $\implies$ Chebyshev interpolation converges like $\mathcal{O}(n^{-\nu})$
+%\item Analytic function $\implies$ geometric convergence
+%\item Same results will apply for 2-D approximations
+%\end{itemize}
+%\centering
+%\begin{figure}
+%\includegraphics[width=.5\textwidth]{cheb_convergence_plots.pdf}
+%\end{figure}
+%}
+
+%\frame{
+%\frametitle{Chebyshev Interpolation Avoids the Runge Phenomenon}
+%\begin{itemize}
+%\item Interpolation on evenly spaced points is susceptible to the {\bf Runge phenomenon}
+%\item Chebyshev interpolation minimizes this effect.
+%\end{itemize}
+%\begin{center}
+%\begin{figure}
+%\includegraphics[width=.9\textwidth]{runge_plot.pdf}
+%\caption{Interpolating $\frac{1}{1+25x^2}$}
+%\end{figure}
+%\end{center}
+%}
+
+\section{The Algorithm for Rectangular Domains from {\tt chebfun}}
+
+\begin{frame}
+\tableofcontents[currentsection]
+\end{frame}
+
+
+
+%\frame{
+%\frametitle{Algorithm Overview}
+%The bulk of the algorithm is a replication of the algorithm introduced by Alex Townsend in {\tt chebfun}
+%\begin{block}{The Algorithm}
+%Given $f(x,y)$ and $g(x,y)$, we can find the roots with the following steps
+%\begin{itemize}
+%\item Interpolate $f,g$ with 2-D Chebyshev polynomials $p_f,p_g$
+%\item Construct the Chebyshev-B\'{e}zout matrix polynomial $B$
+%\item Linearize and solve a generalized eigenvalue problem to find the $x$ or $y$ values where $p_f,p_g$ have common roots
+%\item Employ a 1-D rootfinding technique to find all the roots along the already found $x$ and $y$ values
+%\end{itemize}
+%\end{block}
+%}
+
+
+%\frame{
+%\frametitle{2-D Interpolation}
+%The Idea behind 2-D interpolation is to continually interpolate the error from our previous approximations
+%\begin{algorithm}[H]
+%\begin{algorithmic}[1]
+%\STATE $e_0(x,y)=f(x,y)$
+%\STATE set tolerance $\varepsilon$
+%\WHILE{$\max|e_k(x,y)|\geq\varepsilon$}
+%\STATE find $(x_k,y_k)$ st $|e_k(x_k,y_k)|=\max|e_k(x,y)|$
+%\STATE compute 1-D interpolation $\tilde{p}_{xk}(x,y_k)\approx e_k(x,y_k)$ 
+%\STATE compute 1-D interpolation $\tilde{p}_{yk}(x_k,y)\approx e_k(x_k,y)/e_k(x_k,y_k)$
+%\STATE $P_k(x,y) \gets P_{k-1}(x,y)+\tilde{p}_{xk}(x,y_k)\tilde{p}_{yk}(x_k,y)$ 
+%\STATE $e_{k+1}(x,y) \gets e_k(x,y)-P_k(x,y)$ 
+%\ENDWHILE
+%\RETURN $P_k(x,y)$
+%\end{algorithmic}
+%\caption{Gaussian Elimination of Functions from Townsend (2014)}
+%\label{2dinterp}
+%\end{algorithm}
+%}
+
+
+%\begin{frame}{2-D Interpolation}
+%    \centering
+%    \animategraphics[loop,controls,height=.8\textheight]{1.3}{pivots_animation-}{0}{12}
+%\end{frame}
+
+\begin{frame}{2-D Interpolation}
+\begin{itemize}
+\item Define our first error function as $e_0(x,y)=f(x,y)$ 
+\item Define later error functions as $e_k(x,y)\coloneqq e_{k-1}(x,y)-P_{k-1}(x,y)$ where $P_{k-1}$ is our approximation
+\end{itemize}
+\begin{block}{Algorithm Outline}
+\begin{itemize}
+\item Find $(x_k,y_k)$ s.t.  $|e_k(x_k,y_k)|=\max|e_k(x,y)|$
+\item Do 1-D interpolations of $e_k(x,y_k)$ and $e_k(x_k,y)/e_k(x_k,y_k)$ denoted $p_x(x)$ and $p_y(y)$
+\item Compute new approximation $P_{k}(x,y) = P_{k-1}(x,y)+ p_x(x)p_y(y)$
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{Interpolation From Our Example}
+    \centering
+    \animategraphics[loop,controls,height=.8\textheight]{1.3}{pivots2_animation-}{0}{28}
+\end{frame}
+
+
+%\frame{
+%\frametitle{1st: 2-D Interpolation}
+%%The pivots below are for a $64\times64$ grid of Chebyshev nodes. Note we do less interpolations than if we used all $64^2$ points
+%The algorithm works by choosing a pivot position which is the maximum residual and doing 1-D interpolations in the $x$ and $y$ directions
+%\begin{center}
+%\begin{figure}
+%\includegraphics[width=.9\textwidth]{contours_pivots.pdf}
+%\caption{Plot of the contours of our example functions with pivots from the algorithm}
+%\end{figure}
+%\end{center}
+%}
+
+%\frame{
+%\frametitle{Our Algorithm Can Provide Accurate Approximations}
+%\begin{itemize}
+%\item Almost machine precision accuracy with $x^2-y^2$
+%\item Struggles with  $\sin\left(\pi\sqrt{x^2+y^2}\right)$ due to the lack of %differentiability at $(0,0)$
+%\end{itemize}
+%\begin{center}
+%\begin{figure}
+%\includegraphics[trim = 3cm 0cm 0cm 0.75cm, width=\textwidth]%{pointwise_error_surface.pdf}
+%\end{figure}
+%\end{center}
+%}
+
+%\frame{
+%\frametitle{Comparison to chebfun2}
+%\begin{center}
+%\begin{table}[h!]
+%\begin{tabular}{|c|c|c|}
+%\hline
+%Function & Our Code (64x64 points) & chebfun2 (adaptive)\\ \hline
+% $x^2-y^2$ &106 ms & 153 ms \\ \hline
+% $\sin\left(\pi\sqrt{x^2+y^2}\right)$ & 650 ms & 3222 ms \\ \hline
+%\end{tabular}
+%\caption{Speed Comparison}
+%\end{table}
+%\begin{table}[h!]
+%\begin{tabular}{|c|c|c|}
+%\hline
+%Function & Our Code (64x64 points) & chebfun2 (adaptive)\\ \hline
+% $x^2-y^2$ 					&6.89e-15  	& 5.55e-16 \\ \hline
+% $\sin\left(\pi\sqrt{x^2+y^2}\right)$ 	& 2.97e-3  	& 2.98e-3 \\ \hline
+%\end{tabular}
+%\caption{Accuracy (Max Abs Error) Comparison}
+%\end{table}
+%\end{center}
+%}
+%\frame{
+%\frametitle{Some Initial Differences with chebfun2}
+%\begin{itemize}
+%\item We do not have use an adaptive constructor while chebfun2 does
+%	\begin{itemize}
+%	\item This explains the slower speed of chebfun2 in the second example since $\sin(\pi\sqrt{x^2+y^2})$ is hard to approximate
+%	\item An adaptive constructor does not make as much sense for our application
+%	\end{itemize}
+%\item We have note implemented a FFT version of Chebyshev Interpolation
+%	\begin{itemize}
+%	\item This could explain why chebfun2 is faster in the easy example
+%	\item Implementing interpolation using FFT could further improvements our library
+%	\end{itemize}
+%\end{itemize}
+%}
+
+
+
+%\frame{
+%\frametitle{B\'{e}zout Matrix Polynomials}
+%\begin{block}{We create a matrix polynomial $B(x)$ from our Chebyshevs}
+%\begin{itemize}
+%\item $B(x)$ is a matrix with polynomial entries
+%\item $\det\left(B(x)\right)=0$ $\iff$ common roots along the specific $x$ value
+%\item Solving $\det\left(B(x)\right)=0$ is a {\bf matrix polynomial eigenvalue problem}
+%\end{itemize}
+%\end{block}
+%\begin{center}
+%\begin{figure}
+%\includegraphics[height=.57\textheight]{bezout_det_plot.pdf}
+%\end{figure}
+%\end{center}
+%}
+
+\frame{
+\frametitle{B\'{e}zout Resultant Method}
+\begin{itemize}
+\item From our Chebyshev approximations $p_f(x,y),p_g(x,y)$, we can construct a B\'{e}zout matrix polynomial $B(x)$
+\item $\det\left(B(x_0)\right)=0$ $\iff$ $p_f(x_0,\cdot)$ and $p_g(x_0,\cdot)$ have common root
+\end{itemize}
+
+If $p_f,p_g$ are of degree $(m_f,n_f),(m_g,n_g)$ respectively, then the resulting form of the matrix polynomial of degree $M$ is
+$$B(x) = \sum_{i=0}^{M}B_iT_i(x)$$
+\begin{itemize}
+\item $B_i$ are square matrices of size $n = \max(n_f,n_g)$ and $M\leq m_f+m_g$.
+\item Solving $\det\left(B(x_0)\right)=0$ involves linearizing $B(x)$ (Nakatsukasa et. al. 2016)
+\item Finally solve a generalized eigenvalue problem with computational complexity of $\mathcal{O}\left(M^3n^3\right)$
+\end{itemize}
+}
+
+%\begin{frame}{Solving the Matrix Polynomial Eigenvalue Problem}
+%Expressing $B(x) = \sum_{i=0}^{M}B_iT_i(x)$, then we can solve $\det\left(B(x)\right)=0$ by solving the generalized eigenvalue problem
+%\begin{align*}
+%\frac{1}{2}&\begin{pmatrix}
+%-B_{M-1} 	& I_n-B_{M-2} 	& -B_{M-3} 	& \cdots 	& -B_0	\\
+%I_n	       	& 0		     	& I_n	       		&	    	&		\\
+%		& \ddots		& \ddots		& \ddots	&		\\
+%		&			& I_n			& 0		& I_n		\\
+%		&			&			& 2I_n	& 0
+%\end{pmatrix}{\bf v}\\
+%&=\lambda\begin{pmatrix}
+%B_M	&	&		&	\\
+%	&I_n	&		&	\\
+%	&	&\ddots	&	\\
+%	&	&		&I_n \\
+%\end{pmatrix}{\bf v}
+%\end{align*}
+%This is the most computationally intensive part of the algorithm and has computational complexity of $\mathcal{O}\left(M^3n^3\right)$
+%\end{frame}
+
+\begin{frame}{Conditioning of the B\'{e}zout Matrix Polynomials}
+\begin{itemize}
+\item The B\'{e}zout matrix polynomial technique can square the condition number of the common root.
+\item The {\tt chebfun} algorithm refines the roots by recomputing the matrix polynomial problem on a zoomed in region of the root
+\end{itemize}
+
+
+\begin{center}
+\begin{figure}
+\includegraphics[height=.63\textheight]{bezout_det_plot.pdf}
+\end{figure}
+\end{center}
+\end{frame}
+
+%\frame{
+% We can solve the matrix polynomial eigenvalue problem by solving the generalized eigenvalue problem
+%\begin{align*}
+%\frac{1}{2}\begin{pmatrix}
+%-B_{M-1} 	& I_n-A_{M-2} 	& -A_{M-3} 	& \cdots 	& -A_0	\\
+%I_n	       	& 0		     	& I_n	       		&	    	&		\\
+%		& \ddots		& \ddots		& \ddots	&		\\
+%		&			& I_n			& 0		& I_n		\\
+%		&			&			& 2I_n	& 0
+%\end{pmatrix}&{\bf v}\\
+%&=\lambda\begin{pmatrix}
+%A_M	&	&		&	\\
+%	&I_n	&		&	\\
+%	&	&\ddots	&	\\
+%	&	&		&I_n \\
+%\end{pmatrix}{\bf v}
+%\end{align*}
+%}
+
+\frame{
+\frametitle{1-D Root Finding}
+\noindent
+\begin{minipage}{.4\linewidth}
+\begin{block}{1-D Root Finding}
+\begin{itemize}
+\item We now have the possible $x$ values for where there are common roots
+\item Employ a companion matrix method finding the roots of 1-D Chebyshev polynomials
+\end{itemize}
+\end{block}
+\end{minipage}%
+\hspace{.01\linewidth}
+\noindent
+\begin{minipage}{.53\linewidth}
+\begin{center}
+\begin{figure}
+\includegraphics[width=\linewidth]{cheb1d_roots.pdf}
+\end{figure}
+\end{center}
+\end{minipage}%
+%\begin{block}{Problem: Poor conditioning of matrix polynomial problem}
+%\begin{itemize}
+%\item  Need for local refinement of roots
+%\item Refine the roots with Newton's method
+%\end{itemize}
+%\end{block}
+
+}
+\section{Results and Future Work}
+\frame{
+\tableofcontents[currentsection]
+}
+\frame{
+\frametitle{First Results}
+
+
+\begin{tabular}{ |c|c|c|c|c|  }
+ \hline
+ & \multicolumn{2}{|c|}{{\tt chebtools}}&\multicolumn{2}{|c|}{{\tt chebfun}} \\
+ \hline
+ Functions							& 2 Norm Error 	& Time (s)	& 2 Norm Error	& Time (s)\\
+ \hline
+ $F_1(x,y),F_2(x,y)$ & $6.97\times10^{-32}$&0.004268 &$7.7\times10^{-16}$ &0.522 \\
+ \hline
+ $G_1(x,y),G_2(x,y)$ & $6.21\times10^{-16}$ & 214.059 &$2.92\times10^{-10}$ &0.294 \\
+ \hline
+ $H_1(x,y),H_2(x,y)$ &$3.24\times10^{-16}$ & 195.903 &$2.77\times10^{-11}$ &0.296 \\
+ \hline
+\end{tabular}
+\begin{align*}
+F_1(x,y) &= T_3(x)-13T_1(x) & F_2(x,y) &= T_3(y)-13T_1(y)\\
+G_1(x,y) &= \cos(\pi x)(y-2) & G_2(x,y) &= (y-.9)(x-2)\\
+H_1(x,y) &= \cos\left(\pi x-\frac{\pi}{10}\right)(y-2) & H_2(x,y) &= (y-.1)(y-.9)(x-2)
+\end{align*}
+\begin{itemize}
+\item {\tt chebfun} is much faster than {\tt chebtools}
+\item {\tt chebfun} has a domain subdivision strategy for reducing the size of the generalized eigenvalue problem
+\end{itemize}
+}
+
+
+\frame{
+\frametitle{Application Motivates Future Work}
+\begin{itemize}
+\item Empirical equations of state in thermodynamics have ranges of validity which are not rectangular domains
+\item Solutions outside the domain will not make physical sense
+\item Some properties are not defined at certain points (ex: Critical Point)
+%\item Current work for us involves implementing a new subdivision strategy
+%\item The goal of our strategy will be to deal with non-rectangular domains
+%\item The need for dealing with non-rectangular domains comes from our application of interest in thermodynamic calculations
+\end{itemize}
+%insert plot of water with critical region
+
+\begin{center}
+\begin{figure}
+\includegraphics[width=.7\linewidth]{hp_water.pdf}
+\end{figure}
+\end{center}
+}
+
+\frame{
+\frametitle{Current Work for Moving Beyond Rectangular Domains}
+Suppose we have
+\begin{itemize}
+\item Subdivided such that part of the boundary of the subdomain of interest, $\Omega_s$, can be expressed as a function 
+\item mapped the rectangle containing $\Omega_s$ has been mapped to a reference square $[-1,1]^2$
+\end{itemize}
+%add plot of subdivided domain
+
+\begin{block}{Our Idea:}
+\begin{itemize}
+\item Same 2-D interpolation procedure as with the rectangular domain
+\item Instead of 1-D interpolations, solve a least squares fitting problem with nodes inside $\Omega_s$
+\item Constrain the least squares solution s.t. $p(\pm 1)\leq B$ for some bound $B$
+\end{itemize}
+\end{block}
+}
+
+\frame{
+\frametitle{Future Work}
+For Non-Rectangular Domains
+\begin{itemize}
+\item Further develop ideas for Chebyshev approximation methods
+\item Provide analysis of the new method of approximations
+\end{itemize}
+
+
+
+Other Future Work
+\begin{itemize}
+\item Introduce GPU/parallel computing to the root finding process
+\end{itemize}
+}
+
+
+
+
+%\frame{
+%\frametitle{Back to Our First Example}
+%\begin{block}{{\tt chebfun} also struggled}
+%\begin{itemize}
+%\item Found 4 of the roots with an error of $5.55\times10^{-16}$
+%\item Took 208.8 seconds
+%\item Missed the root at $(0,0)$
+%\end{itemize}
+%\end{block}
+%\begin{center}
+%\begin{figure}
+%\includegraphics[trim=3cm 0cm 0cm 0cm,width=.8\textwidth]{surface_plots1.pdf}
+%\end{figure}
+%\end{center}
+%
+%}
+
+
+%\frame{
+%\frametitle{Similarities and Differences with chefun2}
+%Similarities:
+%\begin{itemize}
+%\item The B\'{e}zout Resultant method for 2-D rootfinding and companion matrix methods for 1-D rootfinding
+%\item Use Newton's method to polish/refine solutions
+%\item Approximation methods are extremely similar
+%\end{itemize}
+%
+%Differences:
+%\begin{itemize}
+%\item The goals of chebfun2 are much more general than just rootfinding, unlike our code
+%\item We approximate with a set amount of points, unlike chebfun2, which is adaptive
+%\item We 1-D root find $p_f+p_g$ and not $p_f$ and $p_g$ individually
+%\item chefun2 subdivides to reduce the polynomial sizes, while the goal of our subdivision will be different
+%\end{itemize}
+%}
+
+%\section{Current Ideas for Moving Beyond Rectangular Domains}
+%\frame{
+%\tableofcontents[currentsection]
+%}
+%\frame{
+%\frametitle{Beyond Rectangular Domains}
+%There are a few methods that could deal with non rectangular domains:
+%\begin{itemize}
+%\item Conformal maps: Can cause problem to be ill-conditioned
+%\item Coordinate transformations: Need to know domain before-hand
+%\item Method of frames
+%\end{itemize}
+%{\bf Goal:} We want a way to deal with any connected and sufficiently smooth domain
+%}
+
+%\frame{
+%\frametitle{Beyond Rectangular Domains}
+%{\bf Problem: }Chebyshev polynomials grow quickly outside $[-1,1]$. This could throw our approximation off and cause our algorithm to fail
+%\begin{center}
+%\begin{figure}
+%\includegraphics[width=.7\textwidth]{cheb_growth.pdf}
+%\caption{Even the 5th and 6th Chebyshev polynomials grow quickly outside $[-1,1]$}
+%\end{figure}
+%\end{center}
+%
+%}
+
+%\frame{
+%\frametitle{Chebyshev Interpolation Meets Constrained Least Squares}
+%Using ideas from least squares, we have started to develop a method that does the following:
+%\begin{itemize}
+%\item Controls errors made by growth of Chebyshev polynomials
+%\item Generalizes Chebyshev interpolation
+%\item Can be done knowing currently available techniques such as SVD and Lagrange multipliers
+%\end{itemize}
+%
+%Open questions:
+%\begin{itemize}
+%\item How does this technique affect the approximation made inside $[-1,1]$?
+%\item Does this method guarantee convergence?
+%\item Is it numerically stable?
+%\end{itemize}
+%}
+%\frame{
+%\frametitle{Chebyshev Interpolation Meets Constrained Least Squares}
+%Typical Chebyshev interpolation involves a matrix vector product
+%$$A{\bf f} = {\bf c}$$
+%where $A$ is the interpolation matrix, ${\bf f}$ are the function values of $f(x)$ at the Chebyshev nodes and ${\bf c}$ are the Chebyshev coefficients. We could formulate the problem as solving
+%
+%$$A^{-1}{\bf c} = {\bf f}$$
+% We still have interpolation if the above is a square system. To control the growth of the Chebyhshev polynomials outside $[-1,1]$, we can introduce a regularization term $\Gamma_\delta{\bf c}$ where 
+% 
+% $$\Gamma_\delta{\bf c} = \delta p(1+\delta) \implies \lVert\Gamma_\delta{\bf c}\rVert = \lvert \delta p(1+\delta)\rvert$$
+% 
+% where $p$ is our Chebyshev polynomial
+% 
+%}
+
+%\frame{
+%Instead of
+%$$ A^{-1} = {\bf c}$$
+%we now can reformulate our problem as 
+%$$ \min_{\lVert\Gamma_\delta{\bf c}\rVert \leq \beta}\lVert A^{-1}{\bf c} - {\bf f}\rVert$$
+%\begin{itemize}
+%\item $\Gamma_\delta$ is controlling the error beyond the interval $[-1,1]$.
+%\item $\delta=0\implies \Gamma_\delta\equiv0$ so our problem is a generalization of interpolation
+%\item Framing the problem with a bound on $\lVert\Gamma_\delta{\bf c}\rVert$ provides a less ad hoc method than normal regularization  
+%\item The new problem can still be solved with known techniques for constrained least squares problems such as SVD and Lagrange multipliers
+%\end{itemize}
+%}
+
+%\frame{
+%\frametitle{Conclusions and Future Work}
+%Key Contributions:
+%\begin{itemize}
+%\item Made significant progress in replicating the 2-D rootfinding algorithm in {\tt chebfun} with some modifications in C++11, which will be fully open source
+%\item Developed ideas and have a strategy for extending the algorithm to non-rectangular domains
+%\end{itemize}
+%
+%Future Work:
+%\begin{itemize}
+%\item Further develop ideas on non-rectangular domains and subdivision strategies
+%\item Introduce GPU/parallel computing to the rootfinding process
+%\end{itemize}
+%
+%
+%Other Contributions while at NIST:
+%\begin{itemize}
+%\item Idea for using Gram-Schmidt process to create orthogonal terms for developing equations of state
+%\end{itemize}
+%}
+
+\frame{
+\frametitle{Conclusions and Acknowledgements}
+Contributions:
+\begin{itemize}
+\item Made significant progress in replicating the 2-D root finding algorithm in {\tt chebfun} with some modifications in C++11
+\item Began to develop ideas for extending the algorithm to non-rectangular domains
+\end{itemize}
+
+Acknowledgments
+\begin{itemize}
+\item Ian Bell and Bradley Alpert (NIST Applied Math Division)
+\item The Summer Undergraduate Research Fellowship program at NIST
+\end{itemize}
+\bigskip
+\bigskip
+\begin{center}
+{\large Questions?}
+\end{center}
+}
+
+\frame{
+\frametitle{References}
+{\scriptsize
+$[1]$ R. Bartels and G. Stewart. {\it Solution of the Matrix Equation} $AX+XB=C$: {\it Algorithm 432}, Comm. ACM, 1972.\\
+$[2]$ I. Bell et. al. {\it Pure and Pseudo-pure Fluid Thermophysical Property Evaluation and
+             the Open-Source Thermophysical Property Library CoolProp}, Industrial \& Engineering Chemical Research, 2014.\\
+$[3]$ P. Deuflhard. {\it Newton Methods for Nonlinear Problems}, Springer, Berlin, 2011.\\
+$[4]$ G. Golub and C. Van Loan. {\it Matrix Computations}. The Johns Hopkins University Press, Baltimore, 2013.\\
+$[5]$ M. Kunick et. al. {\it Fast Calculation of Thermodynamic Properties of Water and Steam in Process Modelling using Spline Interpolation}. 2008.\\
+$[6]$ Y. Nakatsukasa et. al. {\it Vector Spaces of Linearizations for Matrix Polynomials: A Bivariate Polynomial Approach}, arXiv:1610.01859v1, 2016.\\
+ $[7]$ A. Townsend. {\it Computing with Functions in Two Dimensions} (Doctoral Dissertation). Oxford University, 2014.\\
+ $[8]$ L. N. Trefethen, {\it Approximation Theory and Approximation Practice}, SIAM, Philadelphia, 2013.\\}
+}
+
+\end{document}
