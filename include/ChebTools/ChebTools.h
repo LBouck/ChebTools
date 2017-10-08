@@ -101,6 +101,7 @@ namespace ChebTools{
         */
         double y_recurrence(const double x);
         double y_Clenshaw(const double x) const;
+        double y_Clenshaw_xscaled(const double x) const;
         /**
         * @brief Do a vectorized evaluation of the Chebyshev expansion with the inputs scaled in [xmin, xmax]
         * @param x A vectype of values in the domain [xmin,xmax]
@@ -141,6 +142,7 @@ namespace ChebTools{
         * solver in numpy tends to be more reliable.
         */
         std::vector<double> real_roots(bool only_in_domain = true) const ;
+        std::vector<double> real_roots2(bool only_in_domain = true) const;
         std::vector<ChebyshevExpansion> subdivide(std::size_t Nintervals, std::size_t Norder) const ;
         static std::vector<double> real_roots_intervals(const std::vector<ChebyshevExpansion> &segments, bool only_in_domain = true);
 

@@ -49,12 +49,12 @@ void init_ChebTools(py::module &m){
         .def("xmin", &ChebyshevExpansion::xmin)
         .def("xmax", &ChebyshevExpansion::xmax)
         .def("get_nodes_n11", &ChebyshevExpansion::get_nodes_n11)
+        .def("get_nodes_realworld", &ChebyshevExpansion::get_nodes_realworld)
         .def("get_node_function_values", &ChebyshevExpansion::get_node_function_values)
         ;
 }
 
-PYBIND11_PLUGIN(ChebTools) {
-    py::module m("ChebTools", "C++ tools for working with Chebyshev expansions");
+PYBIND11_MODULE(ChebTools, m) {
+    m.doc() = "C++ tools for working with Chebyshev expansions";
     init_ChebTools(m);
-    return m.ptr();
 }
