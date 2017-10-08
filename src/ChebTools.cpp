@@ -17,6 +17,9 @@
 #define DBL_MAX std::numeric_limits<double>::max()
 #endif
 
+template <class T> T POW2(T x){ return x*x; }
+template <class T> bool inbetween(T bound1, T bound2, T val){ return val > std::min(bound1,bound2) && val < std::max(bound1,bound2); }
+
 /// See python code in https://en.wikipedia.org/wiki/Binomial_coefficient#Binomial_coefficient_in_programming_languages
 /// This is a direct translation of that code to C++
 double binomialCoefficient(const double n, const double k) {
@@ -294,21 +297,30 @@ namespace ChebTools {
     ChebyshevExpansion& ChebyshevExpansion::times_x_inplace() {
         Eigen::Index N = m_c.size() - 1; // N is the order of A
         double diff = ((m_xmax - m_xmin) / 2.0), plus = (m_xmax + m_xmin) / 2.0;
-        Eigen::VectorXd cc(N + 2); // Order of x*A is one higher than that of A
+        double cim1old = 0, ciold = 0;
+        m_c.conservativeResize(N+2);
+        m_c(N+1) = 0.0; // Fill the last entry with a zero
         if (N > 1) {
-            cc(0) = diff*m_c(1)/2.0 + plus*m_c(0);
+            // 0-th element
+            cim1old = m_c(0); // store the current 0-th element in temporary variable
+            m_c(0) = diff*(0.5*m_c(1)) + plus*m_c(0);
         }
         if (N > 2) {
-            cc(1) = diff*(m_c(0) + m_c(2) / 2.0) + plus*m_c(1);
+            // 1-th element
+            ciold = m_c(1); // store the current 1-th element in temporary variable
+            m_c(1) = diff*(cim1old + 0.5*m_c(2)) + plus*m_c(1);
+            cim1old = ciold;
         }
-        for (Eigen::Index i = 2; i < cc.size(); ++i) {
-            cc(i) = (i + 1 <= N) ? diff*(0.5*(m_c(i - 1) + m_c(i + 1)))+plus*m_c(i) : diff*(0.5*(m_c(i - 1))) + plus*((i<=N) ? m_c(i) : 0);
+        for (Eigen::Index i = 2; i <= N-1; ++i) {
+            ciold = m_c(i); // store the current i-th element in temporary variable
+            m_c(i) = diff*(0.5*(cim1old + m_c(i + 1)))+plus*m_c(i);
+            cim1old = ciold;
         }
-        // Scale the values into the real world, which is given by
-        // C_scaled = (b-a)/2*(chi*A) + ((b+a)/2)*A
-        // where the coefficients in the second term need to be padded with a zero to have
-        // the same order as the product of x*A
-        m_c = cc;
+        for (Eigen::Index i = N; i <= N + 1; ++i) {
+            ciold = m_c(i); // store the current i-th element in temporary variable
+            m_c(i) = diff*(0.5*cim1old) + plus*m_c(i);
+            cim1old = ciold;
+        }
         return *this;
     };
 
@@ -343,6 +355,22 @@ namespace ChebTools {
         // Short circuit if not using recursive solution
         if (Norder == 0) { return m_c[0]; }
         if (Norder == 1) { return m_c[0] + m_c[1]*xscaled; }
+
+        double u_k = 0, u_kp1 = m_c[Norder], u_kp2 = 0;
+        for (int k = static_cast<int>(Norder) - 1; k >= 1; --k) {
+            u_k = 2.0*xscaled*u_kp1 - u_kp2 + m_c(k);
+            // Update summation values for all but the last step
+            if (k > 1) {
+                u_kp2 = u_kp1; u_kp1 = u_k;
+            }
+        }
+        return xscaled*u_k - u_kp1 + m_c(0);
+    }
+    double ChebyshevExpansion::y_Clenshaw_xscaled(const double xscaled) const {
+        std::size_t Norder = m_c.size() - 1;
+        // Short circuit if not using recursive solution
+        if (Norder == 0) { return m_c[0]; }
+        if (Norder == 1) { return m_c[0] + m_c[1] * xscaled; }
 
         double u_k = 0, u_kp1 = m_c[Norder], u_kp2 = 0;
         for (int k = static_cast<int>(Norder) - 1; k >= 1; --k) {
@@ -423,6 +451,90 @@ namespace ChebTools {
             A(j, j + 1) = 0.5;
         }
         return A;
+    }
+    std::vector<double> ChebyshevExpansion::real_roots2(bool only_in_domain) const {
+        //vector of roots to be returned
+        std::vector<double> roots;
+
+        auto N = m_c.size()-1;
+        auto Ndegree_scaled = N*2;
+        Eigen::VectorXd xscaled = get_extrema(Ndegree_scaled), yy = y_Clenshaw_xscaled(xscaled);
+
+        // a,b,c can also be obtained by solving the matrix system:
+        // [x_k^2, x_k, 1] = [b_k] for k in 1,2,3
+        for (auto i = 0; i+2 < Ndegree_scaled+1; i += 2){
+            const double &x_1 = xscaled[i + 0], &y_1 = yy[i + 0],
+                         &x_2 = xscaled[i + 1], &y_2 = yy[i + 1],
+                         &x_3 = xscaled[i + 2], &y_3 = yy[i + 2];
+            double d = (x_3 - x_2)*(x_2 - x_1)*(x_3 - x_1);
+            double a = ((x_3 - x_2)*y_1 - (x_3 - x_1)*y_2 + (x_2 - x_1)*y_3) / d;
+            double b = (-(POW2(x_3) - POW2(x_2))*y_1 + (POW2(x_3) - POW2(x_1))*y_2 - (POW2(x_2) - POW2(x_1))*y_3) / d;
+            double c = ((x_3 - x_2)*x_2*x_3*y_1 - (x_3 - x_1)*x_1*x_3*y_2 + (x_2 - x_1)*x_2*x_1*y_3) / d;
+
+            // Discriminant of quadratic
+            double D = b*b - 4*a*c;
+            if (D >= 0) {
+                double root1, root2;
+                if (a == 0){
+                    // Linear
+                    root1 = -c/b;
+                    root2 = -1000; // Something outside the domain; we are in scaled coordinates so this will definitely get rejected
+                }
+                else if (D == 0) { // Unlikely due to numerical precision
+                    // Two equal real roots
+                    root1 = -b/(2*a);
+                    root2 = -1000; // Something outside the domain; we are in scaled coordinates so this will definitely get rejected
+                }
+                else {
+                    // Numerically stable method for solving quadratic
+                    // From https://people.csail.mit.edu/bkph/articles/Quadratics.pdf
+                    double sqrtD = sqrt(D);
+                    if (b >= 0){
+                        root1 = (-b - sqrtD)/(2*a);
+                        root2 = 2*c/(-b-sqrtD);
+                    }
+                    else {
+                        root1 = 2*c/(-b+sqrtD);
+                        root2 = (-b+sqrtD)/(2*a);
+                    }
+                }
+                bool in1 = inbetween(x_1, x_3, root1), in2 = inbetween(x_1, x_3, root2);
+                const ChebyshevExpansion &e = *this;
+                auto secant = [e](double a, double ya, double b, double yb, double yeps = 1e-14, double xeps = 1e-14) {
+                    auto c = b - yb*(b - a) / (yb - ya);
+                    auto yc = e.y_Clenshaw_xscaled(c);
+                    for (auto i = 0; i < 50; ++i){
+                        if (yc*ya > 0) {
+                            a=c; ya=yc;
+                        }
+                        else {
+                            b=c; yb=yc;
+                        }
+                        if (std::abs(b - a) < xeps) { break; }
+                        if (std::abs(yc) < yeps){ break; }
+                        c = b - yb*(b - a) / (yb - ya);
+                        yc = e.y_Clenshaw_xscaled(c);
+                    }
+                    return c;
+                };
+                int Nroots_inside = static_cast<int>(in1) + static_cast<int>(in2);
+                if (Nroots_inside == 2) {
+                    // Split the domain at the midline of the quadratic, polish each root against the underlying expansion
+                    double x_m = -b/(2*a), y_m = e.y_Clenshaw_xscaled(x_m);
+                    root1 = secant(x_1, y_1, x_m, y_m);
+                    root2 = secant(x_m, y_m, x_3, y_3);
+                    // Rescale back into real-world values in [xmin,xmax] from [-1,1]
+                    roots.push_back(((m_xmax - m_xmin)*root1 + (m_xmax + m_xmin)) / 2.0);
+                    roots.push_back(((m_xmax - m_xmin)*root2 + (m_xmax + m_xmin)) / 2.0);
+                }
+                else if(Nroots_inside == 1) {
+                    root1 = secant(x_1, y_1, x_3, y_3);
+                    roots.push_back(((m_xmax - m_xmin)*root1 + (m_xmax + m_xmin)) / 2.0);
+                }
+                else {}
+            }
+        }
+        return roots;
     }
     std::vector<double> ChebyshevExpansion::real_roots(bool only_in_domain) const {
       //vector of roots to be returned
@@ -572,15 +684,15 @@ namespace ChebTools {
         return roots;
     }
 
-    /// Chebyshev-Lobatto nodes cos(pi*j/N), j = 0,..., N
+    /// Chebyshev-Lobatto nodes cos(pi*j/N), j = 0,..., N in the range [-1,1]
     Eigen::VectorXd ChebyshevExpansion::get_nodes_n11() {
         std::size_t N = m_c.size()-1;
         return extrema_library.get(N);
     }
+    /// Chebyshev-Lobatto nodes cos(pi*j/N), j = 0,..., N mapped to the range [xmin, xmax]
     Eigen::VectorXd ChebyshevExpansion::get_nodes_realworld() {
-        return ((m_xmax - m_xmin)*get_nodes_n11().array() + (m_xmax + m_xmin)) / 2.0;
+        return ((m_xmax - m_xmin)*get_nodes_n11().array() + (m_xmax + m_xmin))*0.5;
     }
-
     /// Values of the function at the Chebyshev-Lobatto nodes
     Eigen::VectorXd ChebyshevExpansion::get_node_function_values() {
         std::size_t N = m_c.size()-1;
