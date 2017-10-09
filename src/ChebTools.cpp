@@ -190,6 +190,74 @@ namespace ChebTools {
     };
     static UMatrixLibrary u_matrix_library;
 
+
+    class DiffMatrixLibrary{
+    private:
+      Eigen::MatrixXd first_order_diff(std::size_t N){
+        Eigen::MatrixXd first_diff_matrix(N+1,N+1);
+        Eigen::VectorXd cheb_nodes(N+1) = ChebyshevExtremaLibrary::get_extrema(N);
+
+        double deltai, deltaj;
+        for (std::size_t i=0;i<N+1;i++){
+          for (std::size_t j=0;j<N+1;j++){
+            deltai = (i==0 || i==N) ? 2 : 1;
+            deltaj = (j==0 || j==N) ? 2 : 1;
+            if (i==j){ first_diff_matrix(i,j) = 0;}
+            else{ first_diff_matrix(i,j) = (deltai/deltaj)*std::pow((double) -1,i+j)/(cheb_nodes(i)-cheb_nodes(j)); }
+          }
+        }
+        for (std::size_t i=0;i<N+1;i++){
+          first_diff_matrix(i,i) = -first_diff_matrix.row(i).sum();
+        }
+        return first_diff_matrix;
+      }
+      Eigen::MatrixXd second_order_diff(std::size_t N){
+        Eigen::MatrixXd first_diff_matrix(N+1,N+1) = first_order_diff(std::size_t N);
+        Eigen::VectorXd cheb_nodes(N+1) = ChebyshevExtremaLibrary::get_extrema(N);
+        Eigen::MatrixXd second_diff_matrix(N+1,N+1);
+        for (std::size_t i=0;i<N+1;i++){
+          for (std::size_t j=0;j<N+1;j++){
+            if (i==j){
+              second_diff_matrix(i,j) = 2*std::pow(first_diff_matrix(i,i),2)
+              second_diff_matrix(i,j) += 2*(first_diff_matrix.row(i).head(i).array()/
+                                            (cheb_nodes(i)*Eigen::ArrayXd::One(i)-cheb_nodes.head(i).array())).sum();
+              second_diff_matrix(i,j) += 2*(first_diff_matrix.row(i).tail(N-i-1).array()/
+                                            (cheb_nodes(i)*Eigen::ArrayXd::One(N-i-1)-cheb_nodes.tail(N-i-1).array())).sum();
+
+            }
+            else{
+              second_diff_matrix(i,j) = 2*first_diff_matrix(i,j)*(first_diff_matrix(i,i)-1/(cheb_nodes(i)-cheb_nodes(j)));
+            }
+          }
+        }
+        return second_diff_matrix;
+      }
+      public:
+        Eigen::MatrixXd norder_diff_matrix(int order, std::size_t N){
+          if (order==1){
+            return first_order_diff(std::size_t N);
+          }
+          else if (order==2){
+            return second_order_diff(std::size_t N);
+          }
+          Eigen::MatrixXd second_diff_matrix = second_order_diff(std::size_t N);
+          Eigen::MatrixXd first_diff_matrix = first_order_diff(std::size_t N);
+          int order_left = order;
+          Eigen::MatrixXd diff_matrix = Eigen::MatrixXd::Identity(N+1);
+          while (order_left>0){
+            if (order_left-2>0){
+              diff_matrix *= second_diff_matrix;
+              order_left -= 2;
+            }
+            else{
+              diff_matrix *= first_diff_matrix;
+              order_left--;
+            }
+          }
+          return diff_matrix;
+        }
+    };
+
     // From CoolProp
     template<class T> bool is_in_closed_range(T x1, T x2, T x) { return (x >= std::min(x1, x2) && x <= std::max(x1, x2)); };
 
@@ -459,7 +527,7 @@ namespace ChebTools {
         auto N = m_c.size()-1;
         auto Ndegree_scaled = N*2;
         Eigen::VectorXd xscaled = get_extrema(Ndegree_scaled), yy = y_Clenshaw_xscaled(xscaled);
-        
+
         // a,b,c can also be obtained by solving the matrix system:
         // [x_k^2, x_k, 1] = [b_k] for k in 1,2,3
         for (auto i = 0; i+2 < Ndegree_scaled+1; i += 2){
@@ -524,7 +592,7 @@ namespace ChebTools {
                     root1 = secant(x_1, y_1, x_m, y_m);
                     root2 = secant(x_m, y_m, x_3, y_3);
                     // Rescale back into real-world values in [xmin,xmax] from [-1,1]
-                    roots.push_back(((m_xmax - m_xmin)*root1 + (m_xmax + m_xmin)) / 2.0); 
+                    roots.push_back(((m_xmax - m_xmin)*root1 + (m_xmax + m_xmin)) / 2.0);
                     roots.push_back(((m_xmax - m_xmin)*root2 + (m_xmax + m_xmin)) / 2.0);
                 }
                 else if(Nroots_inside == 1) {
@@ -695,7 +763,7 @@ namespace ChebTools {
     Eigen::VectorXd ChebyshevExpansion::get_nodes_realworld() {
         return ((m_xmax - m_xmin)*get_nodes_n11().array() + (m_xmax + m_xmin))*0.5;
     }
-    /// Values of the function at the Chebyshev-Lobatto nodes 
+    /// Values of the function at the Chebyshev-Lobatto nodes
     Eigen::VectorXd ChebyshevExpansion::get_node_function_values() {
         std::size_t N = m_c.size()-1;
         return u_matrix_library.get(N)*m_c;
@@ -791,6 +859,53 @@ namespace ChebTools {
         else {
             return A.eigenvalues();
         }
+    }
+
+    ChebyshevExpansion solve_bvp(const std::size_t N, const std::vector<double_function> &lhs_coeffs,
+                                        const double_function &rhs_func, const std::vector<double> &left_bc,
+                                        const std::vector<double> &right_bc, const double xmin, const double xmax){
+      if (left_bc.size()!=3 || right_bc.size()!=3){
+        throw new std::invalid_argument("Must specify 3 values for boundary conditions!");
+      }
+      if (N==0){
+        throw new std::invalid_argument("Must specify a nonzero degree for the Chebyshev Expansion!");
+      }
+      // Assembling the rhs vector
+      Eigen::VectorXd f_vec = ChebyshevExtremaLibrary.get_extrema(N);
+      for (std::size_t i=1;i<N;i++){
+        f_vec(i) = rhs_func((xmax-xmin)*f_vec(i)/2+(xmax+xmin)/2);
+      }
+      // Incorporating boundary conditions on for left hand side vector
+      f_vec(0) = left_bc[2]; f_vec(N) = right_bc[2];
+
+      // Assembling the left hand side matrix that will be all the differentiation together
+      Eigen::MatrixXd left_side_matrix = Eigen::MatrixXd::Zero(N+1);
+      Eigen::MatrixXd temp_matrix(N+1,N+1);
+      for (std::size_t i=0;i<lhs_coeffs.size();i++){
+        if (i==0){
+          temp_matrix = Eigen::MatrixXd::Identity(N+1);
+          for (std::size_t j=0;j<lhs_coeffs.size();j++){
+            temp_matrix.row(j) = lhs_coeffs[i]((xmax-xmin)*f_vec(j)/2+(xmax+xmin)/2);
+          }
+        }
+        else{
+          temp_matrix = std::pow(2/(xmax-xmin),i)*DiffMatrixLibrary::norder_diff_matrix(i,N);
+          for (std::size_t j=0;j<lhs_coeffs.size();j++){
+            temp_matrix.row(j) = lhs_coeffs[i]((xmax-xmin)*f_vec(j)/2+(xmax+xmin)/2);
+          }
+        }
+        left_side_matrix += temp_matrix;
+      }
+      // Assemble the boundary conditions
+      // the left boundary condition should effect the top row
+      // the right boundary condition should effect the bottom row
+      left_side_matrix.row(0)(0) = left_bc[1];
+      left_side_matrix.row(0) += left_bc[0]*2/(xmax-xmin)*DiffMatrixLibrary::norder_diff_matrix(1,N).row(0);
+      left_side_matrix.row(N)(0) = right_bc[1];
+      left_side_matrix.row(N) += right_bc[0]*2/(xmax-xmin)*DiffMatrixLibrary::norder_diff_matrix(1,N).row(N);
+
+
+      return ChebyshevExpansion::factoryf(N, left_side_matrix.colPivHouseholderQr().solve(f_vec), xmin, xmax);
     }
 
 }; /* namespace ChebTools */

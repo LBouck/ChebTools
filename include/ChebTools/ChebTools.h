@@ -202,7 +202,23 @@ namespace ChebTools{
 		Eigen::VectorXd get_nodes_realworld();
         /// Values of the function at the Chebyshev-Lobatto nodes
         Eigen::VectorXd get_node_function_values();
+
+        /* @brief Solves a linear boundary value problem and returns the ChebyshevExpansion solution
+         * @param N degree of desired ChebyshevExpansion
+         * @param lhs_coeffs coefficient functions of x for each order derivative
+         * @param rhs_func source term for right hand side of BVP equation
+         * @param left_bc specifies left side robin boundary conditions so \f$left_bc[0]u'(xmin)+left_bc[1]u(xmin)=left_bc[2]\f$
+         * @param right_bc specifies right side robin boundary conditions so \f$right_bc[0]u'(xmin)+right_bc[1]u(xmin)=right_bc[2]\f$
+         * @param xmin specifies the left side of the domain
+         * @param xmax specifies the right side of the domain
+         */
+        template<class double_function>
+        static ChebyshevExpansion solve_bvp(const std::size_t N, const std::vector<double_function> &lhs_coeffs,
+                                            const double_function &rhs_func, const std::vector<double> &left_bc,
+                                            const std::vector<double> &right_bc, const double xmin, const double xmax);
+
     };
+
 
 }; /* namespace ChebTools */
 #endif
