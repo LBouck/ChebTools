@@ -211,7 +211,7 @@ TEST_CASE("Transform y=x^3 by sin(y) to be y=sin(x^3)", "")
     std::cout << C2.coef() << std::endl;
     double y_expected = sin(0.7*0.7*0.7);
     double y = C2.y(0.7);
-    
+
     auto err = std::abs((y_expected - y)/y);
     CAPTURE(err);
     CHECK(err < 1e-14);
@@ -386,5 +386,51 @@ TEST_CASE("corner cases with linear ChebyshevExpansion",""){
     CAPTURE(roots);
     CHECK(roots==0);
     CHECK(linCheb.coef().size()==3);
+  }
+}
+
+
+// functions that should return the 4th degree chebyshev polynomial
+double rhs(double x){ return 0;}
+double secondCoeff(double x){ return 1-std::pow(x,2); }
+double firstCoeff(double x){ return -x;}
+double zerothCoeff(double x){ return 16;}
+TEST_CASE("Linear BVP Tests",""){
+  double error;
+  double tol = 1e-14;
+  Eigen::MatrixXd A(2,2);
+  A << 1/(std::cos(EIGEN_PI/4)-std::cos(3*EIGEN_PI/4)), -1/(std::cos(EIGEN_PI/4)-std::cos(3*EIGEN_PI/4)),
+      -1/(std::cos(3*EIGEN_PI/4)-std::cos(EIGEN_PI/4)), 1/(std::cos(3*EIGEN_PI/4)-std::cos(EIGEN_PI/4));
+  SECTION("first differentiation matrix check"){
+    error = (A-ChebTools::DiffMatrixLibrary::norder_diff_matrix(1,1)).norm()
+    CAPTURE(error);
+    CHECK(error<tol);
+  }
+  SECTION("second differentiation matrix check"){
+    error = (A*A-ChebTools::DiffMatrixLibrary::norder_diff_matrix(2,1)).norm()
+    CAPTURE(error);
+    CHECK(error<tol);
+  }
+  SECTION("third differentiation matrix check"){
+    error = (A*A*A-ChebTools::DiffMatrixLibrary::norder_diff_matrix(3,1)).norm()
+    CAPTURE(error);
+    CHECK(error<tol);
+  }
+  SECTION("fourth differentiation matrix check"){
+    error = (A*A*A*A-ChebTools::DiffMatrixLibrary::norder_diff_matrix(4,1)).norm()
+    CAPTURE(error);
+    CHECK(error<tol);
+  }
+
+  SECTION("Cheb diff eq test"){
+    std::vector<double_function> coeffs = {zerothCoeff,firstCoeff,secondCoeff};
+    std::vector<double> left_bc = {0,1,1};
+    std::vector<double> right_bc = {0,1,1};
+    ChebTools::ChebyshevExpansion cheb_soln = ChebTools::ChebyshevExpansion::cheb_from_bvp(5, coeffs,rhs,left_bc,right_bc, -1, 1);
+    Eigen::VectorXd soln = Eigen::VectorXd::Zero(6);
+    soln(4) = 1;
+    error = (soln-cheb_soln.coef()).norm();
+    CAPTURE(error);
+    CHECK(error<tol);
   }
 }

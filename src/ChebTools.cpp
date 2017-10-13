@@ -258,6 +258,25 @@ namespace ChebTools {
         }
     };
 
+    class LeastSquaresMatrixLibrary{
+    public:
+      Eigen::MatrixXd leastSquaresMatrix(std::size_t degree_of_cheb, const Eigen::VectorXd &xvals){
+        Eigen::MatrixXd ls_mat(xvals.size(),degree_of_cheb+1);
+        double xmin = Eigen::VectorXd::min(xvals); double xmax = Eigen::VectorXd::max(xvals);
+        ChebyshevExpansion jcheb;
+        std::vector<double> coeffs = {1};
+
+        for (std::size_t j=0;j<degree_of_cheb+1;j++){
+          if (j>0){coeffs[j-1] = 0; coeffs.push_back(1);}
+           jcheb = ChebyshevExpansion(coeffs,xmin,xmax);
+          for (std::size_t i=0;i<xvals.size();i++){
+            ls_mat(i,j) = jcheb.y(xvals(i));
+          }
+        }
+        return ls_mat;
+      }
+    }
+
     // From CoolProp
     template<class T> bool is_in_closed_range(T x1, T x2, T x) { return (x >= std::min(x1, x2) && x <= std::max(x1, x2)); };
 
@@ -868,7 +887,7 @@ namespace ChebTools {
         }
     }
 
-    ChebyshevExpansion solve_bvp(const std::size_t N, const std::vector<double_function> &lhs_coeffs,
+    ChebyshevExpansion cheb_from_bvp(const std::size_t N, const std::vector<double_function> &lhs_coeffs,
                                         const double_function &rhs_func, const std::vector<double> &left_bc,
                                         const std::vector<double> &right_bc, const double xmin, const double xmax){
       if (left_bc.size()!=3 || right_bc.size()!=3){
@@ -911,8 +930,23 @@ namespace ChebTools {
       left_side_matrix.row(N)(0) = right_bc[1];
       left_side_matrix.row(N) += right_bc[0]*2/(xmax-xmin)*DiffMatrixLibrary::norder_diff_matrix(1,N).row(N);
 
-
       return ChebyshevExpansion::factoryf(N, left_side_matrix.colPivHouseholderQr().solve(f_vec), xmin, xmax);
+    }
+
+
+    ChebyshevExpansion cheb_from_leastSquares(const std::size_t degree_of_cheb, const Eigen::VectorXd &x_data, const Eigen::VectorXd &y_data){
+      if (x_data.size()!=y_data.size() || x_data.size()==0){
+        throw new std::invalid_argument("Number of x_data and y_data points must agree and be greater than zero!");
+      }
+      if (degree_of_cheb==0){
+        throw new std::invalid_argument("Must specify a nonzero degree for the Chebyshev Expansion!");
+      }
+      double xmin = Eigen::VectorXd::min(x_data);
+      double xmax = Eigen::VectorXd::max(x_data);
+      Eigen::MatrixXd A = LeastSquaresMatrixLibrary::leastSquaresMatrix(degree_of_cheb,x_data);
+      Eigen::MatrixXd At = A.transpose();
+      Eigen vectorXd coeffs = (At*A).colPivHouseholderQr().solve(At*y_data);
+      return ChebyshevExpansion::factoryf(degree_of_cheb, coeffs, xmin, xmax);
     }
 
 }; /* namespace ChebTools */

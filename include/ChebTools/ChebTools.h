@@ -92,7 +92,7 @@ namespace ChebTools{
         friend ChebyshevExpansion operator*(double value, const ChebyshevExpansion &ce){
             return ChebyshevExpansion(std::move(ce.coef()*value),ce.m_xmin, ce.m_xmax);
         };
-        
+
         ChebyshevExpansion apply(std::function<Eigen::ArrayXd(const Eigen::ArrayXd &)> &f);
 
         /// Get the vector of coefficients
@@ -214,7 +214,8 @@ namespace ChebTools{
         /// Values of the function at the Chebyshev-Lobatto nodes
         Eigen::VectorXd get_node_function_values();
 
-        /* @brief Solves a linear boundary value problem and returns the ChebyshevExpansion solution
+        /**
+         * @brief Solves a linear boundary value problem and returns the ChebyshevExpansion solution
          * @param N degree of desired ChebyshevExpansion
          * @param lhs_coeffs coefficient functions of x for each order derivative
          * @param rhs_func source term for right hand side of BVP equation
@@ -224,9 +225,22 @@ namespace ChebTools{
          * @param xmax specifies the right side of the domain
          */
         template<class double_function>
-        static ChebyshevExpansion solve_bvp(const std::size_t N, const std::vector<double_function> &lhs_coeffs,
+        static ChebyshevExpansion cheb_from_bvp(const std::size_t N, const std::vector<double_function> &lhs_coeffs,
                                             const double_function &rhs_func, const std::vector<double> &left_bc,
                                             const std::vector<double> &right_bc, const double xmin, const double xmax);
+
+
+
+        /**
+         * @brief Computes a least squares approximation of the data and returns a ChebyshevExpansion
+         * @param degree_of_cheb degree of desired ChebyshevExpansion, should be less than number of data points
+         * @param x_data the x values of data points
+         * @param y_data the y values of data points
+         */
+        static ChebyshevExpansion cheb_from_leastSquares(const std::size_t degree_of_cheb,
+                                                         const Eigen::VectorXd &x_data,
+                                                         const Eigen::VectorXd &y_data);
+
 
     };
 
