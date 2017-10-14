@@ -93,6 +93,8 @@ namespace ChebTools{
         friend ChebyshevExpansion operator*(double value, const ChebyshevExpansion &ce){
             return ChebyshevExpansion(std::move(ce.coef()*value),ce.m_xmin, ce.m_xmax);
         };
+        
+        ChebyshevExpansion apply(std::function<Eigen::ArrayXd(const Eigen::ArrayXd &)> &f);
 
         /// Get the vector of coefficients
         const vectype &coef() const ;
@@ -101,6 +103,10 @@ namespace ChebTools{
         * @param x A value scaled in the domain [xmin,xmax]
         */
         double y_recurrence(const double x);
+        /**
+        * @brief Do a single input/single output evaluation of the Chebyshev expansion with the inputs scaled in [xmin, xmax]
+        * @param x A value scaled in the domain [xmin,xmax]
+        */
         double y_Clenshaw(const double x) const;
         double y_Clenshaw_xscaled(const double x) const;
         /**
@@ -108,6 +114,11 @@ namespace ChebTools{
         * @param x A vectype of values in the domain [xmin,xmax]
         */
         vectype y(const vectype &x) const ;
+        /**
+        * @brief Do a vectorized evaluation of the Chebyshev expansion with the inputs scaled in [xmin, xmax]
+        * @param x A value scaled in the domain [xmin,xmax]
+        */
+        double y(const double x) const{ return y_Clenshaw(x); }
         /**
         * @brief Do a vectorized evaluation of the Chebyshev expansion with the input scaled in the domain [-1,1]
         * @param xscaled A vectype of values scaled to the domain [-1,1] (the domain of the Chebyshev basis functions)
