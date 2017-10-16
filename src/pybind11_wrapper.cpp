@@ -22,7 +22,7 @@ void init_ChebTools(py::module &m){
     m.def("Eigen_nbThreads", []() { return Eigen::nbThreads(); });
     m.def("Eigen_setNbThreads", [](int Nthreads) { return Eigen::setNbThreads(Nthreads); });
     // m.def("cheb_from_leastSquares", &ChebyshevExpansion::cheb_from_leastSquares);
-    // m.def("cheb_from_bvp", &ChebyshevExpansion::cheb_from_bvp);
+    m.def("cheb_from_bvp", &ChebyshevExpansion::cheb_from_bvp);
 
     py::class_<ChebyshevExpansion>(m, "ChebyshevExpansion")
         .def(py::init<const std::vector<double> &, double, double>())

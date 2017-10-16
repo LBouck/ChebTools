@@ -391,45 +391,65 @@ TEST_CASE("corner cases with linear ChebyshevExpansion",""){
 
 
 // functions that should return the 4th degree chebyshev polynomial
-double rhs(double x){ return 0;}
-double secondCoeff(double x){ return 1-std::pow(x,2); }
-double firstCoeff(double x){ return -x;}
-double zerothCoeff(double x){ return 16;}
+// double rhs(double x){ return 0;}
+// double secondCoeff(double x){ return 1-std::pow(x,2); }
+// double firstCoeff(double x){ return -x;}
+// double zerothCoeff(double x){ return 16;}
+double rhs(double x){ return 1; }
+double zerothCoeff(double x){ return 0;}
+double pi_constant(double x){ return std::pow(EIGEN_PI,2); }
+double rhs2(double x){ return -std::pow(EIGEN_PI,2)*std::sin(EIGEN_PI*x); }
 TEST_CASE("Linear BVP Tests",""){
   double error;
   double tol = 1e-14;
-  Eigen::MatrixXd A(2,2);
-  A << 1/(std::cos(EIGEN_PI/4)-std::cos(3*EIGEN_PI/4)), -1/(std::cos(EIGEN_PI/4)-std::cos(3*EIGEN_PI/4)),
-      -1/(std::cos(3*EIGEN_PI/4)-std::cos(EIGEN_PI/4)), 1/(std::cos(3*EIGEN_PI/4)-std::cos(EIGEN_PI/4));
-  SECTION("first differentiation matrix check"){
-    error = (A-ChebTools::DiffMatrixLibrary::norder_diff_matrix(1,1)).norm()
-    CAPTURE(error);
-    CHECK(error<tol);
-  }
-  SECTION("second differentiation matrix check"){
-    error = (A*A-ChebTools::DiffMatrixLibrary::norder_diff_matrix(2,1)).norm()
-    CAPTURE(error);
-    CHECK(error<tol);
-  }
-  SECTION("third differentiation matrix check"){
-    error = (A*A*A-ChebTools::DiffMatrixLibrary::norder_diff_matrix(3,1)).norm()
-    CAPTURE(error);
-    CHECK(error<tol);
-  }
-  SECTION("fourth differentiation matrix check"){
-    error = (A*A*A*A-ChebTools::DiffMatrixLibrary::norder_diff_matrix(4,1)).norm()
+  // Eigen::MatrixXd A(2,2);
+  // A << 1/(std::cos(EIGEN_PI/4)-std::cos(3*EIGEN_PI/4)), -1/(std::cos(EIGEN_PI/4)-std::cos(3*EIGEN_PI/4)),
+  //     -1/(std::cos(3*EIGEN_PI/4)-std::cos(EIGEN_PI/4)), 1/(std::cos(3*EIGEN_PI/4)-std::cos(EIGEN_PI/4));
+  // SECTION("first differentiation matrix check"){
+  //   error = (A-ChebTools::DiffMatrixLibrary::norder_diff_matrix(1,1)).norm()
+  //   CAPTURE(error);
+  //   CHECK(error<tol);
+  // }
+  // SECTION("second differentiation matrix check"){
+  //   error = (A*A-ChebTools::DiffMatrixLibrary::norder_diff_matrix(2,1)).norm()
+  //   CAPTURE(error);
+  //   CHECK(error<tol);
+  // }
+  // SECTION("third differentiation matrix check"){
+  //   error = (A*A*A-ChebTools::DiffMatrixLibrary::norder_diff_matrix(3,1)).norm()
+  //   CAPTURE(error);
+  //   CHECK(error<tol);
+  // }
+  // SECTION("fourth differentiation matrix check"){
+  //   error = (A*A*A*A-ChebTools::DiffMatrixLibrary::norder_diff_matrix(4,1)).norm()
+  //   CAPTURE(error);
+  //   CHECK(error<tol);
+  // }
+  SECTION("Cheb diff eq test"){
+    // std::vector<std::function<double(double)>> coeffs = {zerothCoeff,firstCoeff,secondCoeff};
+    std::vector<std::function<double(double)>> coeffs = {zerothCoeff,rhs};
+    std::vector<double> left_bc = {0,1,-1};
+    std::vector<double> right_bc = {0,1,1};
+    ChebTools::ChebyshevExpansion cheb_soln = ChebTools::ChebyshevExpansion::cheb_from_bvp(2, coeffs, rhs, left_bc, right_bc, -1, 1);
+    // std::cout << "coeffs" <<cheb_soln.coef()<< '\n';
+    Eigen::VectorXd soln = Eigen::VectorXd::Zero(3);
+    soln(1) = 1;
+    // soln(4) = 1;
+    error = (soln-cheb_soln.coef()).norm();
     CAPTURE(error);
     CHECK(error<tol);
   }
 
-  SECTION("Cheb diff eq test"){
-    std::vector<double_function> coeffs = {zerothCoeff,firstCoeff,secondCoeff};
-    std::vector<double> left_bc = {0,1,1};
-    std::vector<double> right_bc = {0,1,1};
-    ChebTools::ChebyshevExpansion cheb_soln = ChebTools::ChebyshevExpansion::cheb_from_bvp(5, coeffs,rhs,left_bc,right_bc, -1, 1);
-    Eigen::VectorXd soln = Eigen::VectorXd::Zero(6);
-    soln(4) = 1;
-    error = (soln-cheb_soln.coef()).norm();
+  SECTION("Sine on [0,1] test"){
+    // std::vector<std::function<double(double)>> coeffs = {zerothCoeff,firstCoeff,secondCoeff};
+    std::vector<std::function<double(double)>> coeffs = {pi_constant,zerothCoeff,rhs};
+    std::vector<double> left_bc = {0,1,0};
+    std::vector<double> right_bc = {0,1,0};
+    ChebTools::ChebyshevExpansion cheb_soln = ChebTools::ChebyshevExpansion::cheb_from_bvp(32, coeffs, rhs2, left_bc, right_bc, 0, 1);
+    Eigen::VectorXd true_soln = (Eigen::ArrayXd::LinSpaced(0,1,100)*EIGEN_PI).sin().matrix();
+    Eigen::VectorXd approx_soln = cheb_soln.y(Eigen::ArrayXd::LinSpaced(0,1,100).matrix());
+    error = (true_soln-approx_soln).norm();
+    std::cout<<"Error: "<<error<<std::endl;
     CAPTURE(error);
     CHECK(error<tol);
   }

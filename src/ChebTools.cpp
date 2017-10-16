@@ -193,9 +193,12 @@ namespace ChebTools {
 
     class DiffMatrixLibrary{
     private:
-      Eigen::MatrixXd first_order_diff(std::size_t N){
+      static Eigen::MatrixXd first_order_diff(std::size_t N){
+        // std::cout<<"Inside first_order_diff"<<std::endl;
         Eigen::MatrixXd first_diff_matrix(N+1,N+1);
-        Eigen::VectorXd cheb_nodes(N+1) = ChebyshevExtremaLibrary::get_extrema(N);
+        Eigen::VectorXd cheb_nodes = get_extrema(N);
+        // std::cout<<"Size of cheb_nodes"<<std::endl;
+        // std::cout<<cheb_nodes.size()<<std::endl;
 
         double deltai, deltaj;
         for (std::size_t i=0;i<N+1;i++){
@@ -203,71 +206,97 @@ namespace ChebTools {
             deltai = (i==0 || i==N) ? 2 : 1;
             deltaj = (j==0 || j==N) ? 2 : 1;
             if (i==j){ first_diff_matrix(i,j) = 0;}
-            else{ first_diff_matrix(i,j) = (deltai/deltaj)*std::pow((double) -1,i+j)/(cheb_nodes(i)-cheb_nodes(j)); }
+            else{ first_diff_matrix(i,j) = (deltai/deltaj)*std::pow((double) -1,i+j)/(std::cos(i*EIGEN_PI/N)-std::cos(j*EIGEN_PI/N)); }
           }
         }
+        // std::cout<<"Diagonal terms"<<std::endl;
+        double sum;
         for (std::size_t i=0;i<N+1;i++){
-          first_diff_matrix(i,i) = -first_diff_matrix.row(i).sum();
+          sum = first_diff_matrix.row(i).sum();
+          first_diff_matrix(i,i) = -sum;
         }
         return first_diff_matrix;
       }
-      Eigen::MatrixXd second_order_diff(std::size_t N){
-        Eigen::MatrixXd first_diff_matrix(N+1,N+1) = first_order_diff(std::size_t N);
-        Eigen::VectorXd cheb_nodes(N+1) = ChebyshevExtremaLibrary::get_extrema(N);
-        Eigen::MatrixXd second_diff_matrix(N+1,N+1);
-        for (std::size_t i=0;i<N+1;i++){
-          for (std::size_t j=0;j<N+1;j++){
-            if (i==j){
-              second_diff_matrix(i,j) = 2*std::pow(first_diff_matrix(i,i),2)
-              second_diff_matrix(i,j) += 2*(first_diff_matrix.row(i).head(i).array()/
-                                            (cheb_nodes(i)*Eigen::ArrayXd::One(i)-cheb_nodes.head(i).array())).sum();
-              second_diff_matrix(i,j) += 2*(first_diff_matrix.row(i).tail(N-i-1).array()/
-                                            (cheb_nodes(i)*Eigen::ArrayXd::One(N-i-1)-cheb_nodes.tail(N-i-1).array())).sum();
-
-            }
-            else{
-              second_diff_matrix(i,j) = 2*first_diff_matrix(i,j)*(first_diff_matrix(i,i)-1/(cheb_nodes(i)-cheb_nodes(j)));
-            }
-          }
-        }
-        return second_diff_matrix;
-      }
+      // static Eigen::MatrixXd second_order_diff(std::size_t N){
+      //   // std::cout<<"Inside second_order_diff"<<std::endl;
+      //   Eigen::MatrixXd first_diff_matrix = first_order_diff(N);
+      //   // std::cout<<"Size of first order matrice"<<std::endl;
+      //   // std::cout<<first_diff_matrix.rows()<<std::endl;
+      //   // std::cout<<first_diff_matrix.cols()<<std::endl;
+      //   Eigen::VectorXd cheb_nodes = get_extrema(N);
+      //   // std::cout<<"Size of cheb_nodes"<<std::endl;
+      //   // std::cout<<cheb_nodes.size()<<std::endl;
+      //   Eigen::MatrixXd second_diff_matrix(N+1,N+1);
+      //   for (std::size_t i=0;i<N+1;i++){
+      //     for (std::size_t j=0;j<N+1;j++){
+      //       if (i==j){
+      //         if (i!=0){
+      //           // std::cout<<"Size of row(i).head(i) "<<first_diff_matrix.row(i).head(i).size()<<std::endl;
+      //           // std::cout<<"Size of Eigen::VectorXd::Constant(i,1) "<<Eigen::VectorXd::Constant(i,1).size()<<std::endl;
+      //           // std::cout<<"Size of cheb_nodes.head(i) "<<cheb_nodes.head(i).size()<<std::endl;
+      //           second_diff_matrix(i,j) = 2*std::pow(first_diff_matrix(i,i),2);
+      //           second_diff_matrix(i,j) += 2*(first_diff_matrix.row(i).head(i).array()/
+      //                                         (cheb_nodes(i)*Eigen::VectorXd::Constant(i,1).array()-cheb_nodes.head(i).array()).transpose()).sum();
+      //         }
+      //         if (i!=N){
+      //           // std::cout<<"Size of first_diff_matrix.row(i).tail(N-i-1) "<<first_diff_matrix.row(i).tail(N-i-1).size()<<std::endl;
+      //           // std::cout<<"Size of Eigen::VectorXd::Constant(N-i-1,1) "<<Eigen::VectorXd::Constant(N-i-1,1).size()<<std::endl;
+      //           // std::cout<<"Size of cheb_nodes.tail(N-i-1) "<<cheb_nodes.tail(N-i-1).size()<<std::endl;
+      //           Eigen::ArrayXd quotient = cheb_nodes(i)*Eigen::VectorXd::Constant(N-i-1,1).array()-cheb_nodes.tail(N-i-1).array();
+      //           // std::cout<<"Done with quotient"<<std::endl;
+      //           // std::cout<<"Dimensions of quotient: "<<quotient.rows()<<", "<<quotient.cols()<<std::endl;
+      //           // std::cout<<"Dimensions of row: "<<first_diff_matrix.row(i).tail(N-i-1).rows()<<", "<<first_diff_matrix.row(i).tail(N-i-1).cols()<<std::endl;
+      //           second_diff_matrix(i,j) += 2*(first_diff_matrix.row(i).tail(N-i-1).array()/quotient.transpose()).sum();
+      //         }
+      //       }
+      //       else{
+      //         second_diff_matrix(i,j) = 2*first_diff_matrix(i,j)*(first_diff_matrix(i,i)-1/(cheb_nodes(i)-cheb_nodes(j)));
+      //       }
+      //     }
+      //   }
+      //   return second_diff_matrix;
+      // }
       public:
-        Eigen::MatrixXd norder_diff_matrix(int order, std::size_t N){
+        static Eigen::MatrixXd norder_diff_matrix(int order, std::size_t N){
           if (order==1){
-            return first_order_diff(std::size_t N);
+            return first_order_diff(N);
           }
-          else if (order==2){
-            return second_order_diff(std::size_t N);
-          }
-          Eigen::MatrixXd second_diff_matrix = second_order_diff(std::size_t N);
-          Eigen::MatrixXd first_diff_matrix = first_order_diff(std::size_t N);
+          // else if (order==2){
+          //   return second_order_diff(N);
+          // }
+          // Eigen::MatrixXd second_diff_matrix = second_order_diff(N);
+          Eigen::MatrixXd first_diff_matrix = first_order_diff(N);
+          // std::cout<<"Size of second and first order matrices"<<std::endl;
+          // std::cout<<second_diff_matrix.rows()<<std::endl;
+          // std::cout<<second_diff_matrix.cols()<<std::endl;
+          // std::cout<<first_diff_matrix.rows()<<std::endl;
+          // std::cout<<first_diff_matrix.cols()<<std::endl;
           int order_left = order;
-          Eigen::MatrixXd diff_matrix = Eigen::MatrixXd::Identity(N+1);
+          Eigen::MatrixXd diff_matrix = Eigen::MatrixXd::Identity(N+1,N+1);
           while (order_left>0){
-            if (order_left-2>0){
-              diff_matrix *= second_diff_matrix;
-              order_left -= 2;
-            }
-            else{
+            // if (order_left-2>0){
+            //   diff_matrix *= second_diff_matrix;
+            //   order_left -= 2;
+            // }
+            // else{
               diff_matrix *= first_diff_matrix;
               order_left--;
-            }
+            // }
           }
           return diff_matrix;
         }
     };
+    static DiffMatrixLibrary DiffMatrixLibrary;
 
     class LeastSquaresMatrixLibrary{
     public:
-      Eigen::MatrixXd leastSquaresMatrix(std::size_t degree_of_cheb, const Eigen::VectorXd &xvals){
+      static Eigen::MatrixXd leastSquaresMatrix(std::size_t degree_of_cheb, const Eigen::VectorXd &xvals){
         Eigen::MatrixXd ls_mat(xvals.size(),degree_of_cheb+1);
-        double xmin = Eigen::VectorXd::min(xvals); double xmax = Eigen::VectorXd::max(xvals);
-        ChebyshevExpansion jcheb;
+        double xmin = xvals.minCoeff(); double xmax = xvals.maxCoeff();
         std::vector<double> coeffs = {1};
-
+        ChebyshevExpansion jcheb = ChebyshevExpansion(coeffs,xmin,xmax);
         for (std::size_t j=0;j<degree_of_cheb+1;j++){
-          if (j>0){coeffs[j-1] = 0; coeffs.push_back(1);}
+          if (j>0){ coeffs[j-1] = 0; coeffs.push_back(1); }
            jcheb = ChebyshevExpansion(coeffs,xmin,xmax);
           for (std::size_t i=0;i<xvals.size();i++){
             ls_mat(i,j) = jcheb.y(xvals(i));
@@ -275,8 +304,8 @@ namespace ChebTools {
         }
         return ls_mat;
       }
-    }
-
+    };
+    static LeastSquaresMatrixLibrary LeastSquaresMatrixLibrary;
     // From CoolProp
     template<class T> bool is_in_closed_range(T x1, T x2, T x) { return (x >= std::min(x1, x2) && x <= std::max(x1, x2)); };
 
@@ -887,8 +916,8 @@ namespace ChebTools {
         }
     }
 
-    ChebyshevExpansion cheb_from_bvp(const std::size_t N, const std::vector<double_function> &lhs_coeffs,
-                                        const double_function &rhs_func, const std::vector<double> &left_bc,
+    ChebyshevExpansion ChebyshevExpansion::cheb_from_bvp(const std::size_t N, const std::vector<std::function<double(double)>> &lhs_coeffs,
+                                        const std::function<double(double)> &rhs_func, const std::vector<double> &left_bc,
                                         const std::vector<double> &right_bc, const double xmin, const double xmax){
       if (left_bc.size()!=3 || right_bc.size()!=3){
         throw new std::invalid_argument("Must specify 3 values for boundary conditions!");
@@ -897,55 +926,70 @@ namespace ChebTools {
         throw new std::invalid_argument("Must specify a nonzero degree for the Chebyshev Expansion!");
       }
       // Assembling the rhs vector
-      Eigen::VectorXd f_vec = ChebyshevExtremaLibrary.get_extrema(N);
+      // std::cout<<"RHS"<<std::endl;
+      Eigen::VectorXd cheb_nodes = get_extrema(N);
+      Eigen::VectorXd f_vec(N+1);
+      std::cout<<f_vec.size()<<std::endl;
       for (std::size_t i=1;i<N;i++){
-        f_vec(i) = rhs_func((xmax-xmin)*f_vec(i)/2+(xmax+xmin)/2);
+        f_vec(i) = rhs_func((xmax-xmin)*cheb_nodes(i)/2+(xmax+xmin)/2);
       }
       // Incorporating boundary conditions on for left hand side vector
-      f_vec(0) = left_bc[2]; f_vec(N) = right_bc[2];
+      f_vec(N) = left_bc[2]; f_vec(0) = right_bc[2];
 
       // Assembling the left hand side matrix that will be all the differentiation together
-      Eigen::MatrixXd left_side_matrix = Eigen::MatrixXd::Zero(N+1);
+      Eigen::MatrixXd left_side_matrix = Eigen::MatrixXd::Zero(N+1,N+1);
       Eigen::MatrixXd temp_matrix(N+1,N+1);
       for (std::size_t i=0;i<lhs_coeffs.size();i++){
         if (i==0){
-          temp_matrix = Eigen::MatrixXd::Identity(N+1);
+          temp_matrix = Eigen::MatrixXd::Identity(N+1,N+1);
           for (std::size_t j=0;j<lhs_coeffs.size();j++){
-            temp_matrix.row(j) = lhs_coeffs[i]((xmax-xmin)*f_vec(j)/2+(xmax+xmin)/2);
+            temp_matrix(j,j) = lhs_coeffs[i]((xmax-xmin)*cheb_nodes(j)/2+(xmax+xmin)/2);
           }
         }
         else{
           temp_matrix = std::pow(2/(xmax-xmin),i)*DiffMatrixLibrary::norder_diff_matrix(i,N);
           for (std::size_t j=0;j<lhs_coeffs.size();j++){
-            temp_matrix.row(j) = lhs_coeffs[i]((xmax-xmin)*f_vec(j)/2+(xmax+xmin)/2);
+            temp_matrix.row(j) *= lhs_coeffs[i]((xmax-xmin)*cheb_nodes(j)/2+(xmax+xmin)/2);
           }
         }
+        // std::cout<<"Coeff Matrix for i="<<i<<std::endl;
+        // std::cout<<temp_matrix<<std::endl;
         left_side_matrix += temp_matrix;
       }
       // Assemble the boundary conditions
       // the left boundary condition should effect the top row
       // the right boundary condition should effect the bottom row
-      left_side_matrix.row(0)(0) = left_bc[1];
-      left_side_matrix.row(0) += left_bc[0]*2/(xmax-xmin)*DiffMatrixLibrary::norder_diff_matrix(1,N).row(0);
-      left_side_matrix.row(N)(0) = right_bc[1];
-      left_side_matrix.row(N) += right_bc[0]*2/(xmax-xmin)*DiffMatrixLibrary::norder_diff_matrix(1,N).row(N);
+      left_side_matrix.row(0) = right_bc[1]*Eigen::MatrixXd::Identity(1,N+1);
+      left_side_matrix.row(0) += right_bc[0]*2/(xmax-xmin)*DiffMatrixLibrary::norder_diff_matrix(1,N).row(0);
+      left_side_matrix.row(N) = left_bc[1]*Eigen::MatrixXd::Identity(N+1,N+1).row(N);
+      left_side_matrix.row(N) += left_bc[0]*2/(xmax-xmin)*DiffMatrixLibrary::norder_diff_matrix(1,N).row(N);
 
+      // std::cout<<"Left side matrix: "<<std::endl;
+      // std::cout<<left_side_matrix<<std::endl;
+      // std::cout<<"Right side vector"<<std::endl;
+      // std::cout<<f_vec<<std::endl;
+      //
+      // std::cout<<"Solution: "<<left_side_matrix.colPivHouseholderQr().solve(f_vec)<<std::endl;
       return ChebyshevExpansion::factoryf(N, left_side_matrix.colPivHouseholderQr().solve(f_vec), xmin, xmax);
     }
 
 
-    ChebyshevExpansion cheb_from_leastSquares(const std::size_t degree_of_cheb, const Eigen::VectorXd &x_data, const Eigen::VectorXd &y_data){
+    ChebyshevExpansion ChebyshevExpansion::cheb_from_leastSquares(const std::size_t degree_of_cheb, const Eigen::VectorXd &x_data, const Eigen::VectorXd &y_data){
+
+      // We want the user to give us consistent and non empty data
       if (x_data.size()!=y_data.size() || x_data.size()==0){
         throw new std::invalid_argument("Number of x_data and y_data points must agree and be greater than zero!");
       }
+      // we also want them to want a ChebyshevExpansion of at least degree 1
       if (degree_of_cheb==0){
         throw new std::invalid_argument("Must specify a nonzero degree for the Chebyshev Expansion!");
       }
-      double xmin = Eigen::VectorXd::min(x_data);
-      double xmax = Eigen::VectorXd::max(x_data);
+      double xmin = x_data.minCoeff(); double xmax = x_data.maxCoeff();
       Eigen::MatrixXd A = LeastSquaresMatrixLibrary::leastSquaresMatrix(degree_of_cheb,x_data);
       Eigen::MatrixXd At = A.transpose();
-      Eigen vectorXd coeffs = (At*A).colPivHouseholderQr().solve(At*y_data);
+
+      // solving the normal equations
+      Eigen::VectorXd coeffs = (At*A).colPivHouseholderQr().solve(At*y_data);
       return ChebyshevExpansion::factoryf(degree_of_cheb, coeffs, xmin, xmax);
     }
 

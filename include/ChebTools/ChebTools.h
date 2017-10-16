@@ -224,9 +224,8 @@ namespace ChebTools{
          * @param xmin specifies the left side of the domain
          * @param xmax specifies the right side of the domain
          */
-        template<class double_function>
-        static ChebyshevExpansion cheb_from_bvp(const std::size_t N, const std::vector<double_function> &lhs_coeffs,
-                                            const double_function &rhs_func, const std::vector<double> &left_bc,
+        static ChebyshevExpansion cheb_from_bvp(const std::size_t N, const std::vector<std::function<double(double)>> &lhs_coeffs,
+                                            const std::function<double(double)> &rhs_func, const std::vector<double> &left_bc,
                                             const std::vector<double> &right_bc, const double xmin, const double xmax);
 
 
