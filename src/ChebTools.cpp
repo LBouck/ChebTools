@@ -947,6 +947,7 @@ namespace ChebTools {
           }
         }
         else{
+          // std::pow(2/(xmax-xmin),i) comes from chain rule of derivative of order i
           temp_matrix = std::pow(2/(xmax-xmin),i)*DiffMatrixLibrary::norder_diff_matrix(i,N);
           for (std::size_t j=0;j<N+1;j++){
             temp_matrix.row(j) *= lhs_coeffs[i]((xmax-xmin)*std::cos(j*EIGEN_PI/N)/2+(xmax+xmin)/2);
@@ -959,6 +960,7 @@ namespace ChebTools {
       // Assemble the boundary conditions
       // the left boundary condition should effect the top row
       // the right boundary condition should effect the bottom row
+      // 2/(xmax-xmin) comes from chain rule when mapping [xmin,xmax] => [-1,1]
       left_side_matrix.row(0) = right_bc[1]*Eigen::MatrixXd::Identity(1,N+1);
       left_side_matrix.row(0) += right_bc[0]*2/(xmax-xmin)*DiffMatrixLibrary::norder_diff_matrix(1,N).row(0);
       left_side_matrix.row(N) = left_bc[1]*Eigen::MatrixXd::Identity(N+1,N+1).row(N);
