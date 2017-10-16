@@ -401,7 +401,7 @@ double pi_constant(double x){ return std::pow(EIGEN_PI,2); }
 double rhs2(double x){ return -std::pow(EIGEN_PI,2)*std::sin(EIGEN_PI*x); }
 TEST_CASE("Linear BVP Tests",""){
   double error;
-  double tol = 1e-14;
+  double tol = 1e-12;
   // Eigen::MatrixXd A(2,2);
   // A << 1/(std::cos(EIGEN_PI/4)-std::cos(3*EIGEN_PI/4)), -1/(std::cos(EIGEN_PI/4)-std::cos(3*EIGEN_PI/4)),
   //     -1/(std::cos(3*EIGEN_PI/4)-std::cos(EIGEN_PI/4)), 1/(std::cos(3*EIGEN_PI/4)-std::cos(EIGEN_PI/4));
@@ -442,15 +442,19 @@ TEST_CASE("Linear BVP Tests",""){
 
   SECTION("Sine on [0,1] test"){
     // std::vector<std::function<double(double)>> coeffs = {zerothCoeff,firstCoeff,secondCoeff};
-    std::vector<std::function<double(double)>> coeffs = {pi_constant,zerothCoeff,rhs};
+    std::vector<std::function<double(double)>> coeffs = {zerothCoeff,zerothCoeff,rhs};
     std::vector<double> left_bc = {0,1,0};
     std::vector<double> right_bc = {0,1,0};
     ChebTools::ChebyshevExpansion cheb_soln = ChebTools::ChebyshevExpansion::cheb_from_bvp(32, coeffs, rhs2, left_bc, right_bc, 0, 1);
-    Eigen::VectorXd true_soln = (Eigen::ArrayXd::LinSpaced(0,1,100)*EIGEN_PI).sin().matrix();
-    Eigen::VectorXd approx_soln = cheb_soln.y(Eigen::ArrayXd::LinSpaced(0,1,100).matrix());
+    Eigen::VectorXd true_soln = (Eigen::ArrayXd::LinSpaced(100,0,1)*EIGEN_PI).sin().matrix();
+    // std::cout<<"True_soln"<<std::endl;
+    // std::cout<<true_soln<<std::endl;
+    Eigen::VectorXd approx_soln = cheb_soln.y(Eigen::ArrayXd::LinSpaced(100,0,1).matrix());
+    // std::cout<<"approx_soln"<<std::endl;
+    // std::cout<<approx_soln<<std::endl;
     error = (true_soln-approx_soln).norm();
-    std::cout<<"Error: "<<error<<std::endl;
+    // std::cout<<"Error: "<<error<<std::endl;
     CAPTURE(error);
-    CHECK(error<tol);
+    CHECK(error<100*tol);
   }
 }

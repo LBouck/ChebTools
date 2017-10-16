@@ -931,10 +931,10 @@ namespace ChebTools {
       Eigen::VectorXd f_vec(N+1);
       std::cout<<f_vec.size()<<std::endl;
       for (std::size_t i=1;i<N;i++){
-        f_vec(i) = rhs_func((xmax-xmin)*cheb_nodes(i)/2+(xmax+xmin)/2);
+        f_vec(i) = rhs_func((xmax-xmin)*std::cos(i*EIGEN_PI/N)/2+(xmax+xmin)/2);
       }
       // Incorporating boundary conditions on for left hand side vector
-      f_vec(N) = left_bc[2]; f_vec(0) = right_bc[2];
+      f_vec(0) = right_bc[2]; f_vec(N) = left_bc[2];
 
       // Assembling the left hand side matrix that will be all the differentiation together
       Eigen::MatrixXd left_side_matrix = Eigen::MatrixXd::Zero(N+1,N+1);
@@ -942,14 +942,14 @@ namespace ChebTools {
       for (std::size_t i=0;i<lhs_coeffs.size();i++){
         if (i==0){
           temp_matrix = Eigen::MatrixXd::Identity(N+1,N+1);
-          for (std::size_t j=0;j<lhs_coeffs.size();j++){
-            temp_matrix(j,j) = lhs_coeffs[i]((xmax-xmin)*cheb_nodes(j)/2+(xmax+xmin)/2);
+          for (std::size_t j=0;j<N+1;j++){
+            temp_matrix(j,j) = lhs_coeffs[i]((xmax-xmin)*std::cos(j*EIGEN_PI/N)/2+(xmax+xmin)/2);
           }
         }
         else{
           temp_matrix = std::pow(2/(xmax-xmin),i)*DiffMatrixLibrary::norder_diff_matrix(i,N);
-          for (std::size_t j=0;j<lhs_coeffs.size();j++){
-            temp_matrix.row(j) *= lhs_coeffs[i]((xmax-xmin)*cheb_nodes(j)/2+(xmax+xmin)/2);
+          for (std::size_t j=0;j<N+1;j++){
+            temp_matrix.row(j) *= lhs_coeffs[i]((xmax-xmin)*std::cos(j*EIGEN_PI/N)/2+(xmax+xmin)/2);
           }
         }
         // std::cout<<"Coeff Matrix for i="<<i<<std::endl;
@@ -969,6 +969,12 @@ namespace ChebTools {
       // std::cout<<"Right side vector"<<std::endl;
       // std::cout<<f_vec<<std::endl;
       //
+      // std::cout<< "Cheb matrix N=3"<<std::endl;
+      // std::cout<<DiffMatrixLibrary::norder_diff_matrix(1,3)<<std::endl;
+      // std::cout<< "Cheb matrix N=4"<<std::endl;
+      // std::cout<<DiffMatrixLibrary::norder_diff_matrix(1,4)<<std::endl;
+      // std::cout<< "Cheb matrix N=5 mult with pi^"<<std::endl;
+      // std::cout<<DiffMatrixLibrary::norder_diff_matrix(1,5)<<std::endl;
       // std::cout<<"Solution: "<<left_side_matrix.colPivHouseholderQr().solve(f_vec)<<std::endl;
       return ChebyshevExpansion::factoryf(N, left_side_matrix.colPivHouseholderQr().solve(f_vec), xmin, xmax);
     }
