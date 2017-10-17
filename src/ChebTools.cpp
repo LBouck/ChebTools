@@ -929,7 +929,7 @@ namespace ChebTools {
       // std::cout<<"RHS"<<std::endl;
       Eigen::VectorXd cheb_nodes = get_extrema(N);
       Eigen::VectorXd f_vec(N+1);
-      std::cout<<f_vec.size()<<std::endl;
+      // std::cout<<f_vec.size()<<std::endl;
       for (std::size_t i=1;i<N;i++){
         f_vec(i) = rhs_func((xmax-xmin)*std::cos(i*EIGEN_PI/N)/2+(xmax+xmin)/2);
       }
@@ -995,10 +995,9 @@ namespace ChebTools {
       double xmin = x_data.minCoeff(); double xmax = x_data.maxCoeff();
       Eigen::MatrixXd A = LeastSquaresMatrixLibrary::leastSquaresMatrix(degree_of_cheb,x_data);
       Eigen::MatrixXd At = A.transpose();
-
       // solving the normal equations
       Eigen::VectorXd coeffs = (At*A).colPivHouseholderQr().solve(At*y_data);
-      return ChebyshevExpansion::factoryf(degree_of_cheb, coeffs, xmin, xmax);
+      return ChebyshevExpansion(coeffs, xmin, xmax);
     }
 
 }; /* namespace ChebTools */

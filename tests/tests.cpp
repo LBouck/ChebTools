@@ -458,3 +458,40 @@ TEST_CASE("Linear BVP Tests",""){
     CHECK(error<100*tol);
   }
 }
+double sin1(double x){ return std::sin(x); }
+TEST_CASE("Least squares tests",""){
+  double error;
+  double tol = 1e-12;
+  SECTION("Exact interpolation"){
+    Eigen::VectorXd xdata(3);
+    xdata<<-1,0,1;
+    Eigen::VectorXd ydata(3);
+    ydata<<1,-1,1;
+    ChebTools::ChebyshevExpansion chebLS = ChebTools::ChebyshevExpansion::cheb_from_leastSquares(2, xdata, ydata);
+    Eigen::VectorXd soln = Eigen::VectorXd::Zero(3);
+    soln(2) = 1;
+    error = (soln-chebLS.coef()).norm();
+    CAPTURE(error);
+    CHECK(error<tol);
+  }
+  SECTION("Least Squares and interpolation of functions should be similar"){
+    Eigen::VectorXd xdata = Eigen::ArrayXd::LinSpaced(100,0,1);
+    Eigen::VectorXd ydata = xdata.array().sin().matrix();
+    ChebTools::ChebyshevExpansion chebLS = ChebTools::ChebyshevExpansion::cheb_from_leastSquares(10, xdata, ydata);
+    ChebTools::ChebyshevExpansion chebf = ChebTools::ChebyshevExpansion::factory(10,sin1,0, 1);
+    error = (chebf.coef()-chebLS.coef()).norm();
+    CAPTURE(error);
+    CHECK(error<tol);
+  }
+  SECTION("Cubic Least squares"){
+    Eigen::VectorXd xdata = Eigen::ArrayXd::LinSpaced(100,-1,1);
+    Eigen::VectorXd ydata = xdata.array()*xdata.array()*xdata.array();
+    xdata(1) = 0; xdata(2) = 0;
+    ydata(1) = -.01; ydata(2) = .01;
+    ChebTools::ChebyshevExpansion chebLS = ChebTools::ChebyshevExpansion::cheb_from_leastSquares(3, xdata, ydata);
+    ChebTools::ChebyshevExpansion chebf = ChebTools::ChebyshevExpansion::from_powxn(3,-1,1);
+    error = (chebf.coef()-chebLS.coef()).norm();
+    CAPTURE(error);
+    CHECK(error<tol);
+  }
+}
