@@ -1,0 +1,463 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% reference:
+%% http://www-i6.informatik.rwth-aachen.de/~dreuw/latexbeamerposter.php
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[final]{beamer}
+\mode<presentation>
+{
+  %\usetheme{I6dv}
+  \usetheme{l6dv-2}
+  %\usetheme{l6dv-3}
+%  \usetheme{Aachen}
+%  \usetheme{Oldi6}
+%  \usetheme{I6td}
+  %\usetheme{I6dv}
+%  \usetheme{I6pd}
+%  \usetheme{I6pd2}
+}
+% additional settings
+\usefonttheme[onlymath]{serif}
+\setbeamerfont{itemize}{size=\normalsize}
+\setbeamerfont{itemize/enumerate body}{size=\normalsize}
+\setbeamerfont{itemize/enumerate subbody}{size=\small}
+\setbeamertemplate{bibliography entry title}{}
+\setbeamertemplate{bibliography entry location}{}
+\setbeamertemplate{bibliography entry note}{}
+
+\usepackage{natbib}
+
+%\renewcommand\printleftlogo
+%  {\begin{center}
+%     \resizebox{\textwidth}{!}%
+%       {\includegraphics{GMU_Logo.eps}}
+%   \end{center}
+%  }
+
+% additional packages
+\usepackage{times}
+\usepackage{amsmath,amsthm, amssymb, latexsym,epsfig,graphicx}
+\usepackage{mathtools}
+\usepackage{exscale}
+\usepackage{multirow}
+%\usepackage{subfig}
+\usepackage{color}
+
+\usepackage{pgfplots}
+\pgfplotsset{every axis/.append style={
+                    xlabel={$x$},          % default put x on x-axis
+                    ylabel={$y$},          % default put y on y-axis
+            }}
+\pgfplotsset{every tick label/.append style={font=\tiny}}
+\pgfplotsset{every axis/.append style={font=\tiny}}
+\pgfplotsset{compat=1.12}
+
+
+
+\usepackage{subcaption}
+\captionsetup{compatibility=false}
+\usepackage{booktabs, array}
+%\usepackage{tabularx}
+%\usepackage{rotating} %sideways environment
+\usepackage[english]{babel}
+%\usepackage[latin1]{inputenc}
+%\usepackage[orientation=landscape,size=custom,width=200,height=120,scale=1.9]{beamerposter}
+\usepackage[size=custom, width=48,height=36,scale=1.4]{beamerposter}
+\listfiles
+
+
+\title{\huge Root Finding with Chebyshev Polynomials in Two Dimensions}
+\author[Bouck, Bell]{Lucas Bouck and Ian Bell}
+\institute[George Mason University]{George Mason University, Fairfax, VA, U.S.A. and National Institute of Standards and Technology, Boulder, CO, U.S.A}
+%\date[Aug. 31 , 2007]{Aug. 31 , 2007}
+
+% abbreviations
+\usepackage{xspace}
+\makeatletter
+%\DeclareRobustCommand\onedot{\futurelet\@let@token\@onedot}
+%\def\@onedot{\ifx\@let@token.\else.\null\fi\xspace}
+%\def\eg{{e.g}\onedot} \def\Eg{{E.g}\onedot}
+%\def\ie{{i.e}\onedot} \def\Ie{{I.e}\onedot}
+%\def\cf{{c.f}\onedot} \def\Cf{{C.f}\onedot}
+%\def\etc{{etc}\onedot}
+%\def\vs{{vs}\onedot}
+%\def\wrt{w.r.t\onedot}
+%\def\dof{d.o.f\onedot}
+%\def\etal{{et al}\onedot}
+\makeatother
+
+%%%%%%%%%%%%%%%%%%%%%%%
+% Logo for Poster
+%%%%%%%%%%%%%%%%%%%%%
+%\printleftlogo
+%\leftlogo[1]{GMU_Logo.eps}  % defines logo to left of title (with scale factor)
+%\rightlogo[0.7]{nsf_logo.jpg}  % same but on right
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+\vspace*{-10mm}
+\begin{frame}{}
+  \begin{columns}[t]
+    \hspace*{5mm}
+
+    \begin{column}{.31\linewidth}
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{block}{Summary}
+We want to find all isolated, common roots of $f,g: \mathbb{R}^2\to\mathbb{R}$ in a bounded domain. We replicate the root finding algorithm found in \cite{nakatsukasa_2013}, which approximates $f,g$ with Chebyshev polynomials and finds the roots of the polynomials. We are working to extend the algorithm to non-rectangular domains.
+ \end{block}
+ \vspace*{2mm}
+ \begin{block}{Background, Applications, and Motivation}
+ {\color{numhypRed} Background and Applications}
+\begin{itemize}
+\item {\tt ChebTools} \cite{bell_2018} is a C++ library developed by Ian Bell
+\item Inspired by the Matlab library {\tt chebfun} \cite{driscoll_2014}
+\item Determine thermodynamic properties of a fluid \cite{kunick_2008}
+\end{itemize}
+{\color{numhypRed} Motivating Example}\\
+$f(x,y)=x^2-y^2, g(x,y)=\sin\left(\pi\sqrt{x^2+y^2}\right)$ with the domain $[-1,1]^2$
+\begin{figure}[H] 
+\begin{center}
+\begin{minipage}{.55\textwidth}
+\includegraphics[trim=1cm 0cm 0cm 0cm,width=\textwidth]{surface_plots1.pdf}
+\end{minipage}%
+\begin{minipage}{.45\textwidth}
+\includegraphics[width=\textwidth]{newton_basins.pdf}
+\end{minipage}%
+\end{center}
+\caption{Newton's method would require multiple runs to find all roots, which would be inadequate for our application.}
+\end{figure}
+\end{block}
+
+\begin{block}{Chebyshev Polynomials}
+\begin{minipage}{.5725\linewidth}
+{\color{numhypRed} Definition}
+$$T_n(x)=\cos\left(n\arccos(x)\right),\, x\in[-1,1]$$
+{\color{numhypRed} Interpolation Convergence \cite[Ch.\ 7, 8]{trefethen_2012}}
+\begin{itemize}
+\item $f^{(m)}$ has bounded variation $\implies$ polynomial convergence of order $m$
+\item $f$ is analytic $\implies$ geometric convergence 
+\end{itemize}
+\end{minipage}%}%
+\hfill%
+%\fbox{%
+\begin{minipage}{.3775\linewidth}
+\begin{center}
+\begin{figure}
+\includegraphics[width=\textwidth]{cheb_poly_plot.pdf}
+\end{figure}
+\end{center}
+\end{minipage}%}
+\end{block}
+\begin{block}{Summary of Algorithm from \cite{nakatsukasa_2013}}
+\begin{itemize}
+\item Construct interpolations, $p_f,p_g$, of $f,g$ \cite[Sec.\ 2]{townsend_2013}
+\item Apply the B\'{e}zout Resultant Method for $x$ values
+\item Apply 1-D root finding techniques for $y$ values
+\end{itemize}
+{\color{numhypRed} B\'{e}zout Resultant Method}\\
+With $p_f,p_g$ of degree $(m_f,n_f),(m_g,n_g)$, we can construct a square {\bf B\'{e}zout Matrix Polynomial} of degree $M\leq m_f+m_g$ and size $n = \max(n_f,n_g)$:
+$$B(x) = \sum_{i=0}^{M}B_iT_i(x),$$
+\begin{itemize}
+\item $\det\left(B(x_0)\right)=0\iff p_f(x_0,\cdot)$ and $p_g(x_0,\cdot)$ have a common root
+\item Solving $\det\left(B(x_0)\right)=0$ involves linearizing $B(x)$ 
+\end{itemize}
+\end{block}
+
+
+
+\end{column}
+%%% end of first column %%%%%%%%%%%%
+
+%% 2/19/2012 start next column next time %%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% begining of second column %%%%%%%%%%%%%%
+    \begin{column}{.31\linewidth}
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%
+
+\begin{block}{Challenges with the Algorithm}
+{\color{numhypRed}Poor Conditioning}\\
+\begin{center}
+\begin{figure}
+\includegraphics[width=.71\textwidth]{bezout_det_plot.pdf}
+\caption{$\det(B(x))$ from our example. The B\'{e}zout technique can square the condition number. \cite[Sec.\ 5]{nakatsukasa_2013}
+}
+\end{figure}
+\end{center}
+{\color{numhypRed}Poor Scaling}\\
+\begin{itemize}
+\item Have to solve a generalized eigenvalue problem \cite[Sec.\ 3]{nakatsukasa_2013}
+\item Computational complexity of $\mathcal{O}(M^3n^3)$ \cite[Sec.\ 4]{nakatsukasa_2013}
+\end{itemize}
+\end{block}
+
+\begin{block}{Our Implementation}
+{\color{numhypRed} Refinement}\\
+\begin{itemize}
+\item {\tt chebfun2} refines roots by repeating the B\'{e}zout method in a smaller region surrounding the root \cite[Sec.\ 7]{nakatsukasa_2013}
+\item We refine the roots with Newton's method
+\end{itemize}
+{\color{numhypRed} 1-D Root Finding}\\
+\begin{itemize}
+\item Our 1-D algorithm is a mix of a bisection and secant method
+\item Faster than companion matrix methods \cite{boyd_2013}
+\end{itemize}
+{\color{numhypRed} Domain Subdivision}\\
+\begin{itemize}
+\item {\tt chebfun2} divides the domain to reduce the matrix polynomial problem size \cite[Sec.\ 4]{nakatsukasa_2013}
+\item We have yet to implement a domain subdivision method
+\end{itemize}
+\end{block}
+\begin{block}{Current Results}
+\begin{tabular}{ |c|c|c|c|c|  }
+ \hline
+ & \multicolumn{2}{|c|}{{\tt ChebTools}}&\multicolumn{2}{|c|}{{\tt chebfun}} \\
+ \hline
+ Functions							& Max $\lVert\cdot\rVert_2$ Error 	& Time (s)	& Max $\lVert\cdot\rVert_2$ Error	& Time (s)\\
+ \hline
+ $F_1(x,y),F_2(x,y)$ & $6.97\times10^{-32}$&0.004268 &$7.7\times10^{-16}$ &0.522 \\
+ \hline
+ $G_1(x,y),G_2(x,y)$ & $6.21\times10^{-16}$ & 214.059 &$2.92\times10^{-10}$ &0.294 \\
+ \hline
+ $H_1(x,y),H_2(x,y)$ &$3.24\times10^{-16}$ & 195.903 &$2.77\times10^{-11}$ &0.296 \\
+ \hline
+\end{tabular}
+\begin{align*}
+F_1(x,y) &= T_3(x)-13T_1(x) & F_2(x,y) &= T_3(y)-13T_1(y)\\
+G_1(x,y) &= \cos(\pi x)(y-2) & G_2(x,y) &= (y-.9)(x-2)\\
+H_1(x,y) &= \cos\left(\pi x-\frac{\pi}{10}\right)(y-2) & H_2(x,y) &= (y-.1)(y-.9)(x-2)
+\end{align*}
+{\color{numhypRed} Discussion}
+\begin{itemize}
+\item {\tt chebfun} is much faster than {\tt ChebTools}
+\item This speed difference can be explained by the lack of a subdivision strategy in our implementation
+\item A new subdivision strategy is part of current and future work
+\end{itemize}
+\end{block}
+\end{column}
+%% end of second column %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%% begining of third column%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  \begin{column}{.31\linewidth}
+
+%\begin{block}{Current Results}
+%\begin{tabular}{ |c|c|c|c|c|  }
+% \hline
+% & \multicolumn{2}{|c|}{{\tt ChebTools}}&\multicolumn{2}{|c|}{{\tt chebfun}} \\
+% \hline
+% Functions							& 2 Norm Error 	& Time (s)	& 2 Norm Error	& Time (s)\\
+% \hline
+% $F_1(x,y),F_2(x,y)$ & $6.97\times10^{-32}$&0.004268 &$7.7\times10^{-16}$ &0.522 \\
+% \hline
+% $G_1(x,y),G_2(x,y)$ & $6.21\times10^{-16}$ & 214.059 &$2.92\times10^{-10}$ &0.294 \\
+% \hline
+% $H_1(x,y),H_2(x,y)$ &$3.24\times10^{-16}$ & 195.903 &$2.77\times10^{-11}$ &0.296 \\
+% \hline
+%\end{tabular}
+%\begin{align*}
+%F_1(x,y) &= T_3(x)-13T_1(x) & F_2(x,y) &= T_3(y)-13T_1(y)\\
+%G_1(x,y) &= \cos(\pi x)(y-2) & G_2(x,y) &= (y-.9)(x-2)\\
+%H_1(x,y) &= \cos\left(\pi x-\frac{\pi}{10}\right)(y-2) & H_2(x,y) &= (y-.1)(y-.9)(x-2)
+%\end{align*}
+%\begin{itemize}
+%\item {\tt chebfun} is much faster than {\tt ChebTools}
+%\item {\tt chebfun} has a domain subdivision strategy for reducing the size of the generalized eigenvalue problem
+%\end{itemize}
+%
+%\end{block}
+
+
+
+\begin{block}{Current Work}
+{\color{numhypRed} Our Application Motivates Current Work}
+\begin{itemize}
+\item Empirical equations of state in thermodynamics have ranges of validity which are not rectangular domains
+\item Have to use coordinate transformations \cite{townsend_2013-2} or to work on non-rectangular domains in {\tt chebfun2} 
+\end{itemize}
+{\color{numhypRed} Our Subdivision Idea}
+\begin{itemize}
+\item Subdivide where domain boundary is horizontal, vertical, or has a derivative discontinuity
+\item Interior subdomains can proceed with rectangular subdivision like in the {\tt chebfun} algorithm
+\item Approximate on exterior subdomains using interior Chebyshev points
+\end{itemize}
+
+{\color{numhypRed} Example Domain}\\
+Interior of the closed curve $(1.5\cos(t) + .15\sin(2t), \sin(t) + .3\cos(t))$ with $t\in[0,2\pi]$
+
+\begin{figure}
+\captionsetup[subfigure]{justification=centering}
+\centering
+\begin{minipage}{.48\linewidth}
+\subcaptionbox{Boundary in black and initial subdivisions in blue.}{
+\begin{tikzpicture}[scale=1.82]
+
+%\tikzmath{\a = 1.5; \b =.15; \c = 1; \d = .3; }
+\def\a{1.5}
+\def\b{.15}
+\def\c{1}
+\def\d{.3}
+
+\def\tvv{rad(asin((-\a+(\a^2+32*(\b^2))^.5)/(8*\b)))}
+\def\tv{\tvv+pi}
+
+\def\xv{\a*(cos(deg(\tv))) + \b*(sin(deg(2*\tv)))}
+\def\yv{-0.108616270206} %determined numerically
+
+\def\xvv{\a*(cos(deg(\tvv))) + \b*(sin(deg(2*\tvv)))}
+\def\yvv{\c*(sin(deg(\tvv))) + \d*(cos(deg(\tvv)))}
+
+\def\th{rad(atan(\c/\d))}
+\def\thh{rad(atan(\c/\d))+pi}
+
+\def\xh{\a*(cos(deg(\th))) + \b*(sin(deg(2*\th)))}
+\def\yh{\c*(sin(deg(\th))) + \d*(cos(deg(\th)))}
+
+
+\def\xhh{-0.34845302101} %determined numerically
+\def\yhh{\c*(sin(deg(\thh))) + \d*(cos(deg(\thh)))}
+\def\ep{.0001}
+\begin{axis}[
+  xmin=\xv-\ep,xmax=\xvv+\ep,
+  ymin=\yhh-\ep,ymax=\yh+\ep,
+%  xticklabels={,,},
+%  yticklabels={,,}
+]
+  \addplot+[line width=1.5pt,mark = none, black, domain=0:2*pi,samples=100,variable=\t](%
+    { \a*(cos(deg(t))) + \b*(sin(deg(2*t))) },%
+    {\c*(sin(deg(t))) + \d*(cos(deg(t)))}%
+  ); 
+  
+  
+  \addplot+[line width=1.5pt,mark = none, blue, domain=\yh:\yhh,variable=\t]({\xh},{t});
+  \addplot+[line width=1.5pt,mark = none, blue, domain=\yh:\yhh,variable=\t]({\xhh},{t});
+  \addplot+[line width=1.5pt,mark = none, blue, domain=\xvv:\xv,variable=\t]({t},{\yvv});
+  \addplot+[line width=1.5pt,mark = none, blue,, domain=\xvv:\xv,variable=\t]({t},{\yv});
+\end{axis}
+\end{tikzpicture}}
+\end{minipage}%
+\hfill
+\begin{minipage}{.48\linewidth}
+\subcaptionbox{Interior 7x7 Chebyshev nodes in red.}{
+\begin{tikzpicture}[scale=1.82]
+
+
+\def\a{1.5}
+\def\b{.15}
+\def\c{1}
+\def\d{.3}
+
+\def\tvv{rad(asin((-\a+(\a^2+32*(\b^2))^.5)/(8*\b)))}
+\def\tv{\tvv+pi}
+
+\def\xv{\a*(cos(deg(\tv))) + \b*(sin(deg(2*\tv)))}
+\def\yv{-0.108616270206} %determined numerically
+
+\def\xvv{\a*(cos(deg(\tvv))) + \b*(sin(deg(2*\tvv)))}
+\def\yvv{\c*(sin(deg(\tvv))) + \d*(cos(deg(\tvv)))}
+
+\def\th{rad(atan(\c/\d))}
+\def\thh{rad(atan(\c/\d))+pi}
+
+\def\xh{\a*(cos(deg(\th))) + \b*(sin(deg(2*\th)))}
+\def\yh{\c*(sin(deg(\th))) + \d*(cos(deg(\th)))}
+
+
+\def\xhh{-0.34845302101} %determined numerically
+\def\yhh{\c*(sin(deg(\thh))) + \d*(cos(deg(\thh)))}
+\def\ymid{.5*(\yh + \yvv)}
+\def\ystep{.5*(\yh - \yvv)}
+
+\def\xmid{.5*(\xh + \xvv)}
+\def\xstep{.5*(\xvv - \xh)}
+\def\ep{.0001}
+\begin{axis}[
+  xmin=\xh-\ep,xmax=\xvv+\ep,
+  ymin=\yvv-\ep,ymax=\yh+\ep,
+]
+  \addplot+[line width=1.5pt,mark = none, black, domain=0:pi/2,samples=100,variable=\t](%
+    { \a*(cos(deg(t))) + \b*(sin(deg(2*t))) },%
+    {\c*(sin(deg(t))) + \d*(cos(deg(t)))}%
+  ); 
+   \addplot+[line width=1.5pt,mark = none, blue, domain=\yh:\yhh,variable=\t]({\xh},{t});
+  \addplot+[line width=1.5pt,mark = none, blue, domain=\xvv:\xv,variable=\t]({t},{\yvv});
+  
+  
+  \addplot[red, only marks, mark=*] coordinates {
+(1.52865090951, 0.480897593475)
+
+(1.46065476435, 0.621680857829)
+(1.46065476435, 0.518620355466)
+(1.46065476435, 0.480897593475)
+
+(1.27488584106, 0.762464122183)
+(1.27488584106, 0.621680857829)
+(1.27488584106, 0.518620355466)
+(1.27488584106, 0.480897593475)
+
+(1.0211207726, 0.903247386537)
+(1.0211207726, 0.762464122183)
+(1.0211207726, 0.621680857829)
+(1.0211207726, 0.518620355466)
+(1.0211207726, 0.480897593475)
+
+(0.767355704145, 1.0063078889)
+(0.767355704145, 0.903247386537)
+(0.767355704145, 0.762464122183)
+(0.767355704145, 0.621680857829)
+(0.767355704145, 0.518620355466)
+(0.767355704145, 0.480897593475)
+
+(0.581586780849, 1.0063078889)
+(0.581586780849, 0.903247386537)
+(0.581586780849, 0.762464122183)
+(0.581586780849, 0.621680857829)
+(0.581586780849, 0.518620355466)
+(0.581586780849, 0.480897593475)
+(0.513590635689, 1.04403065089)
+(0.513590635689, 1.0063078889)
+(0.513590635689, 0.903247386537)
+(0.513590635689, 0.762464122183)
+(0.513590635689, 0.621680857829)
+(0.513590635689, 0.518620355466)
+(0.513590635689, 0.480897593475)};
+\end{axis}
+\end{tikzpicture}}
+\end{minipage}
+\caption{Example domain on the left and the upper right subdomain on the right}
+\end{figure}
+\end{block}
+
+\begin{block}{Future Work}
+\begin{itemize}
+\item Parallelize the {\tt ChebTools} library
+\item Adaptive capabilities for approximations
+\end{itemize}
+Add Features To Construct a Chebyshev expansion from:
+\begin{itemize}
+\item linear least squares
+\item linear boundary value problems
+\end{itemize}
+\end{block}
+
+\begin{block}{References}
+\bibliographystyle{plain}
+\scriptsize{\bibliography{jmm2018_poster}}
+\bigskip
+{\normalsize This work was supported by the NIST SURF program.}
+\end{block}
+\end{column}
+  \end{columns}
+\end{frame}
+
+\end{document}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-PDF-mode: t
+%%% End: 

@@ -1,0 +1,50 @@
+\begin{thebibliography}{1}
+
+\bibitem{bell_2018}
+I.H. Bell, L.~Bouck, and B.K. Alpert.
+\newblock Chebtools: A c++11 based library for working with chebyshev
+  expansions.
+\newblock {\em Journal of Open Source Software}, 2018.
+\newblock To be submitted.
+
+\bibitem{boyd_2013}
+J.P. Boyd.
+\newblock Finding the zeros of a univariate equation: Proxy rootfinders,
+  chebyshev interpolation, and the companion matrix.
+\newblock {\em SIAM Review}, 55(2):375--396, 2013.
+
+\bibitem{driscoll_2014}
+T.~A Driscoll, N.~Hale, and L.~N. Trefethen.
+\newblock {\em Chebfun Guide}.
+\newblock Pafnuty Publications, 2014.
+
+\bibitem{kunick_2008}
+M.~Kunick, H.J. Kretzschmar, and U.~Gampe.
+\newblock Fast calculation of thermodynamic properties of water and steam in
+  process modelling using spline interpolation.
+\newblock 01 2008.
+
+\bibitem{nakatsukasa_2013}
+Y.~Nakatsukasa, V.~Noferini, and A.~Townsend.
+\newblock Computing the common zeros of two bivariate functions via b{\'e}zout
+  resultants.
+\newblock {\em Numerische Mathematik}, pages 1--29, 2013.
+
+\bibitem{townsend_2013}
+A.~Townsend and L.~N. Trefethen.
+\newblock An extension of chebfun to two dimensions.
+\newblock {\em SIAM Journal on Scientific Computing}, 35(6):C495--C518, 2013.
+
+\bibitem{townsend_2013-2}
+Alex Townsend.
+\newblock Chebfun2 objects on non-rectangular domains.
+\newblock http://www.chebfun.org/examples/approx2/Other2DDomains.html, 2013.
+
+\bibitem{trefethen_2012}
+L.N. Trefethen.
+\newblock {\em Approximation Theory and Approximation Practice (Other Titles in
+  Applied Mathematics)}.
+\newblock Society for Industrial and Applied Mathematics, Philadelphia, PA,
+  USA, 2012.
+
+\end{thebibliography}
