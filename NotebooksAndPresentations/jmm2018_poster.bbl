@@ -30,15 +30,15 @@ Y.~Nakatsukasa, V.~Noferini, and A.~Townsend.
   resultants.
 \newblock {\em Numerische Mathematik}, pages 1--29, 2013.
 
+\bibitem{townsend_2013-2}
+A.~Townsend.
+\newblock Chebfun2 objects on non-rectangular domains.
+\newblock http://www.chebfun.org/examples/approx2/Other2DDomains.html, 2013.
+
 \bibitem{townsend_2013}
 A.~Townsend and L.~N. Trefethen.
 \newblock An extension of chebfun to two dimensions.
 \newblock {\em SIAM Journal on Scientific Computing}, 35(6):C495--C518, 2013.
-
-\bibitem{townsend_2013-2}
-Alex Townsend.
-\newblock Chebfun2 objects on non-rectangular domains.
-\newblock http://www.chebfun.org/examples/approx2/Other2DDomains.html, 2013.
 
 \bibitem{trefethen_2012}
 L.N. Trefethen.

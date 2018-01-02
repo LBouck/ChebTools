@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015) (preloaded format=pdflatex 2015.5.24)  30 DEC 2017 17:13
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015) (preloaded format=pdflatex 2015.5.24)  2 JAN 2018 13:53
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -1201,21 +1201,22 @@ Package: xspace 2014/10/28 v1.13 Space after command names (DPC,MH)
 (./jmm2018_poster.aux)
 \openout1 = `jmm2018_poster.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 98.
-LaTeX Font Info:    ... okay on input line 98.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 98.
-LaTeX Font Info:    ... okay on input line 98.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 98.
-LaTeX Font Info:    ... okay on input line 98.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 98.
-LaTeX Font Info:    ... okay on input line 98.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 98.
-LaTeX Font Info:    ... okay on input line 98.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 98.
-LaTeX Font Info:    ... okay on input line 98.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 98.
-LaTeX Font Info:    ... okay on input line 98.
-LaTeX Font Info:    Try loading font information for OT1+phv on input line 98.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 100.
+LaTeX Font Info:    ... okay on input line 100.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 100.
+LaTeX Font Info:    ... okay on input line 100.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 100.
+LaTeX Font Info:    ... okay on input line 100.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 100.
+LaTeX Font Info:    ... okay on input line 100.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 100.
+LaTeX Font Info:    ... okay on input line 100.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 100.
+LaTeX Font Info:    ... okay on input line 100.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 100.
+LaTeX Font Info:    ... okay on input line 100.
+LaTeX Font Info:    Try loading font information for OT1+phv on input line 100.
+
 
 (/usr/local/texlive/2015/texmf-dist/tex/latex/psnfss/ot1phv.fd
 File: ot1phv.fd 2001/06/04 scalable font definitions for OT1/phv.
@@ -1284,7 +1285,7 @@ e
 ))
 ABD: EveryShipout initializing macros
 \AtBeginShipoutBox=\box60
-Package hyperref Info: Link coloring OFF on input line 98.
+Package hyperref Info: Link coloring OFF on input line 100.
 
 (/usr/local/texlive/2015/texmf-dist/tex/latex/hyperref/nameref.sty
 Package: nameref 2012/10/27 v2.43 Cross-referencing by name of section
@@ -1294,9 +1295,9 @@ Package: gettitlestring 2010/12/03 v1.4 Cleanup title references (HO)
 )
 \c@section@level=\count201
 )
-LaTeX Info: Redefining \ref on input line 98.
-LaTeX Info: Redefining \pageref on input line 98.
-LaTeX Info: Redefining \nameref on input line 98.
+LaTeX Info: Redefining \ref on input line 100.
+LaTeX Info: Redefining \pageref on input line 100.
+LaTeX Info: Redefining \nameref on input line 100.
 
 (./jmm2018_poster.out) (./jmm2018_poster.out)
 \@outlinefile=\write5
@@ -1305,41 +1306,41 @@ LaTeX Info: Redefining \nameref on input line 98.
 \symnumbers=\mathgroup7
 \sympureletters=\mathgroup8
 LaTeX Font Info:    Overwriting math alphabet `\mathrm' in version `normal'
-(Font)                  OT1/cmr/m/n --> OT1/ptm/m/n on input line 98.
-LaTeX Font Info:    Redeclaring math alphabet \mathbf on input line 98.
+(Font)                  OT1/cmr/m/n --> OT1/ptm/m/n on input line 100.
+LaTeX Font Info:    Redeclaring math alphabet \mathbf on input line 100.
 LaTeX Font Info:    Overwriting math alphabet `\mathbf' in version `normal'
-(Font)                  OT1/cmr/bx/n --> OT1/ptm/bx/n on input line 98.
+(Font)                  OT1/cmr/bx/n --> OT1/ptm/bx/n on input line 100.
 LaTeX Font Info:    Overwriting math alphabet `\mathbf' in version `bold'
-(Font)                  OT1/cmr/bx/n --> OT1/ptm/bx/n on input line 98.
-LaTeX Font Info:    Redeclaring math alphabet \mathsf on input line 98.
+(Font)                  OT1/cmr/bx/n --> OT1/ptm/bx/n on input line 100.
+LaTeX Font Info:    Redeclaring math alphabet \mathsf on input line 100.
 LaTeX Font Info:    Overwriting math alphabet `\mathsf' in version `normal'
-(Font)                  OT1/cmss/m/n --> OT1/phv/m/n on input line 98.
+(Font)                  OT1/cmss/m/n --> OT1/phv/m/n on input line 100.
 LaTeX Font Info:    Overwriting math alphabet `\mathsf' in version `bold'
-(Font)                  OT1/cmss/bx/n --> OT1/phv/m/n on input line 98.
-LaTeX Font Info:    Redeclaring math alphabet \mathit on input line 98.
+(Font)                  OT1/cmss/bx/n --> OT1/phv/m/n on input line 100.
+LaTeX Font Info:    Redeclaring math alphabet \mathit on input line 100.
 LaTeX Font Info:    Overwriting math alphabet `\mathit' in version `normal'
-(Font)                  OT1/cmr/m/it --> OT1/ptm/m/it on input line 98.
+(Font)                  OT1/cmr/m/it --> OT1/ptm/m/it on input line 100.
 LaTeX Font Info:    Overwriting math alphabet `\mathit' in version `bold'
-(Font)                  OT1/cmr/bx/it --> OT1/ptm/m/it on input line 98.
-LaTeX Font Info:    Redeclaring math alphabet \mathtt on input line 98.
+(Font)                  OT1/cmr/bx/it --> OT1/ptm/m/it on input line 100.
+LaTeX Font Info:    Redeclaring math alphabet \mathtt on input line 100.
 LaTeX Font Info:    Overwriting math alphabet `\mathtt' in version `normal'
-(Font)                  OT1/cmtt/m/n --> OT1/pcr/m/n on input line 98.
+(Font)                  OT1/cmtt/m/n --> OT1/pcr/m/n on input line 100.
 LaTeX Font Info:    Overwriting math alphabet `\mathtt' in version `bold'
-(Font)                  OT1/cmtt/m/n --> OT1/pcr/m/n on input line 98.
+(Font)                  OT1/cmtt/m/n --> OT1/pcr/m/n on input line 100.
 LaTeX Font Info:    Overwriting symbol font `numbers' in version `bold'
-(Font)                  OT1/ptm/m/n --> OT1/ptm/bx/n on input line 98.
+(Font)                  OT1/ptm/m/n --> OT1/ptm/bx/n on input line 100.
 LaTeX Font Info:    Overwriting symbol font `pureletters' in version `bold'
-(Font)                  OT1/ptm/m/it --> OT1/ptm/bx/it on input line 98.
+(Font)                  OT1/ptm/m/it --> OT1/ptm/bx/it on input line 100.
 LaTeX Font Info:    Overwriting math alphabet `\mathrm' in version `bold'
-(Font)                  OT1/cmr/bx/n --> OT1/ptm/bx/n on input line 98.
+(Font)                  OT1/cmr/bx/n --> OT1/ptm/bx/n on input line 100.
 LaTeX Font Info:    Overwriting math alphabet `\mathbf' in version `bold'
-(Font)                  OT1/ptm/bx/n --> OT1/ptm/bx/n on input line 98.
+(Font)                  OT1/ptm/bx/n --> OT1/ptm/bx/n on input line 100.
 LaTeX Font Info:    Overwriting math alphabet `\mathsf' in version `bold'
-(Font)                  OT1/phv/m/n --> OT1/phv/bx/n on input line 98.
+(Font)                  OT1/phv/m/n --> OT1/phv/bx/n on input line 100.
 LaTeX Font Info:    Overwriting math alphabet `\mathit' in version `bold'
-(Font)                  OT1/ptm/m/it --> OT1/ptm/bx/it on input line 98.
+(Font)                  OT1/ptm/m/it --> OT1/ptm/bx/it on input line 100.
 LaTeX Font Info:    Overwriting math alphabet `\mathtt' in version `bold'
-(Font)                  OT1/pcr/m/n --> OT1/pcr/bx/n on input line 98.
+(Font)                  OT1/pcr/m/n --> OT1/pcr/bx/n on input line 100.
 
 (/usr/local/texlive/2015/texmf-dist/tex/latex/beamer/translator/dicts/translato
 r-basic-dictionary/translator-basic-dictionary-English.dict
@@ -1365,7 +1366,7 @@ Dictionary: translator-numbers-dictionary, Language: English
 r-theorem-dictionary/translator-theorem-dictionary-English.dict
 Dictionary: translator-theorem-dictionary, Language: English 
 )
-LaTeX Info: Redefining \includegraphics on input line 98.
+LaTeX Info: Redefining \includegraphics on input line 100.
 
 Package pgfplots notification 'compat/show suggested version=true': document ha
 s been generated with the most recent feature set (\pgfplotsset{compat=1.12}).
@@ -1384,76 +1385,93 @@ See the caption package documentation for explanation.
 
 Package caption Info: End \AtBeginDocument code.
 (./jmm2018_poster.nav)
-LaTeX Font Info:    Try loading font information for OT1+pcr on input line 98.
+LaTeX Font Info:    Try loading font information for OT1+pcr on input line 100.
+
 
 (/usr/local/texlive/2015/texmf-dist/tex/latex/psnfss/ot1pcr.fd
 File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
 )
 LaTeX Font Info:    Font shape `OT1/phv/bx/n' in size <16.8> not available
-(Font)              Font shape `OT1/phv/b/n' tried instead on input line 98.
+(Font)              Font shape `OT1/phv/b/n' tried instead on input line 100.
 LaTeX Font Info:    Font shape `OT1/phv/bx/n' in size <60.2> not available
-(Font)              Font shape `OT1/phv/b/n' tried instead on input line 98.
+(Font)              Font shape `OT1/phv/b/n' tried instead on input line 100.
 LaTeX Font Info:    Font shape `OT1/phv/bx/n' in size <72.24> not available
-(Font)              Font shape `OT1/phv/b/n' tried instead on input line 98.
+(Font)              Font shape `OT1/phv/b/n' tried instead on input line 100.
 
-Overfull \hbox (81.88254pt too wide) detected at line 98
+Overfull \hbox (81.88254pt too wide) detected at line 100
 [][][] [][][][][][][][][] [][][][][][][][][] [][][][][][][][][] [][][][][][][][
 ][] [][][][][][][] 
  []
 
-LaTeX Font Info:    Calculating math sizes for size <34.83> on input line 454.
-LaTeX Font Info:    Try loading font information for OT1+ptm on input line 454.
+LaTeX Font Info:    Calculating math sizes for size <34.83> on input line 478.
+LaTeX Font Info:    Try loading font information for OT1+ptm on input line 478.
 
 (/usr/local/texlive/2015/texmf-dist/tex/latex/psnfss/ot1ptm.fd
 File: ot1ptm.fd 2001/06/04 font definitions for OT1/ptm.
 )
-LaTeX Font Info:    Try loading font information for OMS+phv on input line 454.
+LaTeX Font Info:    Try loading font information for OMS+phv on input line 478.
 
 
 (/usr/local/texlive/2015/texmf-dist/tex/latex/psnfss/omsphv.fd
 File: omsphv.fd 
 )
 LaTeX Font Info:    Font shape `OMS/phv/m/n' in size <29.04> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 454.
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 478.
 
 <surface_plots1.pdf, id=13, 1156.32pt x 578.16pt>
 File: surface_plots1.pdf Graphic file (type pdf)
  <use surface_plots1.pdf>
-Package pdftex.def Info: surface_plots1.pdf used on input line 454.
+Package pdftex.def Info: surface_plots1.pdf used on input line 478.
 (pdftex.def)             Requested size: 581.75392pt x 298.22769pt.
 
 <newton_basins.pdf, id=14, 925.05597pt x 635.97598pt>
 File: newton_basins.pdf Graphic file (type pdf)
  <use newton_basins.pdf>
-Package pdftex.def Info: newton_basins.pdf used on input line 454.
+Package pdftex.def Info: newton_basins.pdf used on input line 478.
 (pdftex.def)             Requested size: 475.97462pt x 327.2353pt.
 
 <cheb_poly_plot.pdf, id=15, 234.8775pt x 198.7425pt>
 File: cheb_poly_plot.pdf Graphic file (type pdf)
  <use cheb_poly_plot.pdf>
-Package pdftex.def Info: cheb_poly_plot.pdf used on input line 454.
-(pdftex.def)             Requested size: 399.2951pt x 337.86685pt.
+Package pdftex.def Info: cheb_poly_plot.pdf used on input line 478.
+(pdftex.def)             Requested size: 404.0563pt x 341.8941pt.
 LaTeX Font Info:    Font shape `OT1/phv/bx/n' in size <34.83> not available
-(Font)              Font shape `OT1/phv/b/n' tried instead on input line 454.
+(Font)              Font shape `OT1/phv/b/n' tried instead on input line 478.
 
 <bezout_det_plot.pdf, id=16, 722.7pt x 505.89pt>
 File: bezout_det_plot.pdf Graphic file (type pdf)
  <use bezout_det_plot.pdf>
-Package pdftex.def Info: bezout_det_plot.pdf used on input line 454.
-(pdftex.def)             Requested size: 750.99437pt x 525.69633pt.
-LaTeX Font Info:    Calculating math sizes for size <29.04> on input line 454.
-Package pgfplots info on input line 454: Overriding colorspace to cmyk due to x
+Package pdftex.def Info: bezout_det_plot.pdf used on input line 478.
+(pdftex.def)             Requested size: 722.9598pt x 506.074pt.
+LaTeX Font Info:    Calculating math sizes for size <29.04> on input line 478.
+Package pgfplots info on input line 478: Overriding colorspace to cmyk due to x
 color configuration.
-LaTeX Font Info:    Calculating math sizes for size <16.8> on input line 454.
+LaTeX Font Info:    Calculating math sizes for size <16.8> on input line 478.
 
-Overfull \hbox (61.63538pt too wide) in paragraph at lines 454--454
+Overfull \hbox (7.24034pt too wide) in paragraph at lines 478--478
+[][][][]$\OMS/cmsy/m/n/16.8 ^^@\OT1/ptm/m/n/16.8 1$  
+ []
+
+
+Overfull \hbox (20.20973pt too wide) in paragraph at lines 478--478
+[][][][]$\OMS/cmsy/m/n/16.8 ^^@\OT1/ptm/m/n/16.8 0\OML/cmm/m/it/16.8 :\OT1/ptm/
+m/n/16.8 5$  
+ []
+
+
+Overfull \hbox (7.14302pt too wide) in paragraph at lines 478--478
+[][][][]$\OT1/ptm/m/n/16.8 0\OML/cmm/m/it/16.8 :\OT1/ptm/m/n/16.8 5$  
+ []
+
+
+Overfull \hbox (9.72739pt too wide) in paragraph at lines 478--478
 [][] 
  []
 
-Package pgfplots info on input line 454: Overriding colorspace to cmyk due to x
+Package pgfplots info on input line 478: Overriding colorspace to cmyk due to x
 color configuration.
 
-Overfull \hbox (4.23589pt too wide) in paragraph at lines 454--454
+Overfull \hbox (9.73572pt too wide) in paragraph at lines 478--478
 [][] 
  []
 
@@ -1490,10 +1508,10 @@ inclusion: multiple pdfs with page group included in a single page
 \tf@snm=\write8
 \openout8 = `jmm2018_poster.snm'.
 
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 456.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 456.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 480.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 480.
  (./jmm2018_poster.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 456.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 480.
 
 
  *File List*
@@ -1670,19 +1688,19 @@ bezout_det_plot.pdf    Graphic file (type pdf)
 jmm2018_poster.bbl
  ***********
 
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 456.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 480.
 Package rerunfilecheck Info: File `jmm2018_poster.out' has not changed.
 (rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 456.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 480.
  ) 
 Here is how much of TeX's memory you used:
- 32650 strings out of 493089
- 758224 string characters out of 6134842
- 1094773 words of memory out of 5000000
- 35410 multiletter control sequences out of 15000+600000
+ 32648 strings out of 493089
+ 758140 string characters out of 6134842
+ 1104475 words of memory out of 5000000
+ 35408 multiletter control sequences out of 15000+600000
  54793 words of font info for 129 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 62i,18n,111p,749b,2691s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 64i,19n,116p,749b,2734s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/local/texlive/2015/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/local/t
 exlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/local/te
 xlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb></usr/local/tex
@@ -1695,7 +1713,7 @@ f-dist/fonts/type1/urw/helvetic/uhvr8a.pfb></usr/local/texlive/2015/texmf-dist/
 fonts/type1/urw/helvetic/uhvro8a.pfb></usr/local/texlive/2015/texmf-dist/fonts/
 type1/urw/times/utmr8a.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/urw/
 times/utmri8a.pfb>
-Output written on jmm2018_poster.pdf (1 page, 312050 bytes).
+Output written on jmm2018_poster.pdf (1 page, 311962 bytes).
 PDF statistics:
  151 PDF objects out of 1000 (max. 8388607)
  106 compressed objects within 2 object streams

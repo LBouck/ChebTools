@@ -47,6 +47,8 @@
 \pgfplotsset{every axis/.append style={
                     xlabel={$x$},          % default put x on x-axis
                     ylabel={$y$},          % default put y on y-axis
+                    label style={font=\tiny},
+                    tick label style={font=\tiny}
             }}
 \pgfplotsset{every tick label/.append style={font=\tiny}}
 \pgfplotsset{every axis/.append style={font=\tiny}}
@@ -96,6 +98,12 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{document}
+%\addtobeamertemplate{headline}{} 
+%{
+%\begin{tikzpicture}[remember picture,overlay]
+%\node [shift={(-5.5 cm,-4cm)}] at (current page.north east) {\includegraphics[height=6.5cm]{GMU_Logo}}; 
+%\end{tikzpicture} 
+%}
 \vspace*{-10mm}
 \begin{frame}{}
   \begin{columns}[t]
@@ -126,12 +134,12 @@ $f(x,y)=x^2-y^2, g(x,y)=\sin\left(\pi\sqrt{x^2+y^2}\right)$ with the domain $[-1
 \includegraphics[width=\textwidth]{newton_basins.pdf}
 \end{minipage}%
 \end{center}
-\caption{Newton's method would require multiple runs to find all roots, which would be inadequate for our application.}
+\caption{Newton's method would require multiple runs to find all roots, which may not be robust for our application.}
 \end{figure}
 \end{block}
 
 \begin{block}{Chebyshev Polynomials}
-\begin{minipage}{.5725\linewidth}
+\begin{minipage}{.578\linewidth}
 {\color{numhypRed} Definition}
 $$T_n(x)=\cos\left(n\arccos(x)\right),\, x\in[-1,1]$$
 {\color{numhypRed} Interpolation Convergence \cite[Ch.\ 7, 8]{trefethen_2012}}
@@ -142,7 +150,7 @@ $$T_n(x)=\cos\left(n\arccos(x)\right),\, x\in[-1,1]$$
 \end{minipage}%}%
 \hfill%
 %\fbox{%
-\begin{minipage}{.3775\linewidth}
+\begin{minipage}{.382\linewidth}
 \begin{center}
 \begin{figure}
 \includegraphics[width=\textwidth]{cheb_poly_plot.pdf}
@@ -182,7 +190,7 @@ $$B(x) = \sum_{i=0}^{M}B_iT_i(x),$$
 {\color{numhypRed}Poor Conditioning}\\
 \begin{center}
 \begin{figure}
-\includegraphics[width=.71\textwidth]{bezout_det_plot.pdf}
+\includegraphics[width=.6835\textwidth]{bezout_det_plot.pdf}
 \caption{$\det(B(x))$ from our example. The B\'{e}zout technique can square the condition number. \cite[Sec.\ 5]{nakatsukasa_2013}
 }
 \end{figure}
@@ -202,7 +210,7 @@ $$B(x) = \sum_{i=0}^{M}B_iT_i(x),$$
 \end{itemize}
 {\color{numhypRed} 1-D Root Finding}\\
 \begin{itemize}
-\item Our 1-D algorithm is a mix of a bisection and secant method
+\item Our 1-D algorithm is a mix of bisection and secant methods
 \item Faster than companion matrix methods \cite{boyd_2013}
 \end{itemize}
 {\color{numhypRed} Domain Subdivision}\\
@@ -212,11 +220,12 @@ $$B(x) = \sum_{i=0}^{M}B_iT_i(x),$$
 \end{itemize}
 \end{block}
 \begin{block}{Current Results}
+\begin{center}
 \begin{tabular}{ |c|c|c|c|c|  }
  \hline
  & \multicolumn{2}{|c|}{{\tt ChebTools}}&\multicolumn{2}{|c|}{{\tt chebfun}} \\
  \hline
- Functions							& Max $\lVert\cdot\rVert_2$ Error 	& Time (s)	& Max $\lVert\cdot\rVert_2$ Error	& Time (s)\\
+ Functions							& $\lVert\cdot\rVert_2$ Error 	& Time (s)	& $\lVert\cdot\rVert_2$ Error	& Time (s)\\
  \hline
  $F_1(x,y),F_2(x,y)$ & $6.97\times10^{-32}$&0.004268 &$7.7\times10^{-16}$ &0.522 \\
  \hline
@@ -225,6 +234,7 @@ $$B(x) = \sum_{i=0}^{M}B_iT_i(x),$$
  $H_1(x,y),H_2(x,y)$ &$3.24\times10^{-16}$ & 195.903 &$2.77\times10^{-11}$ &0.296 \\
  \hline
 \end{tabular}
+\end{center}
 \begin{align*}
 F_1(x,y) &= T_3(x)-13T_1(x) & F_2(x,y) &= T_3(y)-13T_1(y)\\
 G_1(x,y) &= \cos(\pi x)(y-2) & G_2(x,y) &= (y-.9)(x-2)\\
@@ -286,15 +296,16 @@ H_1(x,y) &= \cos\left(\pi x-\frac{\pi}{10}\right)(y-2) & H_2(x,y) &= (y-.1)(y-.9
 \end{itemize}
 
 {\color{numhypRed} Example Domain}\\
-Interior of the closed curve $(1.5\cos(t) + .15\sin(2t), \sin(t) + .3\cos(t))$ with $t\in[0,2\pi]$
+Interior of the closed curve $(1.5\cos t + .15\sin2t, \sin t + .3\cos t)$ with $t\in[0,2\pi]$
 
 \begin{figure}
-\captionsetup[subfigure]{justification=centering}
-\centering
-\begin{minipage}{.48\linewidth}
+\captionsetup[subfigure]{justification=centering,position=bottom}
+%\centering
+\begin{minipage}{.5\linewidth}
+\vspace*{6mm}
 \subcaptionbox{Boundary in black and initial subdivisions in blue.}{
-\begin{tikzpicture}[scale=1.82]
-
+\resizebox {\linewidth} {!} {
+\begin{tikzpicture}
 %\tikzmath{\a = 1.5; \b =.15; \c = 1; \d = .3; }
 \def\a{1.5}
 \def\b{.15}
@@ -323,8 +334,12 @@ Interior of the closed curve $(1.5\cos(t) + .15\sin(2t), \sin(t) + .3\cos(t))$ w
 \begin{axis}[
   xmin=\xv-\ep,xmax=\xvv+\ep,
   ymin=\yhh-\ep,ymax=\yh+\ep,
-%  xticklabels={,,},
-%  yticklabels={,,}
+  x label style={at={(axis description cs:0.5,-0.04)},anchor=north},
+  y label style={at={(axis description cs:0.04,.5)},anchor=south},
+  yticklabel style={text width = .5cm, anchor=west, align=left,xshift = -.25cm,yshift=0cm},
+  yticklabel pos = right,
+  xticklabel style={anchor=north},
+  xticklabel shift=-8pt
 ]
   \addplot+[line width=1.5pt,mark = none, black, domain=0:2*pi,samples=100,variable=\t](%
     { \a*(cos(deg(t))) + \b*(sin(deg(2*t))) },%
@@ -337,12 +352,13 @@ Interior of the closed curve $(1.5\cos(t) + .15\sin(2t), \sin(t) + .3\cos(t))$ w
   \addplot+[line width=1.5pt,mark = none, blue, domain=\xvv:\xv,variable=\t]({t},{\yvv});
   \addplot+[line width=1.5pt,mark = none, blue,, domain=\xvv:\xv,variable=\t]({t},{\yv});
 \end{axis}
-\end{tikzpicture}}
+\end{tikzpicture}}}
 \end{minipage}%
-\hfill
-\begin{minipage}{.48\linewidth}
+\begin{minipage}{.5\linewidth}
+
 \subcaptionbox{Interior 7x7 Chebyshev nodes in red.}{
-\begin{tikzpicture}[scale=1.82]
+\resizebox {\linewidth} {!} {
+\begin{tikzpicture}
 
 
 \def\a{1.5}
@@ -377,6 +393,14 @@ Interior of the closed curve $(1.5\cos(t) + .15\sin(2t), \sin(t) + .3\cos(t))$ w
 \begin{axis}[
   xmin=\xh-\ep,xmax=\xvv+\ep,
   ymin=\yvv-\ep,ymax=\yh+\ep,
+  x label style={at={(axis description cs:0.5,-.225)},anchor=south},
+  y label style={at={(axis description cs:.04,.5)},anchor=south, text height = .01cm},
+  ticklabel style={font=\tiny,},
+  yticklabel style={anchor=west, align=left},
+  yticklabel pos = right,
+  yticklabel shift = -10pt,
+  xticklabel style={anchor=north},
+  xticklabel shift=-8pt
 ]
   \addplot+[line width=1.5pt,mark = none, black, domain=0:pi/2,samples=100,variable=\t](%
     { \a*(cos(deg(t))) + \b*(sin(deg(2*t))) },%
@@ -425,7 +449,7 @@ Interior of the closed curve $(1.5\cos(t) + .15\sin(2t), \sin(t) + .3\cos(t))$ w
 (0.513590635689, 0.518620355466)
 (0.513590635689, 0.480897593475)};
 \end{axis}
-\end{tikzpicture}}
+\end{tikzpicture}}}
 \end{minipage}
 \caption{Example domain on the left and the upper right subdomain on the right}
 \end{figure}
@@ -443,7 +467,7 @@ Add Features To Construct a Chebyshev expansion from:
 \end{itemize}
 \end{block}
 
-\begin{block}{References}
+\begin{block}{References and Acknowledgements}
 \bibliographystyle{plain}
 \scriptsize{\bibliography{jmm2018_poster}}
 \bigskip
