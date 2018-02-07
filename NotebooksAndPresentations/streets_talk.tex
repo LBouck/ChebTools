@@ -1,0 +1,1047 @@
+%% Holzer's Golden Rule to presentations:
+%% 1) Tell them what you're about to tell them
+%% 2) Tell them
+%% 3) Tell them what you just told them
+
+\documentclass[xcolor={rgb,dvipsnames}]{beamer}		%% dvipsnames gives toooons of color options
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}{}
+
+% - Style is ornate.
+
+\mode<presentation>							%% makes fullscreen on pdf reader and space bar to change slides
+{
+    \usetheme{Madrid}							%% specify theme
+    %\usecolortheme{Lukestheme}						%% specify color scheme
+    %\usefonttheme[onlysmall]{structuresmallcapsserif}
+    \setbeamercovered{transparent}					%% makes items in enumerate transparent until you click on them
+}
+
+\usepackage{multimedia}							%% movies: .mp4 etc etc
+\usepackage[english]{babel}						%% has all words/spellings/hyphenated words built in for whatever language you 							      					       specify in [ ]
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{float}
+%\usepackage{subfigure}
+\usepackage{graphics}
+\usepackage{graphicx}
+\usepackage{latexsym}
+\usepackage{hyperref}
+\usepackage{verbatim}
+\usepackage{enumerate}
+\usepackage{braket}
+\usepackage{media9}
+\usepackage{algorithm,algorithmic}
+\usepackage{animate}
+\usepackage{subcaption}
+\usepackage{caption}
+\usepackage{pgfplots}
+%\usepackage[noend]{algpseudocode}
+
+\setbeamercovered{dynamic}
+\graphicspath{ {/Users/Luke/Desktop/EXTREEMS/Write-ups} }
+\addmediapath{{/Users/Luke/Desktop/EXTREEMS/Write-ups} }
+
+
+
+
+%% Bibliography colors if you do not want bib items same color as the structure color
+
+%% \setbeamercolor{bibliography entry author}{fg=Black}
+%% \setbeamercolor{bibliography item}{fg=Black}
+%% \setbeamercolor*{bibliography entry title}{fg=Black}
+%% \setbeamercolor{bibliography entry journal}{fg=Black}
+%% \setbeamercolor{bibliography entry note}{fg=Black}
+
+\newcommand{\R}{\mathbb{R}}						%% example of a useful shortcut
+\newcommand{\hs}{\hspace}
+\newcommand{\vs}{\vspace}
+
+%\usepackage{times}
+%\usepackage[T1]{fontenc}
+
+\title[Root Finding with Chebyshev Polynomials] %optional
+{Root Finding with Chebyshev Polynomials: Background and Applications in 2 Dimensions}
+
+%\subtitle{}
+
+\author[L. Bouck] % optional, will appear on every slide
+{Lucas C. Bouck}	%% add more as needed
+
+\institute[GMU] % optional, will appear on every slide
+{ 
+George Mason University\\
+Department of Mathematical Sciences
+}
+
+\date[StReeTs]{February 2, 2018} 		%%% include conference name here, appears on every page
+ 
+
+
+\begin{document}
+
+\frame
+{
+  \titlepage
+ \vspace*{-2ex}
+    \begin{center}
+    \structure{
+    StReeTs Seminar\\
+    George Mason University\\
+     Fairfax, VA}  \\[2ex]
+
+
+{\small
+Joint Work with Ian H. Bell (NIST Applied Chemicals and Materials Division)
+}
+\end{center}
+}
+
+\frame
+{
+\frametitle{Outline}
+\tableofcontents					%% Here's where you give a brief overview as to what you are going to talk about 
+}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Motivation: Application and Backstory}
+\begin{frame}
+\tableofcontents[currentsection]
+\end{frame}
+\frame{
+\frametitle{Big Picture}
+NIST Thermophysical Properties of Fluids Group:
+\begin{itemize}
+\item Mission is to provide reference data for thermophysical properties of fluids
+\item Provide experimental data
+\item Developed software to fill in the gaps of experimental data
+\item End products are libraries like NIST REFPROP\footnotemark and CoolProp\footnotemark												%cite
+\item The computational group fills in the gap with empirical equations of state
+\end{itemize}
+\footnotetext[1]{E. Lemmon et. al. REFPROP Version 10.0, 2017}
+\footnotetext[2]{I. Bell et. al. {\it Pure and Pseudo-pure Fluid Thermophysical Property Evaluation and the Open-Source Thermophysical Property Library CoolProp}, 2014.}
+}
+\frame{
+\frametitle{What is an Equation of State (EOS)?}
+\begin{itemize}
+\item Empirical equation that is built to fit the experimental data while holding to physical constraints
+\item Contains information like melting line, gas liquid transition line, critical point, etc
+\item Fitting EOS involve hard optimization problems that is a research area of its own
+\end{itemize}																							%cite
+%add plot?
+}
+
+\frame{
+\frametitle{Motivation for Robust Root Finding Methods}
+\begin{itemize}
+\item Ian Bell was first interested in root finding methods for EOS to compute an inverse problem\footnotemark[1]
+\item Useful in applications like fluid and steam in a nuclear reactor\footnotemark[2]
+\item Older EOS can be solved by finding the roots of a cubic polynomial
+\item More modern EOS involve transcendental functions and are much harder for the inverse problem
+\item {\bf Goal:} Compromise between the two.\\
+\item {\bf Approach:} Approximate the EOS with a polynomial and find the roots
+\item This approach has been effective and has led to a software library {\tt ChebTools}\footnotemark[3], which is a variant on {\tt chebfun}\footnotemark[4] 	%cite
+\end{itemize}
+
+\footnotetext[1]{I. Bell et. al. {\it Exceptional reliable density solving alg...} 2018.}
+\footnotetext[2]{M. Kunick et. al. {\it Fast Calculation of Therm...}, 2008.}
+\footnotetext[3]{I. Bell {\it ChebTools.}, 2018.}
+\footnotetext[4]{T Driscoll. {\it Chebfun Guide}, 2014.}
+
+}
+
+\section{Chebyshev Polynomials: Approximation and Root Finding in 1-D}
+\begin{frame}
+\tableofcontents[currentsection]
+\end{frame}
+\frame{
+\frametitle{Polynomial Interpolation}
+\begin{block}{Given}
+\begin{itemize}
+ \item $n+1$ points $\{x_j\}_{j=1}^{n+1}\subset[a,b]$
+ \item A function, $f:[a,b]\to\mathbb{R}$
+\end{itemize}
+\end{block}
+\begin{block}{Goal}
+We want to find a polynomial, $p_n$, of degree $\leq n$ such that
+$$p_n(x_j) = f(x_j), 1\leq j\leq n+1$$
+and provide a good approximation for $f$
+\end{block}
+}
+
+\frame{\frametitle{Interpolation Example}
+\begin{figure}
+\includegraphics[width=\textwidth]{interpolation_ex.pdf}
+\end{figure}
+}
+\frame{
+\frametitle{Where Evenly Spaced Interpolation Fails}
+The classic example is the Runge function
+$$f(x)=\frac{1}{1+25x^2}.$$
+On evenly spaced points, the polynomial interpolants diverge as $n\to\infty$												%cite
+\begin{figure}
+\includegraphics[height=.6\textheight]{runge_bad.pdf}
+\end{figure}
+}
+\frame{
+\frametitle{Polynomial Interpolation Error}
+We can actually express the error of polynomial interpolation for a function that is $C^{n+1}[a,b]$:\footnotemark[1]
+$$f(x)-p_n(x) = \frac{f^{n+1}(c)}{(n+1)!}\prod_{j=1}^{n+1}(x-x_j),$$														%cite
+where $c\in[a,b]$.
+{\bf The Big Question:} What points minimize $$\max_{x\in[a,b]}\left|\prod_{j=1}^{n+1}(x-x_j)\right|?$$
+\bigskip
+For $[-1,1]$, we'll see that the answer is {\bf The Chebyshev Roots:} 
+$$x_j=\cos\left(\frac{2j-1}{2(n+1)}\pi\right), 1\leq j\leq n+1$$
+\footnotetext[1]{P. Davis {\it Interpolation and Approximation} 1975. Thm. 3.1.1}
+}
+\frame{
+\frametitle{Chebyshev Polynomials}
+\begin{block}{Definition}
+$$T_n = \cos(n\arccos(x)), x\in[-1,1]$$
+\end{block}
+\begin{align*}
+T_0(x) &= 1\\
+T_1(x) &= x
+\end{align*}
+We can get a recurrence relation for $T_n(x)$ as well.\\
+\bigskip
+Let $\theta=\arccos(x)$ and $n\geq1$.
+\begin{align*}
+T_{n+1}(x) + T_{n-1}(x) = &\cos((n+1)\theta) + \cos((n-1)\theta)\\
+= &\cos(n\theta)\cos(\theta)-\sin(n\theta)\sin(\theta) \\
+&+\cos(n\theta)\cos(-\theta)-\sin(n\theta)\sin(-\theta)\\ 
+= &2\cos(n\theta)\cos(\theta) = 2xT_n(x)\\
+\implies T_{n+1}(x) =& 2xT_n(x)-T_{n-1}(x)
+\end{align*}
+}
+\frame{
+\frametitle{What Chebyshev Polynomials Look Like}
+\begin{minipage}{.48\linewidth}
+\begin{figure}
+\caption{First 5 Chebyshev Polynomials}
+\vspace{4mm}
+\includegraphics[width=\textwidth]{cheb_poly_plot.pdf}
+\end{figure}
+\end{minipage}%}%
+\hfill%
+%\fbox{%
+\begin{minipage}{.48\linewidth}
+\begin{figure}
+\caption{$T_{10}(x)$}
+\includegraphics[width=.9\textwidth]{cheb10.pdf}
+\end{figure}
+\end{minipage}%}
+}
+
+\frame{
+\frametitle{Connection with Error Formula}
+Recall $T_{n+1}(x) = 2xT_n(x)-T_{n-1}(x)$ for $n\geq1$.\\
+\begin{itemize}
+\item The leading coefficient for $T_n(x)$ is $2^{n-1}$.
+\item Therefore, the polynomial $2^{1-n}T_n(x)$ is monic and we can express
+$$2^{1-n}T_n(x) = \left|\prod_{i=1}^n(x-x_i)\right|$$
+\item $\max_{x\in[-1,1]}|2^{1-n}T_n(x)|=2^{1-n}$
+\item All monic polynomials have a larger maximum than $2^{1-n}$.\footnotemark[1] 											%cite
+\end{itemize}
+Therefore, the Chebyshev roots are the best for our error formula.
+\footnotetext[1]{P. Davis {\it Interpolation and Approximation} 1975. Thm. 3.3.4}
+}
+
+\frame{
+\frametitle{Error Estimate for Chebyshev Roots Points}
+We can now have an error estimate for interpolating through the Chebyshev points for $n\geq 1$
+\begin{align*}
+\lVert f(x)-p_n(x)\rVert_\infty&\leq\max_{x\in[-1,1]}\left|\frac{f^{n+1}(c)}{(n+1)!}\prod_{i=1}^{n+1}n(c-x_i)\right|\\
+&\leq\frac{1}{2^{n}(n+1)!}\max_{c\in[-1,1]}\left|f^{n+1}(c)\right|
+\end{align*}
+}
+\frame{
+\frametitle{Other Useful Points}
+The Chebyshev Extrema Points 
+$$x_j = \cos\left(\frac{j\pi}{n}\right), 0\leq j\leq n$$
+are also useful for interpolation. 
+They can be thought of as the $x$ components of points evenly spaced on the unit circle:
+\begin{figure}
+\includegraphics[width=.6\textwidth]{extrema_nodes.pdf}
+\end{figure}
+
+}
+
+\frame{
+\frametitle{The Chebyshev Extrema Points}
+ The Chebyshev Extrema Points $x_j = \cos\left(\frac{j\pi}{n}\right)$ are used by us in {\tt ChebTools} and also are the points used in {\tt chebfun}.
+ \bigskip
+ It isn't hard to interpolate with these points because there is a matrix $A$ where
+ $$\begin{pmatrix} a_0 \\ \vdots \\ a_n \end{pmatrix} = A\begin{pmatrix} f(x_0) \\ \vdots \\ f(x_n) \end{pmatrix}\footnotemark[1],$$\\
+\bigskip
+This gives us the advantage of having the coefficients $a_j$, which we'll need for root finding methods with polynomials.			%cite
+\footnotetext[1]{JP Boyd {\it Finding the Zeros of a Univariate Equation: Proxy Rootfinders, Chebyshev Interpolation, and the Companion Matrix}, 2013. Appendix A.}
+}
+
+
+\frame{
+\frametitle{An Orthogonal View of Chebyshev Polynomials}
+Chebyshev polynomials are orthogonal with respect to a weight:
+$$\langle T_n,T_m\rangle=\int_{-1}^{1}\frac{T_n(x)T_m(x)}{\sqrt{1-x^2}}\mathrm{d}x = \begin{cases} 0, n\neq m\\
+\frac{\pi}{2}, n=m>0\\
+\pi, n=m=0
+\end{cases}$$
+We can approximate a function $f:[-1,1]\to\mathbb{R}$ as 
+$$f(x) = \sum_{n=0}^Na_nT_n(x), \hspace{.25in} a_n=\frac{\langle f, T_n\rangle}{\langle T_n,T_n\rangle},$$
+which is we'll call a Chebyshev projection of $f$.
+\begin{block}{Uniform Convergence\footnotemark[1]}
+If $f$ is Lipschitz continuous on $[-1,1]$, then the Chebyshev projections converge uniformly to $f$ on $[-1,1]$					%cite
+\end{block}
+\footnotetext[1]{L. N. Trefethen, {\it Approximation Theory and Approximation Practice}, 2013. Theorem 3.1}
+}
+\frame{
+\frametitle{Convergence Properties}
+\begin{block}{Differentiable Functions\footnotemark[1]}																				%cite
+Let $f\in C^{\nu-1}[-1,1]$ and have $f^{\nu}$ be of bounded variation. Then the interpolating Chebyshev polynomial, $p_n$, satisfies:
+$$\lVert f-p_n\rVert_\infty = \mathcal{O}(n^{-\nu})$$
+\end{block}
+\begin{block}{Analytic Functions\footnotemark[2]}																	%cite
+Let $f$ be analytic on $[-1,1]$. Then the interpolating Chebyshev polynomial, $p_n$, satisfies:
+$$\lVert f-p_n\rVert = \mathcal{O}(\rho^{-n}),$$
+\end{block}
+\footnotetext[1]{L. N. Trefethen, {\it Approximation Theory and Approximation Practice}, 2013. Theorem 7.2}
+\footnotetext[1]{Theorem 8.2}
+}
+\frame{
+\frametitle{Convergence Examples}
+\centering
+\begin{figure}
+\includegraphics[width=.9\textwidth]{cheb_convergence_plots.pdf}
+\end{figure}
+}
+\frame{
+\frametitle{Chebyshev Interpolation Can Handle the Runge Function}
+\begin{figure}
+\includegraphics[width=\linewidth]{runge_plot.pdf}
+\end{figure}
+}
+%\frame{
+%\frametitle{Link Between Coefficients and the Error}
+%\begin{figure}
+%\includegraphics[width=.9\linewidth]{runge_cheb_error.pdf}
+%\end{figure}
+%}
+
+\frame{
+\frametitle{Root Finding: The Companion Matrix Method\footnotemark[1]}
+{\bf Idea:} Convert a root $x$ to an eigenvalue of a matrix.
+
+First we start with
+$$xT_0(x) = T_1(x)$$
+and 
+$$xT_n(x) = \frac{1}{2}T_{n+1}(x)+\frac{1}{2}T_{n-1}(x), n\geq1$$
+We can arrange the above equation as a matrix equation
+$$\begin{pmatrix} 
+0 & 1 & 0 & \cdots&  0\\
+\frac{1}{2} & 0 & \frac{1}{2} &\cdots &0\\
+\vdots &\ddots &\ddots  & \ddots & \vdots \\
+0 &0 &\cdots  & \ddots & \frac{1}{2} \\
+0 &0 &\cdots & \frac{1}{2} & 0
+\end{pmatrix}
+\begin{pmatrix}
+T_0(x)\\
+T_1(x)\\
+\vdots\\
+T_{n-1}(x)
+\end{pmatrix} = 
+x\begin{pmatrix}
+T_0(x)\\
+T_1(x)\\
+\vdots\\
+T_{n-1}(x)
+\end{pmatrix} - \begin{pmatrix}
+0\\
+0\\
+\vdots\\
+\frac{1}{2}T_{n}(x)
+\end{pmatrix}$$
+We'll denote $C$ to be the LHS matrix
+\footnotetext[1]{JP Boyd {\it Finding the Zeros of a Univariate Equation...}, 2013. Appendix C}
+}
+\frame{
+Now add and subtract away the interpolant, $p_n(x)$
+\begin{align*}
+C
+\begin{pmatrix}
+T_0(x)\\
+T_1(x)\\
+\vdots\\
+T_{n-1}(x)
+\end{pmatrix} &= 
+x\begin{pmatrix}
+T_0(x)\\
+T_1(x)\\
+\vdots\\
+T_{n-1}(x)
+\end{pmatrix} - \begin{pmatrix}
+0\\
+0\\
+\vdots\\
+\frac{1}{2}T_{n}(x)
+\end{pmatrix} \\
+&+
+\begin{pmatrix}
+0\\
+0\\
+\vdots\\
+\gamma
+\end{pmatrix}\left(a_nT_n(x)+\sum_{j=0}^{n-1}a_jT_j(x) -p_n(x)\right)
+\end{align*}
+Setting $\gamma=\frac{1}{2a_n}$ we get:
+\begin{align*}
+C
+\begin{pmatrix}
+T_0(x)\\
+T_1(x)\\
+\vdots\\
+T_{n-1}(x)
+\end{pmatrix} &= 
+x\begin{pmatrix}
+T_0(x)\\
+T_1(x)\\
+\vdots\\
+T_{n-1}(x)
+\end{pmatrix}+
+\begin{pmatrix}
+0\\
+0\\
+\vdots\\
+\frac{1}{2a_n}
+\end{pmatrix}\left(\sum_{j=0}^{n-1}a_jT_j(x) -p_n(x)\right)
+\end{align*}
+}
+\frame{
+\frametitle{The Companion Matrix}
+Rearranging and setting $x$ to be a root of $p_n(x)$, we end with 
+$$
+\begin{pmatrix} 
+0 & 1 & 0 & \cdots&  0\\
+\frac{1}{2} & 0 & \frac{1}{2} &\cdots &0\\
+\vdots &\ddots &\ddots  & \ddots & \vdots \\
+0 &0 &0  & \ddots & \frac{1}{2} \\
+\frac{-a_0}{2a_n} &\frac{-a_1}{2a_n} &\cdots & \frac{1}{2}-\frac{a_{n-2}}{2a_n} & -\frac{a_{n-1}}{2a_n}
+\end{pmatrix}{\bf v} = x{\bf v},$$ which is an eigenvalue problem whose eigenvalues are the roots of $p_n(x)$. We can now eigenvalue solve to get all roots of $p_n(x)$.\\
+\bigskip
+(Boyd, 2013)\footnotemark[1] Shows how to derive companion matrices for a general basis.
+\footnotetext[1]{JP Boyd {\it Finding the Zeros of a Univariate Equation...}, 2013. Appendix C}
+}
+
+\section{Success in 1-D Applications}
+\begin{frame}
+\tableofcontents[currentsection]
+\end{frame}
+
+\frame{
+\frametitle{Example EOS}
+\begin{figure}
+\caption{Example EOS terms for Nitrogen\footnotemark[1]}
+\includegraphics[width=.7\textwidth]{some_nitrogen_terms.pdf}								%cite
+\end{figure}
+\footnotetext[1]{I. Bell et. al. {\it Exceptional reliable density solving algorithms for multi parameter mixture models from Chebyshev expansion root finding} 2018.}
+}
+
+\frame{
+\frametitle{Effectiveness of Chebyshev Interpolants for Our Application}
+\begin{minipage}{.6\linewidth}
+\begin{figure}
+\caption{Accuracy of Chebyshev Approximations\footnotemark[1]}
+\includegraphics[width=.9\textwidth]{term_expansion_error_profiles.pdf}
+\end{figure}
+\end{minipage}
+\begin{minipage}{.35\linewidth}
+Speed:
+\begin{itemize}
+\item Have been able to use root finding techniques to get comparable speeds to other options\footnotemark[1]
+\end{itemize}
+\end{minipage}
+\footnotetext[1]{I. Bell et. al. {\it Exceptional reliable density solving algorithms for multi parameter mixture models from Chebyshev expansion root finding} 2018.}
+}
+
+
+
+
+\section{The 2-D Problem}
+\begin{frame}
+\tableofcontents[currentsection]
+\end{frame}
+\frame{
+\frametitle{Why go to Two Dimensions?}
+\begin{itemize}
+\item So far we have assumed that we know 1 proprerty
+\item For Ian Bell's density solver, we assumed we knew the temperature
+\item The more general problem is finding the temperature and pressure at which two desired thermophysical properties hold
+\end{itemize}
+}
+
+\frame{
+\frametitle{The Problem}
+\begin{block}{Global 2-D Root Finding Problem}
+We want to find all solutions ${\bf x}\in\Omega\subset\R^2$ to 
+$${\bf F}({\bf x})={\bf 0}$$
+\end{block}
+
+Additional assumptions
+\begin{itemize}
+\item $\Omega$ will be a bounded domain and rectangular for now
+\item Treat ${\bf F}$ as $\begin{pmatrix} f(x,y) \\
+g(x,y)
+\end{pmatrix}$, where $x,y\in\R$ and $f,g$ are scalar functions
+\item Assume $f,g$ are smooth enough (more on this later)
+\item Assume finitely many roots
+\end{itemize}
+}
+
+
+\frame{
+\frametitle{Example}
+$f(x,y)=x^2-y^2$ and $g(x,y)=\sin\left(\pi\sqrt{x^2+y^2}\right)$ with the square domain $\Omega=[-1,1]^2$
+\begin{center}
+\begin{figure}
+\includegraphics[trim=3cm 0cm 0cm 0cm,width=1\textwidth]{surface_plots1.pdf}
+\end{figure}
+\end{center}
+}
+
+
+
+\frame{
+\frametitle{Example (cont.)}
+Another view: We are finding where $f$ and $g$'s zero level sets intersect inside $\Omega$
+\begin{center}
+\begin{figure}
+\includegraphics[trim=3cm 1cm 1cm 1cm,width=.9\textwidth]{level_sets1.pdf}
+\end{figure}
+\end{center}
+}
+
+\frame{
+\frametitle{A Need for a Method to Find All Roots}
+\begin{itemize}
+\item Iterative methods may take multiple runs to find all roots.
+\item We need a method to find all solutions at once, just like the companion matrix methods in 1-D
+\end{itemize}
+\begin{center}
+\begin{figure}
+\includegraphics[width=.5\textwidth]{newton_basins.pdf}
+\caption{Initial guesses in white areas did not converge to roots in $\Omega$}
+\end{figure}
+\end{center}
+}
+
+\section{The Algorithm for Rectangular Domains from {\tt chebfun}}
+
+\begin{frame}
+\tableofcontents[currentsection]
+\end{frame}
+
+
+\begin{frame}{Townsend's 2-D Interpolation Idea\footnotemark[1]}
+Want to express
+$$f(x,y)\approx\sum_{i=0}^n\sum_{j=0}^mT_i(x)T_j(y)$$
+in as few 1-D interpolations as possible. One way to do it is express
+$$f(x,y)\approx\sum_{i=0}^Kp_i(x)q_i(y)$$
+where $p_i,q_i$ are 1-D Chebyshev expansions $K$ is as small as we can make it to get desired accuracy.\\						%cite
+\bigskip
+When is $K$ is relatively small compared to the degree of polynomials, Townsend calls it a {\bf Low Rank Approximation} of $f$
+\footnotetext[1]{A. Townsend. {\it Computing with Functions in Two Dimensions}, 2014.}
+\end{frame}
+
+\begin{frame}{Townsend's 2-D Interpolation Algorithm}
+\begin{itemize}																							%cite
+\item Define our first error function as $e_0(x,y)=f(x,y)$ 
+\item Define later error functions as $e_k(x,y)\coloneqq e_{k-1}(x,y)-P_{k-1}(x,y)$ where $P_{k-1}$ is our approximation
+\end{itemize}
+\begin{block}{Algorithm Outline}
+\begin{itemize}
+\item Find $(x_k,y_k)$ s.t.  $|e_k(x_k,y_k)|=\max|e_k(x,y)|$
+\item Do 1-D interpolations of $e_k(x,y_k)$ and $e_k(x_k,y)/e_k(x_k,y_k)$ denoted $p_x(x)$ and $p_y(y)$
+\item Compute new approximation $P_{k}(x,y) = P_{k-1}(x,y)+ p_x(x)p_y(y)$
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{Interpolation From Our Example}
+    \centering
+    \animategraphics[loop,controls,height=.8\textheight]{1.3}{pivots2_animation-}{0}{28}
+\end{frame}
+
+
+\frame{
+\frametitle{The Advantage of The Low Rank Approximation}
+The pivots below are for a $64\times64$ grid of Chebyshev nodes. Note we do less interpolations than if we used all $64^2$ points
+%The algorithm works by choosing a pivot position which is the maximum residual and doing 1-D interpolations in the $x$ and $y$ directions
+\begin{center}
+\begin{figure}
+\includegraphics[width=.9\textwidth]{contours_pivots.pdf}
+\caption{Plot of the contours of our example functions with pivots from the algorithm}
+\end{figure}
+\end{center}
+}
+
+\frame{
+\frametitle{Approximations of Our Example Functions}
+\begin{itemize}
+\item Almost machine precision accuracy with $x^2-y^2$
+\item Struggles with  $\sin\left(\pi\sqrt{x^2+y^2}\right)$ due to the lack of differentiability at $(0,0)$
+\end{itemize}
+\begin{center}
+\begin{figure}
+\includegraphics[trim = 3cm 0cm 0cm 0.75cm, width=\textwidth]{pointwise_error_surface.pdf}
+\end{figure}
+\end{center}
+}
+
+\frame{
+\frametitle{B\'{e}zout Resultant Method}
+\begin{itemize}
+\item From our Chebyshev approximations $p_f(x,y),p_g(x,y)$, we can construct a B\'{e}zout matrix polynomial $B(x)$
+\item $\det\left(B(x_0)\right)=0$ $\iff$ $p_f(x_0,\cdot)$ and $p_g(x_0,\cdot)$ have common root						%cite
+\end{itemize}
+
+If $p_f,p_g$ are of degree $(m_f,n_f),(m_g,n_g)$ respectively, then the resulting form of the matrix polynomial of degree $M$ is
+$$B(x) = \sum_{i=0}^{M}B_iT_i(x)$$
+\begin{itemize}
+\item $B_i$ are square matrices of size $n = \max(n_f,n_g)$ and $M\leq m_f+m_g$.
+\item Solving $\det\left(B(x_0)\right)=0$ involves linearizing $B(x)$\footnotemark[1]										%cite
+\end{itemize}
+\footnotetext[1]{Y. Nakatsukasa {\it Computing the Common Zeros of Two Bivariate Functions Via Beout Resultants} 2014.}
+}
+
+\begin{frame}{Solving the Matrix Polynomial Eigenvalue Problem\footnotemark[1]}															%cite
+Expressing $B(x) = \sum_{i=0}^{M}B_iT_i(x)$, then we can solve $\det\left(B(x)\right)=0$ by solving the generalized eigenvalue problem
+\begin{align*}
+\frac{1}{2}&\begin{pmatrix}
+-B_{M-1} 	& I_n-B_{M-2} 	& -B_{M-3} 	& \cdots 	& -B_0	\\
+I_n	       	& 0		     	& I_n	       		&	    	&		\\
+		& \ddots		& \ddots		& \ddots	&		\\
+		&			& I_n			& 0		& I_n		\\
+		&			&			& 2I_n	& 0
+\end{pmatrix}{\bf v}\\
+&=\lambda\begin{pmatrix}
+B_M	&	&		&	\\
+	&I_n	&		&	\\
+	&	&\ddots	&	\\
+	&	&		&I_n \\
+\end{pmatrix}{\bf v}
+\end{align*}
+Has computational complexity of $\mathcal{O}\left(M^3n^3\right)$	%cite
+\footnotetext[1]{Y. Nakatsukasa {\it Computing the Common Zeros of Two Bivariate Functions Via Bezout Resultants} 2014.}
+\end{frame}
+
+\begin{frame}{Conditioning of the B\'{e}zout Matrix Polynomials}
+\begin{itemize}
+\item The B\'{e}zout matrix polynomial technique can square the condition number of the common root.\footnotemark[1]
+\item The {\tt chebfun} algorithm refines the roots by recomputing the matrix polynomial problem on a zoomed in region of the root
+\end{itemize}
+
+
+\begin{center}
+\begin{figure}
+\includegraphics[height=.5\textheight]{bezout_det_plot.pdf}
+\end{figure}
+\end{center}
+\footnotetext[1]{Y. Nakatsukasa {\it Computing the Common Zeros of Two Bivariate Functions Via Bezout Resultants} 2014.}
+\end{frame}
+
+%\begin{frame}{Computational Complexity of the B\'{e}zout Method}
+%
+%\end{frame}
+
+\frame{
+\frametitle{1-D Root Finding}
+\noindent
+\begin{minipage}{.4\linewidth}
+\begin{block}{1-D Root Finding}
+\begin{itemize}
+\item We now have the possible $x$ values for where there are common roots
+\item Employ a companion matrix method finding the roots of 1-D Chebyshev polynomials
+\end{itemize}
+\end{block}
+\end{minipage}%
+\hspace{.01\linewidth}
+\noindent
+\begin{minipage}{.53\linewidth}
+\begin{center}
+\begin{figure}
+\includegraphics[width=\linewidth]{cheb1d_roots.pdf}
+\end{figure}
+\end{center}
+\end{minipage}%
+}
+\section{Results}
+\frame{
+\tableofcontents[currentsection]
+}
+
+\frame{
+\frametitle{Example 1}
+\centering
+\begin{tabular}{ |c|c|c| }
+ \hline
+ & $\lVert\cdot\rVert_2$ Error & Time (s) \\
+ \hline
+ {\tt ChebTools} & $6.97\times10^{-32}$ &  0.004268\\
+ \hline
+  {\tt chebfun} & $7.7\times10^{-16}$ & 0.522\\
+  \hline
+  \end{tabular}
+\begin{figure}
+\includegraphics[width=.9\textwidth]{level_set_ex1.pdf}
+\end{figure}
+}
+\frame{
+\frametitle{Example 2}
+\centering
+\begin{tabular}{ |c|c|c| }
+ \hline
+ & $\lVert\cdot\rVert_2$ Error & Time (s) \\
+ \hline
+ {\tt ChebTools} & $6.21\times10^{-16}$ & 214.059\\
+ \hline
+  {\tt chebfun} & $2.92\times10^{-10}$ & 0.294\\
+  \hline
+  \end{tabular}
+\begin{figure}
+\includegraphics[width=.8\textwidth]{level_set_ex2.pdf}
+\end{figure}
+}
+\frame{
+\frametitle{Example 3}
+\centering
+\begin{tabular}{ |c|c|c| }
+ \hline
+ & $\lVert\cdot\rVert_2$ Error & Time (s) \\
+ \hline
+ {\tt ChebTools} & $3.24\times10^{-16}$ & 195.903\\
+ \hline
+  {\tt chebfun} & $2.77\times10^{-11}$ & 0.296\\
+  \hline
+  \end{tabular}
+\begin{figure}
+\includegraphics[width=.8\textwidth]{level_set_ex3.pdf}
+\end{figure}
+}
+
+%\frame{
+%\frametitle{Results Discussion}
+%
+%
+%\begin{tabular}{ |c|c|c|c|c|  }
+% \hline
+% & \multicolumn{2}{|c|}{{\tt chebtools}}&\multicolumn{2}{|c|}{{\tt chebfun}} \\
+% \hline
+% Functions							& 2 Norm Error 	& Time (s)	& 2 Norm Error	& Time (s)\\
+% \hline
+% $F_1(x,y),F_2(x,y)$ & $6.97\times10^{-32}$&0.004268 &$7.7\times10^{-16}$ &0.522 \\
+% \hline
+% $G_1(x,y),G_2(x,y)$ & $6.21\times10^{-16}$ & 214.059 &$2.92\times10^{-10}$ &0.294 \\
+% \hline
+% $H_1(x,y),H_2(x,y)$ &$3.24\times10^{-16}$ & 195.903 &$2.77\times10^{-11}$ &0.296 \\
+% \hline
+%\end{tabular}
+%\begin{align*}
+%F_1(x,y) &= T_3(x)-13T_1(x) & F_2(x,y) &= T_3(y)-13T_1(y)\\
+%G_1(x,y) &= \cos(\pi x)(y-2) & G_2(x,y) &= (y-.9)(x-2)\\
+%H_1(x,y) &= \cos\left(\pi x-\frac{\pi}{10}\right)(y-2) & H_2(x,y) &= (y-.1)(y-.9)(x-2)
+%\end{align*}
+%\begin{itemize}
+%\item {\tt chebfun} is much faster than {\tt chebtools}
+%\item {\tt chebfun} has a domain subdivision strategy for reducing the size of the generalized eigenvalue problem
+%\end{itemize}
+%}
+
+\section{Current Work}
+\frame{
+\tableofcontents[currentsection]
+}
+\frame{
+\frametitle{Application Motivates Current Work}
+Subdivision for Non-rectangular Domains
+\begin{itemize}
+\item Right now, we don't have a subdivision technique to reduce the size of the matrix polynomials
+\item We want a subdivision technique that will be able to handle non-rectangular domains
+\item Empirical equations of state in thermodynamics have ranges of validity which are not rectangular domains
+\item Solutions outside the domain will not make physical sense
+\item Some properties are not defined at certain points (ex: Critical Point)
+\item The work done by Townsend can not handle this problem in general
+\end{itemize}
+%insert plot of water with critical region
+
+%\begin{center}
+%\begin{figure}
+%\includegraphics[width=.7\linewidth]{hp_water.pdf}
+%\end{figure}
+%\end{center}
+}
+\frame{
+\frametitle{Example Domains for Water}
+\begin{figure}
+\begin{minipage}{.49\linewidth}
+
+\includegraphics[width=\linewidth]{Water_PS.png}
+\end{minipage}
+\begin{minipage}{.49\linewidth}
+\includegraphics[width=\linewidth]{Water_PH.png}
+
+\end{minipage}
+\caption{Examples of liquid/vapor equilibrium region for water.}
+\end{figure}
+}
+\frame{
+\frametitle{Domain with Critical Point}
+\begin{minipage}{.49\linewidth}
+\begin{figure}
+\includegraphics[width=\linewidth]{CO2_PT.png}
+\caption{Example Domain with C$\text{O}_2$ that has a critical point}
+\end{figure}
+\end{minipage}
+\begin{minipage}{.49\linewidth}
+\begin{figure}
+\includegraphics[width=\linewidth]{Water_cp_crit.png}
+\caption{The specific heat of water becomes undefined at the critical point}
+\end{figure}
+\end{minipage}
+
+}
+
+\frame{
+\frametitle{Our Subdivision Idea}
+\begin{itemize}
+\item Subdivide where the boundary is flat, vertical, or has a discontinuity in the derivative
+\item Our boundary curve can then be represented as a 1 variable function
+\item Will allow for quick checking of whether points are inside the domain
+\item Easy to do coordinate transformations to a rectangle
+\end{itemize}
+
+}
+\frame{
+\frametitle{Subdivision Example}
+Interior of the closed curve $(1.5\cos t + .15\sin2t, \sin t + .3\cos t)$ with $t\in[0,2\pi]$
+
+\begin{figure}
+\captionsetup[subfigure]{justification=centering,position=bottom}
+%\centering
+\begin{minipage}{.5\linewidth}
+%\vspace*{6mm}
+\subcaptionbox{Boundary in black and initial subdivisions in blue.}{
+\resizebox {.9\linewidth} {!} {
+\begin{tikzpicture}
+%\tikzmath{\a = 1.5; \b =.15; \c = 1; \d = .3; }
+\def\a{1.5}
+\def\b{.15}
+\def\c{1}
+\def\d{.3}
+
+\def\tvv{rad(asin((-\a+(\a^2+32*(\b^2))^.5)/(8*\b)))}
+\def\tv{\tvv+pi}
+
+\def\xv{\a*(cos(deg(\tv))) + \b*(sin(deg(2*\tv)))}
+\def\yv{-0.108616270206} %determined numerically
+
+\def\xvv{\a*(cos(deg(\tvv))) + \b*(sin(deg(2*\tvv)))}
+\def\yvv{\c*(sin(deg(\tvv))) + \d*(cos(deg(\tvv)))}
+
+\def\th{rad(atan(\c/\d))}
+\def\thh{rad(atan(\c/\d))+pi}
+
+\def\xh{\a*(cos(deg(\th))) + \b*(sin(deg(2*\th)))}
+\def\yh{\c*(sin(deg(\th))) + \d*(cos(deg(\th)))}
+
+
+\def\xhh{-0.34845302101} %determined numerically
+\def\yhh{\c*(sin(deg(\thh))) + \d*(cos(deg(\thh)))}
+\def\ep{.0001}
+\begin{axis}[
+  xmin=\xv-\ep,xmax=\xvv+\ep,
+  ymin=\yhh-\ep,ymax=\yh+\ep,
+  x label style={at={(axis description cs:0.5,-0.04)},anchor=north},
+  y label style={at={(axis description cs:0.04,.5)},anchor=south},
+  yticklabel style={text width = .5cm, anchor=west, align=left,xshift = -.25cm,yshift=0cm},
+  yticklabel pos = right,
+  xticklabel style={anchor=north},
+  xticklabel shift=-8pt,
+  yticklabels={,,},
+  xticklabels={,,}
+]
+  \addplot+[line width=1.5pt,mark = none, black, domain=0:2*pi,samples=100,variable=\t](%
+    { \a*(cos(deg(t))) + \b*(sin(deg(2*t))) },%
+    {\c*(sin(deg(t))) + \d*(cos(deg(t)))}%
+  ); 
+  
+  
+  \addplot+[line width=1.5pt,mark = none, blue, domain=\yh:\yhh,variable=\t]({\xh},{t});
+  \addplot+[line width=1.5pt,mark = none, blue, domain=\yh:\yhh,variable=\t]({\xhh},{t});
+  \addplot+[line width=1.5pt,mark = none, blue, domain=\xvv:\xv,variable=\t]({t},{\yvv});
+  \addplot+[line width=1.5pt,mark = none, blue,, domain=\xvv:\xv,variable=\t]({t},{\yv});
+\end{axis}
+\end{tikzpicture}}}
+\end{minipage}%
+\begin{minipage}{.5\linewidth}
+
+\subcaptionbox{Interior 7x7 Chebyshev nodes in red.}{
+\resizebox {.9\linewidth} {!} {
+\begin{tikzpicture}
+
+
+\def\a{1.5}
+\def\b{.15}
+\def\c{1}
+\def\d{.3}
+
+\def\tvv{rad(asin((-\a+(\a^2+32*(\b^2))^.5)/(8*\b)))}
+\def\tv{\tvv+pi}
+
+\def\xv{\a*(cos(deg(\tv))) + \b*(sin(deg(2*\tv)))}
+\def\yv{-0.108616270206} %determined numerically
+
+\def\xvv{\a*(cos(deg(\tvv))) + \b*(sin(deg(2*\tvv)))}
+\def\yvv{\c*(sin(deg(\tvv))) + \d*(cos(deg(\tvv)))}
+
+\def\th{rad(atan(\c/\d))}
+\def\thh{rad(atan(\c/\d))+pi}
+
+\def\xh{\a*(cos(deg(\th))) + \b*(sin(deg(2*\th)))}
+\def\yh{\c*(sin(deg(\th))) + \d*(cos(deg(\th)))}
+
+
+\def\xhh{-0.34845302101} %determined numerically
+\def\yhh{\c*(sin(deg(\thh))) + \d*(cos(deg(\thh)))}
+\def\ymid{.5*(\yh + \yvv)}
+\def\ystep{.5*(\yh - \yvv)}
+
+\def\xmid{.5*(\xh + \xvv)}
+\def\xstep{.5*(\xvv - \xh)}
+\def\ep{.0001}
+\begin{axis}[
+  xmin=\xh-\ep,xmax=\xvv+\ep,
+  ymin=\yvv-\ep,ymax=\yh+\ep,
+  x label style={at={(axis description cs:0.5,-.225)},anchor=south},
+  y label style={at={(axis description cs:.04,.5)},anchor=south, text height = .01cm},
+  ticklabel style={font=\tiny,},
+  yticklabel style={anchor=west, align=left},
+  yticklabel pos = right,
+  yticklabel shift = -10pt,
+  xticklabel style={anchor=north},
+  xticklabel shift=-8pt,
+    yticklabels={,,},
+  xticklabels={,,}
+]
+  \addplot+[line width=1.5pt,mark = none, black, domain=0:pi/2,samples=100,variable=\t](%
+    { \a*(cos(deg(t))) + \b*(sin(deg(2*t))) },%
+    {\c*(sin(deg(t))) + \d*(cos(deg(t)))}%
+  ); 
+   \addplot+[line width=1.5pt,mark = none, blue, domain=\yh:\yhh,variable=\t]({\xh},{t});
+  \addplot+[line width=1.5pt,mark = none, blue, domain=\xvv:\xv,variable=\t]({t},{\yvv});
+  
+  
+  \addplot[red, only marks, mark=*] coordinates {
+(1.52865090951, 0.480897593475)
+
+(1.46065476435, 0.621680857829)
+(1.46065476435, 0.518620355466)
+(1.46065476435, 0.480897593475)
+
+(1.27488584106, 0.762464122183)
+(1.27488584106, 0.621680857829)
+(1.27488584106, 0.518620355466)
+(1.27488584106, 0.480897593475)
+
+(1.0211207726, 0.903247386537)
+(1.0211207726, 0.762464122183)
+(1.0211207726, 0.621680857829)
+(1.0211207726, 0.518620355466)
+(1.0211207726, 0.480897593475)
+
+(0.767355704145, 1.0063078889)
+(0.767355704145, 0.903247386537)
+(0.767355704145, 0.762464122183)
+(0.767355704145, 0.621680857829)
+(0.767355704145, 0.518620355466)
+(0.767355704145, 0.480897593475)
+
+(0.581586780849, 1.0063078889)
+(0.581586780849, 0.903247386537)
+(0.581586780849, 0.762464122183)
+(0.581586780849, 0.621680857829)
+(0.581586780849, 0.518620355466)
+(0.581586780849, 0.480897593475)
+(0.513590635689, 1.04403065089)
+(0.513590635689, 1.0063078889)
+(0.513590635689, 0.903247386537)
+(0.513590635689, 0.762464122183)
+(0.513590635689, 0.621680857829)
+(0.513590635689, 0.518620355466)
+(0.513590635689, 0.480897593475)};
+\end{axis}
+\end{tikzpicture}}}
+\end{minipage}
+\caption{Example domain on the left and the upper right subdomain on the right}
+\end{figure}
+
+}
+
+
+\frame{
+\frametitle{Future Work}
+For Non-Rectangular Domains
+\begin{itemize}
+\item Further develop ideas for subdivision methods, such as stopping criterion
+\item Look into root finding techniques for Chebyshev polynomials other than B\'{e}zout Resultant Method
+	\begin{itemize}
+	\item Root finding in higher dimensions is needed for mixture EOS
+	\item Resultant methods will not generalize well for high dimensions\footnotemark[1]
+	\item Undergrad group at BYU working on applying algebraic geometry ideas to the root finding process
+	\end{itemize}
+\end{itemize}
+Software:
+\begin{itemize}
+\item Introduce GPU and parallel computing to the {\tt ChebTools} library
+\item Add other features to the library
+\item We are looking for more developers
+\item Link: \href{https://github.com/usnistgov/ChebTools}{https://github.com/usnistgov/ChebTools}
+\end{itemize}
+\footnotetext[1]{V. Noferini {\it Numerical Instability of Resultant Methods for
+Multidimensional Rootfinding} 2016.}
+}
+
+
+\frame{
+\frametitle{Acknowledgements}
+
+\begin{itemize}
+\item Ian Bell and Bradley Alpert (NIST Applied Math Division)
+\item The Summer Undergraduate Research Fellowship program at NIST
+\end{itemize}
+\bigskip
+\bigskip
+\begin{center}
+{\large Questions?}
+\end{center}
+}
+
+%\frame{
+%\frametitle{References}
+%{\scriptsize
+%$[1]$ R. Bartels and G. Stewart. {\it Solution of the Matrix Equation} $AX+XB=C$: {\it Algorithm 432}, Comm. ACM, 1972.\\
+%$[2]$ I. Bell et. al. {\it Pure and Pseudo-pure Fluid Thermophysical Property Evaluation and
+%             the Open-Source Thermophysical Property Library CoolProp}, Industrial \& Engineering Chemical Research, 2014.\\
+%$[3]$ P. Deuflhard. {\it Newton Methods for Nonlinear Problems}, Springer, Berlin, 2011.\\
+%$[4]$ G. Golub and C. Van Loan. {\it Matrix Computations}. The Johns Hopkins University Press, Baltimore, 2013.\\
+%$[5]$ M. Kunick et. al. {\it Fast Calculation of Thermodynamic Properties of Water and Steam in Process Modelling using Spline Interpolation}. 2008.\\
+%$[6]$ Y. Nakatsukasa et. al. {\it Vector Spaces of Linearizations for Matrix Polynomials: A Bivariate Polynomial Approach}, arXiv:1610.01859v1, 2016.\\
+% $[7]$ A. Townsend. {\it Computing with Functions in Two Dimensions} (Doctoral Dissertation). Oxford University, 2014.\\
+% $[8]$ L. N. Trefethen, {\it Approximation Theory and Approximation Practice}, SIAM, Philadelphia, 2013.\\}
+%}
+
+\end{document}

@@ -1,0 +1,9 @@
+\beamer@endinputifotherversion {3.36pt}
+\select@language {english}
+\beamer@sectionintoc {1}{Motivation: Application and Backstory}{3}{0}{1}
+\beamer@sectionintoc {2}{Chebyshev Polynomials: Approximation and Root Finding in 1-D}{7}{0}{2}
+\beamer@sectionintoc {3}{Success in 1-D Applications}{25}{0}{3}
+\beamer@sectionintoc {4}{The 2-D Problem}{28}{0}{4}
+\beamer@sectionintoc {5}{The Algorithm for Rectangular Domains from {\tt chebfun}}{34}{0}{5}
+\beamer@sectionintoc {6}{Results}{44}{0}{6}
+\beamer@sectionintoc {7}{Current Work}{48}{0}{7}
