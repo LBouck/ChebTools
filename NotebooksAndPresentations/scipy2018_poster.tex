@@ -1,0 +1,397 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% reference:
+%% http://www-i6.informatik.rwth-aachen.de/~dreuw/latexbeamerposter.php
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[final]{beamer}
+\mode<presentation>
+{
+  %\usetheme{I6dv}
+  \usetheme{l6dv-2}
+  %\usetheme{l6dv-3}
+%  \usetheme{Aachen}
+%  \usetheme{Oldi6}
+%  \usetheme{I6td}
+  %\usetheme{I6dv}
+%  \usetheme{I6pd}
+%  \usetheme{I6pd2}
+}
+
+
+\usepackage{listings}
+% this part is used to allow your readers to copy the code from a PDF viewer but without copying the line numbers.
+\usepackage{accsupp}
+\newcommand*{\noaccsupp}[1]{\BeginAccSupp{ActualText={}}#1\EndAccSupp{}}
+
+\lstdefinestyle{shared}
+{
+    numbers=none,
+    frame=single,
+    framesep=\fboxsep,
+    framerule=\fboxrule,
+    rulecolor=\color{red},
+    xleftmargin=\dimexpr\fboxsep+\fboxrule\relax,
+    xrightmargin=\dimexpr\fboxsep+\fboxrule\relax,
+    breaklines=true,
+    tabsize=2,
+    columns=flexible,
+}
+
+\lstdefinestyle{python}
+{
+    style=shared,
+    language={Python},
+    basicstyle=\tt\footnotesize,
+    keywordstyle=\color{blue},
+    commentstyle=\color[rgb]{0.13,0.54,0.13},
+    backgroundcolor=\color{gray!2},
+    morekeywords={
+        Console,
+        WriteLine,
+        int,
+    },
+}
+
+\lstnewenvironment{python}
+{\lstset{style=python}}
+{}
+
+
+
+% additional settings
+\usefonttheme[onlymath]{serif}
+\setbeamerfont{itemize}{size=\normalsize}
+\setbeamerfont{itemize/enumerate body}{size=\normalsize}
+\setbeamerfont{itemize/enumerate subbody}{size=\small}
+\setbeamertemplate{bibliography entry title}{}
+\setbeamertemplate{bibliography entry location}{}
+\setbeamertemplate{bibliography entry note}{}
+
+\usepackage{natbib}
+
+%\renewcommand\printleftlogo
+%  {\begin{center}
+%     \resizebox{\textwidth}{!}%
+%       {\includegraphics{GMU_Logo.eps}}
+%   \end{center}
+%  }
+
+% additional packages
+\usepackage{times}
+\usepackage{amsmath,amsthm, amssymb, latexsym,epsfig,graphicx}
+\usepackage{mathtools}
+\usepackage{exscale}
+\usepackage{multirow}
+%\usepackage{subfig}
+\usepackage{color}
+
+\usepackage{pgfplots}
+\pgfplotsset{every axis/.append style={
+                    xlabel={$x$},          % default put x on x-axis
+                    ylabel={$y$},          % default put y on y-axis
+                    label style={font=\tiny},
+                    tick label style={font=\tiny}
+            }}
+\pgfplotsset{every tick label/.append style={font=\tiny}}
+\pgfplotsset{every axis/.append style={font=\tiny}}
+\pgfplotsset{compat=1.12}
+
+
+
+\usepackage{subcaption}
+\captionsetup{compatibility=false}
+\usepackage{booktabs, array}
+%\usepackage{tabularx}
+%\usepackage{rotating} %sideways environment
+\usepackage[english]{babel}
+%\usepackage[latin1]{inputenc}
+%\usepackage[orientation=landscape,size=custom,width=200,height=120,scale=1.9]{beamerposter}
+\usepackage[size=custom, width=48,height=36,scale=1.4]{beamerposter}
+\listfiles
+
+
+\title{\LARGE Chebyshev Expansions: Background and Computing in the
+C++/Python Library ChebTools}
+\author[Bouck, Bell]{Lucas Bouck and Ian Bell}
+\institute[George Mason University]{George Mason University, Fairfax, VA, U.S.A. and National Institute of Standards and Technology, Boulder, CO, U.S.A}
+%\date[Aug. 31 , 2007]{Aug. 31 , 2007}
+
+% abbreviations
+\usepackage{xspace}
+\makeatletter
+%\DeclareRobustCommand\onedot{\futurelet\@let@token\@onedot}
+%\def\@onedot{\ifx\@let@token.\else.\null\fi\xspace}
+%\def\eg{{e.g}\onedot} \def\Eg{{E.g}\onedot}
+%\def\ie{{i.e}\onedot} \def\Ie{{I.e}\onedot}
+%\def\cf{{c.f}\onedot} \def\Cf{{C.f}\onedot}
+%\def\etc{{etc}\onedot}
+%\def\vs{{vs}\onedot}
+%\def\wrt{w.r.t\onedot}
+%\def\dof{d.o.f\onedot}
+%\def\etal{{et al}\onedot}
+\makeatother
+
+%%%%%%%%%%%%%%%%%%%%%%%
+% Logo for Poster
+%%%%%%%%%%%%%%%%%%%%%
+%\printleftlogo
+%\leftlogo[1]{GMU_Logo.eps}  % defines logo to left of title (with scale factor)
+%\rightlogo[0.7]{nsf_logo.jpg}  % same but on right
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+%\addtobeamertemplate{headline}{} 
+%{
+%\begin{tikzpicture}[remember picture,overlay]
+%\node [shift={(-5.5 cm,-4cm)}] at (current page.north east) {\includegraphics[height=6.5cm]{GMU_Logo}}; 
+%\end{tikzpicture} 
+%}
+\vspace*{-10mm}
+\begin{frame}[fragile]{}
+  \begin{columns}[t]
+    \hspace*{5mm}
+
+    \begin{column}{.31\linewidth}
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{block}{Summary}
+	This poster has two goals:
+	\begin{enumerate}
+	\item Give a brief background of Chebyshev interpolation
+		\begin{itemize}
+		\item Background on Polynomial Interpolation
+		\item Motivation and useful properties Chebyshev Polynomials
+		\end{itemize}
+	\item Introduce and demonstrate the capabilities of {\tt ChebTools}
+		\begin{itemize}
+		\item C++/Python library for working with Chebyshev expansions
+		\item In the early stages and are looking for help in growing the library
+		\end{itemize}	
+	\end{enumerate}
+\end{block}
+\vspace*{2mm}
+\begin{block}{Polynomial Interpolation}
+{\color{numhypRed} What is it}\\
+\vspace{2mm}
+	\begin{minipage}{.55\linewidth}
+		\begin{itemize}
+		\item Given points, $\{(x_i,y_i)\}_{i=0}^{n}$ 
+		\item Want a degree $n$ polynomial, $p_n$
+		\item $p_n(x_i) = y_i$ for all $i$
+		\item Interpolate a function $f$ by setting $y_i = f(x_i)$
+		\item Gives an approximation of a function with just addition and multiplication for operations
+	\end{itemize}
+	\end{minipage}%}
+	\hfill%
+	\begin{minipage}{.4\linewidth}
+	\begin{figure}
+	\includegraphics[width=\textwidth]{interpolation_ex.pdf}
+	\end{figure}
+	\end{minipage}%}
+	\\
+	\vspace{2mm}
+{\color{numhypRed} Need to be Careful \cite[Thm.\ 6.1]{mason_2003}}\\
+	\begin{minipage}{.55\linewidth}
+	\begin{itemize}
+		\item Want to interpolate $f(x) = \frac{1}{1+25x^2}$ on $[-1,1]$ 
+		\item Use evenly spaced points, 
+		\item Polynomials actually diverge as $n\to\infty$
+	\end{itemize}
+	\end{minipage}%}
+	\hfill%
+	\begin{minipage}{.4\linewidth}
+	\begin{figure}
+	\includegraphics[width=\textwidth]{runge_bad.pdf}
+	\end{figure}
+	\end{minipage}%}
+\end{block}
+\begin{block}{Motivation for Chebyshev Polynomials}
+{\color{numhypRed} Polynomial Interpolation Error \cite[Thm.\ 3.1.1]{davis_1975}}\\
+The error of polynomial interpolation for a function that is $C^{n+1}[a,b]$:
+$$f(x)-p_n(x) = \frac{f^{n+1}(c)}{(n+1)!}\prod_{j=1}^{n+1}(x-x_j),$$														%%%%%%%%%%% cite %%%%%%%%%%%%%%%%%%%
+{\color{numhypRed}  Motivating Fact \cite[Thm.\ 3.3.4]{davis_1975}}\\
+For $[-1,1]$, the Chebyshev Roots
+$$x_j=\cos\left(\frac{2j-1}{2(n+1)}\pi\right), 1\leq j\leq n+1$$
+minimize the term $\max_{x\in[a,b]}\left|\prod_{j=1}^{n+1}(x-x_j)\right|$
+\end{block}
+
+
+\begin{block}{Chebyshev Polynomials}
+\begin{minipage}{.5\textwidth}
+{\color{numhypRed} Definition}
+$$T_n(x)=\cos\left(n\arccos(x)\right),\, x\in[-1,1]$$
+{\color{numhypRed} Recurrence Relation}
+\begin{align*}
+T_0(x) &= 1\quad T_1(x) = x\\
+T_{n+1}(x) &= 2xT_n(x)-T_{n-1}(x)
+\end{align*}
+Recurrence allows for fast evaluation of Chebyshev polynomial expansions
+\end{minipage}
+\begin{minipage}{.45\textwidth}
+\begin{center}
+\begin{figure}
+\includegraphics[width=.8\textwidth]{cheb_poly_plot.pdf}
+\caption{First 5 Chebyshev Polynomials}
+\end{figure}
+\end{center}
+\end{minipage}
+\end{block}
+
+
+\end{column}
+%%% end of first column %%%%%%%%%%%%
+
+%% 2/19/2012 start next column next time %%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% begining of second column %%%%%%%%%%%%%%
+    \begin{column}{.31\linewidth}
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%
+
+\begin{block}{Useful Properties of Chebyshev Polynomials}
+{\color{numhypRed} Interpolation Convergence \cite[Ch.\ 8]{trefethen_2012}}\\    %%%%%%%%%%% cite %%%%%%%%%%%%%%%%%%%
+\begin{minipage}{.4\textwidth}
+\begin{itemize}
+\item Suppose we want to interpolate $f:[-1,1]\to \mathbb{R}$
+\item $f$ is analytic $\implies$ geometric convergence 
+\item Need a small degree expansion for machine precision in our example
+\end{itemize}
+\end{minipage}
+\begin{minipage}{.55\textwidth}
+\begin{figure}
+\includegraphics[width=\textwidth]{sine_error.pdf}
+\caption{Error of Chebyshev Interpolation on $\sin(x)$ on $[0,2\pi]$}
+\end{figure}
+\end{minipage}
+{\color{numhypRed} Orthogonality}\\
+Chebyshev polynomials are orthogonal on $[-1,1]$ with a weight
+$$\int_{-1}^{1}\frac{T_n(x)T_m(x)}{\sqrt{1-x^2}} = 0 \quad \text{if $m\neq n$}$$
+Discrete orthogonality relations allow for quick interpolation \cite[Sec.\ 6.3]{mason_2003}.
+\end{block}
+
+\begin{block}{{\tt ChebTools} Introduction}
+\begin{itemize}
+\item Written in C++11 with wrappers in Python using {\tt pybind11} \cite{pybind11}
+\item Backend linear algebra with {\tt Eigen} \cite{eigen}						%%%%%%%%%%	cite		%%%%%%%%%%%
+\end{itemize}
+{\color{numhypRed} Chebyshev Expansion Object}
+If our expansion looks like 
+$$\sum_{k=0}^{n}a_kT_k(x), \quad \text{on $[-1, 1]$}$$ 
+then the object looks like
+$$ {\tt xmin} = -1, \; {\tt xmax} = 1, \; {\tt coef} = [a_0, a_1, \ldots, a_n]$$
+{\color{numhypRed} Related Libraries}
+\begin{itemize}
+\item {\tt chebfun} \cite{driscoll_2014}: Extensive MATLAB library by Nick Trefethen's group
+\item {\tt ApproxFun.jl} \cite{approxfun}: Julia library by Alex Townsend
+\item {\tt pychebfun}\cite{pychebfun} and {\tt chebpy}\cite{chebpy} for Python users
+\end{itemize}
+
+\end{block}
+
+\begin{block}{{\tt ChebTools} Current Basic Capabilities}
+{\color{numhypRed} Generating Expansions}\\
+\begin{python}
+# arguments: (degree of expansion, function, xmin, xmax)
+cheb_sin = ct.generate_Chebyshev_expansion(10, np.sin, 0, 2*np.pi)
+\end{python}
+{\color{numhypRed} Function Evaluation}\\
+\begin{python}
+# works with floats and numpy arrays
+cheb_sin.y(3)
+\end{python}
+{\color{numhypRed} Arithmetic Operations}\\
+\begin{python}
+# addition by another expansion and a constant
+# note that operators like +=, -, and -= are also supported
+chebs_added = cheb_sin + cheb_cos + 1
+# multiplication of two expansions and multiplication by a constant
+chebs_sin2x = 2*cheb_sin *cheb_cos
+\end{python}
+{\color{numhypRed} Applying More Advanced Functions (from {\tt pychebfun} \cite{pychebfun})}\\
+\begin{python}
+# applying more complicated functions to a Chebyshev expansion object
+sin_squared = cheb_sin.apply(lambda x: x**2)
+\end{python}\end{block}
+\end{column}
+%% end of second column %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%% begining of third column%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  \begin{column}{.31\linewidth}
+\begin{block}{Other Current Capabilities}
+{\color{numhypRed} Root Finding, Derivatives, and Local Extrema}\\
+
+\begin{python}
+# generate expansion of cosine
+long_cos = ct.generate_Chebyshev_expansion(25, np.cos, -.1, 4*np.pi+.1)
+
+# finding the roots of the Chebyshev expansion
+# the boolean argument being True means that we want just the roots in [xmin, xmax]
+approx_roots = long_cos.real_roots(True)
+
+# finding the local extrema of the Chebyshev expansion
+approx_extrema = long_cos.deriv(1).real_roots(True)
+\end{python}
+%\begin{center}
+%\begin{figure}
+%\caption{Cosine with its approximate roots on $[-.1,4\pi+.1]$}
+%\includegraphics[width = .6\textwidth]{cos_roots.pdf}
+%\end{figure}
+%\end{center}
+
+	\begin{minipage}{.4\linewidth}
+		\begin{itemize}
+		\item The method {\tt real\_roots} utilizes a companion matrix method \cite{boyd_2013}
+		\item Faster method in the C++ library that avoids the companion matrix
+		\item Has been used in \cite{bell_2018-2}
+		\end{itemize}
+	\end{minipage}%}
+	\hfill%
+	\begin{minipage}{.55\linewidth}
+	\begin{figure}
+	\includegraphics[width = \textwidth]{cos_roots.pdf}
+	\end{figure}
+	\end{minipage}%}
+\end{block}
+
+
+
+\begin{block}{Future Work}
+We are looking for help with development. We want to add additional capabilities to the library including:
+\begin{itemize}
+\item Integrating expansions
+\item 2-D capabilities
+\item Adaptive Interpolation
+\item Parallelization
+\end{itemize}
+\end{block}
+
+\begin{block}{More Info}
+{\color{numhypRed} JOSS Paper}\\
+Bell et al., (2018). ChebTools: C++11 (and Python) tools for working with Chebyshev expansions. {\it ]ournal of Open Source Software}, 3(22), 569. https://doi.org/10.21105/joss.00569\\
+{\color{numhypRed} GitHub Link }\\
+https://github.com/usnistgov/ChebTools\\
+{\color{numhypRed} Jupyter Notebook Example}\\
+{\small https://github.com/usnistgov/ChebTools/blob/master/BattlesTrefethen.ipynb}
+\end{block}
+
+\begin{block}{References and Acknowledgements}
+\bibliographystyle{plain}
+\scriptsize{\bibliography{scipy2018_poster}}
+\bigskip
+{\normalsize This work was supported by the NIST SURF program.}
+\end{block}
+\end{column}
+  \end{columns}
+\end{frame}
+
+\end{document}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-PDF-mode: t
+%%% End: 

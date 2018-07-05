@@ -1,0 +1,62 @@
+\begin{thebibliography}{10}
+
+\bibitem{bell_2018-2}
+I.H. Bell and B.K. Alpert.
+\newblock Exceptionally reliable density-solving algorithms for multiparameter
+  mixture models from chebyshev expansion rootfinding.
+\newblock {\em Fluid Phase Equilibria}, 2018.
+
+\bibitem{boyd_2013}
+J.P. Boyd.
+\newblock Finding the zeros of a univariate equation: Proxy rootfinders,
+  chebyshev interpolation, and the companion matrix.
+\newblock {\em SIAM Review}, 55(2):375--396, 2013.
+
+\bibitem{davis_1975}
+P.~Davis.
+\newblock {\em Interpolation and Approximation}.
+\newblock Dover Publications, 1975.
+
+\bibitem{driscoll_2014}
+T.~A Driscoll, N.~Hale, and L.~N. Trefethen.
+\newblock {\em Chebfun Guide}.
+\newblock Pafnuty Publications, 2014.
+
+\bibitem{eigen}
+B.~Jacob and G.~Guennebaud.
+\newblock Eigen, 2017.
+\newblock http://eigen.tuxfamily.org.
+
+\bibitem{pybind11}
+W.~Jakob, J.~Rhinelander, and D.~Moldovan.
+\newblock pybind11 -- seamless operability between c++11 and python, 2016.
+\newblock https://github.com/pybind/pybind11.
+
+\bibitem{mason_2003}
+J.C. Mason and D.C. Handscomb.
+\newblock {\em Chebyshev Polynomials}.
+\newblock Chapman \& Hall/CRC, 2003.
+
+\bibitem{chebpy}
+M.~Richardson.
+\newblock chebpy -- a python implementation of chebfun, 2017.
+\newblock https://github.com/chebpy/chebpy.
+
+\bibitem{pychebfun}
+C.~Swierczewski and O.~Verdier.
+\newblock pychebfun -- python implementation of chebfun, 2017.
+\newblock https://github.com/olivierverdier/pychebfun.
+
+\bibitem{approxfun}
+A.~Townsend.
+\newblock Approxfun.jl -- julia package for function approximation, 2018.
+\newblock https://github.com/JuliaApproximation/ApproxFun.jl.
+
+\bibitem{trefethen_2012}
+L.N. Trefethen.
+\newblock {\em Approximation Theory and Approximation Practice (Other Titles in
+  Applied Mathematics)}.
+\newblock Society for Industrial and Applied Mathematics, Philadelphia, PA,
+  USA, 2012.
+
+\end{thebibliography}
