@@ -11,7 +11,7 @@
 	\item Give a brief background of Chebyshev interpolation
 		\begin{itemize}
 		\item Background on Polynomial Interpolation
-		\item Motivation and useful properties Chebyshev Polynomials
+		\item Motivation and useful properties of Chebyshev polynomials
 		\end{itemize}
 	\item Introduce and demonstrate the capabilities of {\tt ChebTools}
 		\begin{itemize}
@@ -41,11 +41,12 @@
 	\end{minipage}%}
 	\\
 	\vspace{2mm}
-{\color{numhypRed} Need to be Careful \cite[Thm.\ 6.1]{mason_2003}}\\
+{\color{numhypRed} Polynomial Interpolation Can Fail \cite[Thm.\ 6.1]{mason_2003}}\\
 	\begin{minipage}{.55\linewidth}
+	\vspace{-10mm}
 	\begin{itemize}
 		\item Want to interpolate $f(x) = \frac{1}{1+25x^2}$ on $[-1,1]$
-		\item Use evenly spaced points,
+		\item Use evenly spaced points
 		\item Polynomials actually diverge as $n\to\infty$
 	\end{itemize}
 	\end{minipage}%}
@@ -102,14 +103,15 @@ Recurrence allows for fast evaluation of Chebyshev polynomial expansions
 
 \begin{block}{Useful Properties of Chebyshev Polynomials}
 {\color{numhypRed} Interpolation Convergence \cite[Ch.\ 8]{trefethen_2012}}\\    %%%%%%%%%%% cite %%%%%%%%%%%%%%%%%%%
-\begin{minipage}{.4\textwidth}
+\begin{minipage}{.45\textwidth}
+\vspace{-20mm}
 \begin{itemize}
 \item Suppose we want to interpolate $f:[-1,1]\to \mathbb{R}$
 \item $f$ is analytic $\implies$ geometric convergence
-\item Need a small degree expansion for machine precision in our example
+\item Need a small degree expansion for machine precision in example
 \end{itemize}
 \end{minipage}
-\begin{minipage}{.55\textwidth}
+\begin{minipage}{.5\textwidth}
 \begin{figure}
 \includegraphics[width=\textwidth]{sine_error.pdf}
 \caption{Error of Chebyshev Interpolation on $\sin(x)$ on $[0,2\pi]$}
@@ -118,7 +120,7 @@ Recurrence allows for fast evaluation of Chebyshev polynomial expansions
 {\color{numhypRed} Orthogonality}\\
 Chebyshev polynomials are orthogonal on $[-1,1]$ with a weight
 $$\int_{-1}^{1}\frac{T_n(x)T_m(x)}{\sqrt{1-x^2}} = 0 \quad \text{if $m\neq n$}$$
-Discrete orthogonality relations allow for quick interpolation \cite[Sec.\ 6.3]{mason_2003}.
+A discrete orthogonality relations allow for quick interpolation \cite[Sec.\ 6.3]{mason_2003}.
 \end{block}
 
 \begin{block}{{\tt ChebTools} Introduction}
@@ -126,7 +128,7 @@ Discrete orthogonality relations allow for quick interpolation \cite[Sec.\ 6.3]{
 \item Written in C++11 with wrappers in Python using {\tt pybind11} \cite{pybind11}
 \item Backend linear algebra with {\tt Eigen} \cite{eigen}						%%%%%%%%%%	cite		%%%%%%%%%%%
 \end{itemize}
-{\color{numhypRed} Chebyshev Expansion Object}
+{\color{numhypRed} Chebyshev Expansion Object}\\
 If our expansion looks like
 $$\sum_{k=0}^{n}a_kT_k(x), \quad \text{on $[-1, 1]$}$$
 then the object looks like
@@ -163,7 +165,9 @@ chebs_sin2x = 2*cheb_sin *cheb_cos
 \begin{python}
 # applying more complicated functions to a Chebyshev expansion object
 sin_squared = cheb_sin.apply(lambda x: x**2)
-\end{python}\end{block}
+\end{python}
+\vspace{3mm}
+\end{block}
 \end{column}
 %% end of second column %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -194,8 +198,7 @@ approx_extrema = long_cos.deriv(1).real_roots(True)
 	\begin{minipage}{.4\linewidth}
 		\begin{itemize}
 		\item The method {\tt real\_roots} utilizes a companion matrix method \cite{boyd_2013}
-		\item Faster method in the C++ library that avoids the companion matrix
-		\item Has been used in \cite{bell_2018-2}
+		\item Faster method in the C++ library that avoids the companion matrix was used in \cite{bell_2018-2}
 		\end{itemize}
 	\end{minipage}%}
 	\hfill%

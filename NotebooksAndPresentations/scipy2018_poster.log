@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015) (preloaded format=pdflatex 2015.5.24)  5 JUL 2018 11:50
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015) (preloaded format=pdflatex 2015.5.24)  5 JUL 2018 22:46
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -1460,21 +1460,21 @@ Package pdftex.def Info: interpolation_ex.pdf used on input line 39.
 <runge_bad.pdf, id=14, 433.62pt x 289.08pt>
 File: runge_bad.pdf Graphic file (type pdf)
  <use runge_bad.pdf>
-Package pdftex.def Info: runge_bad.pdf used on input line 55.
+Package pdftex.def Info: runge_bad.pdf used on input line 56.
 (pdftex.def)             Requested size: 423.08496pt x 282.0702pt.
 
 <cheb_poly_plot.pdf, id=15, 234.8775pt x 198.7425pt>
 File: cheb_poly_plot.pdf Graphic file (type pdf)
  <use cheb_poly_plot.pdf>
-Package pdftex.def Info: cheb_poly_plot.pdf used on input line 84.
+Package pdftex.def Info: cheb_poly_plot.pdf used on input line 85.
 (pdftex.def)             Requested size: 380.78114pt x 322.20064pt.
 
 <sine_error.pdf, id=16, 433.62pt x 289.08pt>
 File: sine_error.pdf Graphic file (type pdf)
  <use sine_error.pdf>
-Package pdftex.def Info: sine_error.pdf used on input line 114.
-(pdftex.def)             Requested size: 581.75392pt x 387.88567pt.
-LaTeX Font Info:    Calculating math sizes for size <29.04> on input line 115.
+Package pdftex.def Info: sine_error.pdf used on input line 116.
+(pdftex.def)             Requested size: 528.86427pt x 352.61974pt.
+LaTeX Font Info:    Calculating math sizes for size <29.04> on input line 117.
 
 (/usr/local/texlive/2015/texmf-dist/tex/latex/listings/lstlang1.sty
 File: lstlang1.sty 2014/09/06 1.5e listings language file
@@ -1482,16 +1482,16 @@ File: lstlang1.sty 2014/09/06 1.5e listings language file
 <cos_roots.pdf, id=17, 433.62pt x 289.08pt>
 File: cos_roots.pdf Graphic file (type pdf)
  <use cos_roots.pdf>
-Package pdftex.def Info: cos_roots.pdf used on input line 204.
+Package pdftex.def Info: cos_roots.pdf used on input line 207.
 (pdftex.def)             Requested size: 581.75392pt x 387.88567pt.
 LaTeX Font Info:    Font shape `OT1/phv/m/it' in size <34.83> not available
-(Font)              Font shape `OT1/phv/m/sl' tried instead on input line 223.
+(Font)              Font shape `OT1/phv/m/sl' tried instead on input line 226.
 
 (./scipy2018_poster.bbl
 LaTeX Font Info:    Font shape `OT1/phv/m/it' in size <20.16> not available
 (Font)              Font shape `OT1/phv/m/sl' tried instead on input line 7.
 ))
-Overfull \vbox (11.70573pt too high) detected at line 388
+Overfull \vbox (12.26294pt too high) detected at line 391
  []
 
 
@@ -1528,10 +1528,10 @@ ion: multiple pdfs with page group included in a single page
 \tf@snm=\write8
 \openout8 = `scipy2018_poster.snm'.
 
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 390.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 390.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 393.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 393.
  (./scipy2018_poster.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 390.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 393.
 
 
  *File List*
@@ -1716,15 +1716,15 @@ cos_roots.pdf    Graphic file (type pdf)
 scipy2018_poster.bbl
  ***********
 
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 390.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 393.
 Package rerunfilecheck Info: File `scipy2018_poster.out' has not changed.
 (rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 390.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 393.
  ) 
 Here is how much of TeX's memory you used:
  33541 strings out of 493089
  763664 string characters out of 6134842
- 1192559 words of memory out of 5000000
+ 1192576 words of memory out of 5000000
  36273 multiletter control sequences out of 15000+600000
  59616 words of font info for 146 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
@@ -1741,7 +1741,7 @@ f-dist/fonts/type1/urw/helvetic/uhvr8a.pfb></usr/local/texlive/2015/texmf-dist/
 fonts/type1/urw/helvetic/uhvro8a.pfb></usr/local/texlive/2015/texmf-dist/fonts/
 type1/urw/times/utmr8a.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/urw/
 times/utmri8a.pfb>
-Output written on scipy2018_poster.pdf (1 page, 169826 bytes).
+Output written on scipy2018_poster.pdf (1 page, 169833 bytes).
 PDF statistics:
  273 PDF objects out of 1000 (max. 8388607)
  98 compressed objects within 1 object stream
